@@ -1,0 +1,211 @@
+@page
+@using OrganizationIntranet.Helper
+@model PortalModel
+@{
+    ViewData["Title"] = "پورتال داخلی";
+    Layout = "_LayoutApp";
+}
+<style>
+    :root {
+        --navy-950: #0A2036;
+        --navy-900: #0D2C48;
+        --navy-800: #123A5C;
+        --blue-600: #1573B8;
+        --gold-500: #D6A24C;
+        --sand-50: #F6F4EE;
+        --sand-100: #EFEBE0;
+        --ink-900: #152230;
+        --ink-500: #5C6C78;
+        --line: #E3DFD2;
+        --danger: #D65B4C;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Vazir', 'Tahoma', sans-serif;
+        background: var(--sand-50);
+        color: var(--ink-900);
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    header.site {
+        background: var(--navy-950);
+        color: #fff;
+    }
+
+    .header-inner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 74px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { height: 38px; filter: brightness(0) invert(1); }
+    .brand b { font-size: 15px; }
+    .brand span { display: block; font-size: 11px; color: #AFC4D6; }
+
+    .header-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 12px; }
+
+    .user-chip {
+        display: flex; align-items: center; gap: 10px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+
+    .logout-btn {
+        color: #fff;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+        .logout-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+
+    .hero {
+        background: linear-gradient(160deg, var(--navy-950), var(--navy-800));
+        color: #fff;
+        padding: 40px 0;
+    }
+
+    .hero h1 { font-size: 24px; font-weight: 800; margin: 0 0 8px; }
+    .hero h1 em { color: var(--gold-500); font-style: normal; }
+    .hero p { color: #C6D5E1; font-size: 14px; margin: 0; }
+
+    section { padding: 40px 0; }
+    .section-title { font-size: 19px; font-weight: 800; margin: 0 0 20px; }
+
+    .systems-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+
+    .sys-card {
+        background: #fff; border: 1px solid var(--line); border-radius: 14px;
+        padding: 20px; display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .sys-icon {
+        width: 42px; height: 42px; border-radius: 10px;
+        background: linear-gradient(135deg, var(--navy-900), var(--blue-600));
+        color: #fff; display: flex; align-items: center; justify-content: center;
+    }
+
+    .sys-card h3 { font-size: 15px; margin: 0; }
+    .sys-card p { font-size: 13px; color: var(--ink-500); margin: 0; flex: 1; }
+    .sys-card a.go { font-size: 13px; color: var(--blue-600); font-weight: 700; }
+
+    .empty-state { color: var(--ink-500); font-size: 14px; }
+
+    .notif-list { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .notif-item { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item h5 { font-size: 13.5px; margin: 0 0 4px; }
+    .notif-item p { font-size: 12.5px; color: var(--ink-500); margin: 0; }
+    .notif-badge { background: var(--danger); color: #fff; font-size: 11px; font-weight: 800; border-radius: 100px; padding: 2px 10px; }
+
+    footer.site { background: var(--navy-950); color: #AFC4D6; padding: 24px 0; font-size: 12px; text-align: center; }
+</style>
+
+<a href="#main" class="visually-hidden-focusable">رفتن به محتوای اصلی</a>
+
+<header class="site">
+    <div class="container header-inner">
+        <div class="brand">
+            <img src="~/assets/images/brand-logos/logo-pmo.png" alt="نشان" />
+            <div>
+                <b>اداره کل بنادر و دریانوردی</b>
+                <span>پورتال داخلی سازمان</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="user-chip">
+                <i class="ti ti-user"></i>
+                <span>@Model.DisplayName</span>
+                @if (!string.IsNullOrEmpty(Model.RoleNames))
+                {
+                    <span class="text-muted">— @Model.RoleNames</span>
+                }
+            </div>
+            <form method="post" asp-page="/Logout">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="logout-btn">
+                    <i class="ti ti-logout me-1"></i>خروج
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main id="main">
+    <section class="hero">
+        <div class="container">
+            <h1>خوش آمدید، <em>@Model.DisplayName</em></h1>
+            <p>تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
+        </div>
+    </section>
+
+    <section id="systems">
+        <div class="container">
+            <h2 class="section-title">سامانه‌های سازمان</h2>
+            @if (Model.Applications.Count == 0)
+            {
+                <p class="empty-state">در حال حاضر سامانه‌ای در دیتابیس ثبت نشده است.</p>
+            }
+            else
+            {
+                <div class="systems-grid">
+                    @foreach (var app in Model.Applications)
+                    {
+                        <div class="sys-card">
+                            <div class="sys-icon"><i class="ti ti-apps"></i></div>
+                            <h3>@app.ApplicationName</h3>
+                            <p>@app.Description</p>
+                            <a class="go" href="@(string.IsNullOrEmpty(app.BaseUrl) ? "#" : app.BaseUrl)">
+                                ورود به سامانه <i class="ti ti-arrow-left"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <section id="notifications" style="background:var(--sand-100)">
+        <div class="container">
+            <h2 class="section-title">
+                اعلانات
+                @if (Model.UnreadNotificationCount > 0)
+                {
+                    <span class="notif-badge">@Model.UnreadNotificationCount خوانده‌نشده</span>
+                }
+            </h2>
+            @if (Model.RecentNotifications.Count == 0)
+            {
+                <p class="empty-state">اعلانی برای شما ثبت نشده است.</p>
+            }
+            else
+            {
+                <div class="notif-list">
+                    @foreach (var n in Model.RecentNotifications)
+                    {
+                        <div class="notif-item">
+                            <div>
+                                <h5>@n.Title</h5>
+                                <p>@n.Message</p>
+                            </div>
+                            <span class="text-muted fs-12">@n.CreatedAt.ToPersianDate()</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</main>
+
+<footer class="site">
+    تمامی حقوق متعلق به اداره کل بنادر و دریانوردی استان هرمزگان محفوظ می‌باشد.
+</footer>

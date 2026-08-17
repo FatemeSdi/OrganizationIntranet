@@ -1,9 +1,8 @@
-﻿@using OrganizationIntranet.Areas.Security.Models
-@model LoginViewModel
-@using DNTCaptcha.Core
+@page
+@model LoginModel
 @{
     ViewData["Title"] = "ورود به سامانه";
-    Layout = "~/Areas/Security/Views/Shared/_LayoutAuth.cshtml";
+    Layout = "_LayoutAuth";
 }
 <style>
     .login-container {
@@ -95,15 +94,17 @@
         margin-bottom: 20px;
     }
 
-    .form-control, .captchaInput {
+    .form-control {
         height: 46px !important;
         border-radius: 10px !important;
         border: 1px solid #e2e8f0 !important;
         background: #f8fafc !important;
     }
+
     .input-group .form-control {
-    border-radius: 10px 0 0 10px !important;
-}
+        border-radius: 10px 0 0 10px !important;
+    }
+
         .form-control:focus {
             border-color: #244b8b !important;
             box-shadow: 0 0 0 3px rgba(36, 75, 139, 0.12) !important;
@@ -261,27 +262,22 @@
 <div class="login-container">
     <div class="official-header">
         <span class="badge-line"></span>
-        <h6>سامانه جامع گزارش‌گیری تردد‌ها</h6>
+        <h6>پورتال داخلی سازمان</h6>
         <span class="badge-line"></span>
     </div>
 
     <div class="login-card">
         <div class="login-right">
-            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
-            {
-                <div class="alert alert-danger py-2">@ViewBag.ErrorMessage</div>
-            }
-            <form id="loginForm" method="post" autocomplete="off"
-                  asp-area="Security" asp-controller="Account" asp-action="Login">
+            <div class="alert alert-danger py-2 d-none" id="serverError"></div>
+
+            <form id="loginForm" method="post" autocomplete="off" asp-page="/Login">
                 @Html.AntiForgeryToken()
-                <div asp-validation-summary="ModelOnly" class="text-danger d-none"></div>
 
                 <div class="form-group mb-3">
                     <div class="input-group mt-3">
                         <span class="input-group-text"><i class="ti ti-user text-muted"></i></span>
                         <input asp-for="Username" class="form-control" placeholder="نام کاربری" autocomplete="username" required />
                     </div>
-                    <span asp-validation-for="Username" class="text-danger d-block mt-1"></span>
                 </div>
 
                 <div class="form-group mb-3">
@@ -289,36 +285,13 @@
                         <span class="input-group-text"><i class="ti ti-lock text-muted"></i></span>
                         <input asp-for="Password" type="password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" required />
                     </div>
-                    <span asp-validation-for="Password" class="text-danger d-block mt-1"></span>
-                    <a class="float-end link-danger fw-medium fs-12 mt-1"
-                       asp-area="Security" asp-controller="Account" asp-action="ForgotPassword">
+                    <a class="float-end link-danger fw-medium fs-12 mt-1" asp-page="/ForgotPassword">
                         رمز عبور را فراموش کرده‌اید؟
                     </a>
                 </div>
 
-                <div id="securitySection" class="form-group text-start mt-2" style="direction:rtl;">
-                    <dnt-captcha asp-captcha-generator-max="9999"
-                                 asp-captcha-generator-min="1000"
-                                 asp-captcha-generator-language="English"
-                                 asp-captcha-generator-display-mode="ShowDigits"
-                                 asp-use-relative-urls="true"
-                                 asp-placeholder="کد امنیتی"
-                                 asp-text-box-class="form-control captchaInput text-start"
-                                 asp-validation-error-message="کد امنیتی اشتباه است"
-                                 asp-too-many-requests-error-message="درخواست‌های زیاد! یک دقیقه صبر کنید"
-                                 asp-font-name="Tahoma"
-                                 asp-font-size="28"
-                                 asp-fore-color="#333"
-                                 asp-back-color="#F8FAFC"
-                                 asp-text-box-class="form-control captchaInput"
-                                 asp-text-box-template="<div class='form-group'>{0}</div>"
-                                 asp-validation-message-class="text-danger"
-                                 asp-show-refresh-button="true"
-                                 asp-refresh-button-class="ti ti-refresh btn captcha-refresh" />
-                </div>
-
                 <div class="form-check mt-3 mb-0">
-                    <input class="form-check-input" id="defaultCheck1" type="checkbox">
+                    <input asp-for="RememberMe" class="form-check-input" id="defaultCheck1" type="checkbox" />
                     <label class="form-check-label fs-13" for="defaultCheck1">مرا به خاطر بسپار</label>
                 </div>
 
@@ -371,7 +344,7 @@
                     <i class="ti ti-mail"></i>
                     <div>
                         <div class="label">ایمیل</div>
-                        <div class="number">sdi10fateme@gmail.com</div>
+                        <div class="number">sdi10fateme@@gmail.com</div>
                     </div>
                 </div>
             </div>
@@ -380,7 +353,6 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
         function showToast(msg, isSuccess) {
             Toastify({
@@ -393,40 +365,21 @@
             const btn = $("#loginBtn"), spinner = $("#loginSpinner"), text = $("#loginText");
             btn.prop("disabled", true); spinner.removeClass("d-none"); text.text("در حال ورود...");
             $.ajax({
-                url: '/Security/Account/Login', type: 'POST', data: $(this).serialize(),
+                url: '@Url.Page("/Login")', type: 'POST', data: $(this).serialize(),
                 success: function (res) {
                     if (res.success) { text.text("ورود موفق"); window.location.href = res.redirectUrl; }
                     else {
                         spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
                         showToast(res.message || "خطا در ورود", false);
-                        $('.captcha-refresh').click(); $('.captchaInput').val('');
                     }
                 },
                 error: function () {
                     spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
                     showToast("خطای سرور", false);
-                    $('.captcha-refresh').click(); $('.captchaInput').val('');
                 }
             });
         });
-        @if (TempData["SuccessLogoutMessage"] != null)
-        {
-                @:showToast(@Html.Raw(Json.Serialize(TempData["SuccessLogoutMessage"])), true);
-        }
-        const jwtToken = '@ViewBag.JwtToken';
-        if (jwtToken) {
-            localStorage.setItem('jwtToken', jwtToken);
-            window.location.href = '/JudiciaryInquiry/Cartable/Index';
-        }
         document.addEventListener('DOMContentLoaded', function () {
-            const shown = new Set();
-            document.querySelectorAll('.field-validation-error, .validation-summary-errors').forEach(el => {
-                const m = el.textContent.trim();
-                if (m && !shown.has(m)) { shown.add(m); showToast(m, false); }
-            });
-            if ('@(!string.IsNullOrEmpty(ViewBag.ErrorMessage) ? ViewBag.ErrorMessage : "")' !== '')
-                showToast('@ViewBag.ErrorMessage', false);
-
             const toggle = document.getElementById('Password-toggle');
             if (toggle) {
                 const icon = toggle.querySelector('i'), input = toggle.querySelector('input');
