@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" data-header-styles="light" data-menu-styles="light" data-nav-layout="vertical" data-theme-mode="light" data-toggled="close" data-vertical-style="overlay" lang="fa">
+<head>
+    <!-- Meta Data -->
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <title>@ViewData["Title"] - ServicePMO</title>
+    <!-- Favicon -->
+    <link href="~/assets/images/brand-logos/favicon.ico" rel="icon" type="image/x-icon" />
+    <!-- Start::custom-styles -->
+    <!-- Main Theme Js -->
+    <script src="~/assets/js/authentication-main.js">
+    </script>
+    <script>
+        // این صفحه (ورود/فراموشی رمز) طراحی مخصوص روشن دارد و از حالت تاریک
+        // برنامه پیروی نمی‌کند؛ حالت تیره‌ای که authentication-main.js از
+        // localStorage اعمال می‌کند، همین‌جا خنثی می‌شود.
+        (function () {
+            var html = document.querySelector('html');
+            html.setAttribute('data-theme-mode', 'light');
+            html.setAttribute('data-header-styles', 'light');
+            html.setAttribute('data-menu-styles', 'light');
+        })();
+    </script>
+    <!-- Bootstrap Css -->
+    <link href="~/assets/libs/bootstrap/css/bootstrap.rtl.min.css" id="style" rel="stylesheet" />
+    <!-- Style Css -->
+    <link href="~/assets/css/vazir-font.css" rel="stylesheet" />
+    <link href="~/assets/css/styles.css" rel="stylesheet" />
+    <!-- Icons Css -->
+	<link href="~/assets/css/icons.css" rel="stylesheet" />
+	<link href="~/lib/bootstrap/dist/css/toastr.min.css" rel="stylesheet" />
+    <!-- End::custom-styles -->
+    @RenderSection("Styles", required: false)
+</head>
+<body class="authentication-background">
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+    <!-- Start::custom-scripts -->
+	<!-- Bootstrap JS -->
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/two-step-verification.js"> </script>
+    <!-- Show Password JS -->
+    <script src="~/assets/js/show-password.js"></script>
+    <!-- Animation-auth JS -->
+    <!-- <script src="~/assets/js/animation-auth.js"></script> -->
+	<!-- End::custom-scripts -->
+	<script src="~/lib/bootstrap/dist/js/toastr.min.js"></script>
+    @* <script src="~/assets/js/animation-auth.js"></script> *@
+    <script src="~/lib/bootstrap/dist/js/toastr.min.js"></script>
+    <script src="~/lib/jquery-ajax-unobtrusive/dist/jquery.unobtrusive-ajax.min.js"></script>
+	<!-- Toastify JS -->
+	<link href="~/assets/libs/toastify-js/src/toastify.css" rel="stylesheet" />
+    <script src="~/assets/libs/toastify-js/src/toastify.js">
+    </script>
+    <!-- Toast JS -->
+    <script src="~/assets/js/toasts.js">
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
