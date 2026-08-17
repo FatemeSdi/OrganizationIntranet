@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -8,15 +9,17 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationIntranet.Data;
 using OrganizationIntranet.Models;
 
-namespace OrganizationIntranet.Pages
+namespace OrganizationIntranet.Pages.Account
 {
     public class LoginModel : PageModel
     {
         private readonly AppDbContext _db;
+        private readonly IDNTCaptchaValidatorService _captchaValidatorService;
 
-        public LoginModel(AppDbContext db)
+        public LoginModel(AppDbContext db, IDNTCaptchaValidatorService captchaValidatorService)
         {
             _db = db;
+            _captchaValidatorService = captchaValidatorService;
         }
 
         [BindProperty]
@@ -34,6 +37,11 @@ namespace OrganizationIntranet.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!_captchaValidatorService.HasRequestValidCaptchaEntry())
+            {
+                return new JsonResult(new { success = false, message = "کد امنیتی اشتباه است" });
+            }
+
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
             {
                 return new JsonResult(new { success = false, message = "نام کاربری و رمز عبور را وارد کنید" });
@@ -61,9 +69,9 @@ namespace OrganizationIntranet.Pages
             user.LastLogin = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
-            var roleNames = await _db.UserRoles
+            var roleCodes = await _db.UserRoles
                 .Where(ur => ur.UserId == user.UserId)
-                .Select(ur => ur.Role.RoleName)
+                .Select(ur => ur.Role.RoleCode)
                 .ToListAsync();
 
             var claims = new List<Claim>
@@ -73,7 +81,7 @@ namespace OrganizationIntranet.Pages
                 new(ClaimTypes.GivenName, user.Name),
                 new(ClaimTypes.Surname, user.LastName),
             };
-            claims.AddRange(roleNames.Select(r => new Claim(ClaimTypes.Role, r)));
+            claims.AddRange(roleCodes.Select(r => new Claim(ClaimTypes.Role, r)));
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(
@@ -81,7 +89,7 @@ namespace OrganizationIntranet.Pages
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties { IsPersistent = RememberMe });
 
-            return new JsonResult(new { success = true, redirectUrl = Url.Page("/Portal") });
+            return new JsonResult(new { success = true, redirectUrl = Url.Page("/Portal/Index") });
         }
     }
 }

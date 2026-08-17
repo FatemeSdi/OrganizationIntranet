@@ -1,3 +1,4 @@
+using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using OrganizationIntranet.Data;
@@ -10,11 +11,16 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDNTCaptcha(options =>
+{
+    options.UseCookieStorageProvider();
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Login";
-        options.AccessDeniedPath = "/Login";
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
     });
 
 var app = builder.Build();
@@ -35,7 +41,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => Results.Redirect("/Login"));
+app.MapGet("/", () => Results.Redirect("/Account/Login"));
 
 app.MapRazorPages();
 

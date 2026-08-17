@@ -94,7 +94,7 @@
         margin-bottom: 20px;
     }
 
-    .form-control {
+    .form-control, .captchaInput {
         height: 46px !important;
         border-radius: 10px !important;
         border: 1px solid #e2e8f0 !important;
@@ -270,7 +270,7 @@
         <div class="login-right">
             <div class="alert alert-danger py-2 d-none" id="serverError"></div>
 
-            <form id="loginForm" method="post" autocomplete="off" asp-page="/Login">
+            <form id="loginForm" method="post" autocomplete="off" asp-page="/Account/Login">
                 @Html.AntiForgeryToken()
 
                 <div class="form-group mb-3">
@@ -285,9 +285,29 @@
                         <span class="input-group-text"><i class="ti ti-lock text-muted"></i></span>
                         <input asp-for="Password" type="password" class="form-control" placeholder="رمز عبور" autocomplete="current-password" required />
                     </div>
-                    <a class="float-end link-danger fw-medium fs-12 mt-1" asp-page="/ForgotPassword">
+                    <a class="float-end link-danger fw-medium fs-12 mt-1" asp-page="/Account/ForgotPassword">
                         رمز عبور را فراموش کرده‌اید؟
                     </a>
+                </div>
+
+                <div id="securitySection" class="form-group text-start mt-2" style="direction:rtl;">
+                    <dnt-captcha asp-captcha-generator-max="9999"
+                                 asp-captcha-generator-min="1000"
+                                 asp-captcha-generator-language="English"
+                                 asp-captcha-generator-display-mode="ShowDigits"
+                                 asp-use-relative-urls="true"
+                                 asp-placeholder="کد امنیتی"
+                                 asp-text-box-class="form-control captchaInput"
+                                 asp-validation-error-message="کد امنیتی اشتباه است"
+                                 asp-too-many-requests-error-message="درخواست‌های زیاد! یک دقیقه صبر کنید"
+                                 asp-font-name="Tahoma"
+                                 asp-font-size="28"
+                                 asp-fore-color="#333"
+                                 asp-back-color="#F8FAFC"
+                                 asp-text-box-template="<div class='form-group'>{0}</div>"
+                                 asp-validation-message-class="text-danger"
+                                 asp-show-refresh-button="true"
+                                 asp-refresh-button-class="ti ti-refresh btn captcha-refresh" />
                 </div>
 
                 <div class="form-check mt-3 mb-0">
@@ -365,17 +385,19 @@
             const btn = $("#loginBtn"), spinner = $("#loginSpinner"), text = $("#loginText");
             btn.prop("disabled", true); spinner.removeClass("d-none"); text.text("در حال ورود...");
             $.ajax({
-                url: '@Url.Page("/Login")', type: 'POST', data: $(this).serialize(),
+                url: '@Url.Page("/Account/Login")', type: 'POST', data: $(this).serialize(),
                 success: function (res) {
                     if (res.success) { text.text("ورود موفق"); window.location.href = res.redirectUrl; }
                     else {
                         spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
                         showToast(res.message || "خطا در ورود", false);
+                        $('.captcha-refresh').click(); $('.captchaInput').val('');
                     }
                 },
                 error: function () {
                     spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
                     showToast("خطای سرور", false);
+                    $('.captcha-refresh').click(); $('.captchaInput').val('');
                 }
             });
         });

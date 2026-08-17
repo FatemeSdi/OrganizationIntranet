@@ -1,0 +1,106 @@
+@page
+@model IndexModel
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "داشبورد";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="row mt-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <span class="avatar avatar-lg avatar-rounded bg-primary-transparent"><i class="ti ti-users fs-20"></i></span>
+                <div>
+                    <div class="fs-22 fw-semibold">@Model.TotalUsers</div>
+                    <div class="fs-12 text-muted">کل کاربران</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <span class="avatar avatar-lg avatar-rounded bg-success-transparent"><i class="ti ti-user-check fs-20"></i></span>
+                <div>
+                    <div class="fs-22 fw-semibold">@Model.ActiveUsers</div>
+                    <div class="fs-12 text-muted">کاربران فعال</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <span class="avatar avatar-lg avatar-rounded bg-warning-transparent"><i class="ti ti-shield-lock fs-20"></i></span>
+                <div>
+                    <div class="fs-22 fw-semibold">@Model.TotalRoles</div>
+                    <div class="fs-12 text-muted">نقش‌ها</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <span class="avatar avatar-lg avatar-rounded bg-info-transparent"><i class="ti ti-apps fs-20"></i></span>
+                <div>
+                    <div class="fs-22 fw-semibold">@Model.TotalApplications</div>
+                    <div class="fs-12 text-muted">سامانه‌ها</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card custom-card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-title">آخرین کاربران ثبت‌شده</div>
+                <a href="/Admin/Users" class="fs-13 fw-medium">مشاهده همه <i class="ti ti-arrow-left"></i></a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentUsers.Count == 0)
+                {
+                    <p class="text-muted mb-0">کاربری ثبت نشده است.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table text-nowrap mb-0">
+                            <thead>
+                                <tr>
+                                    <th>کاربر</th>
+                                    <th>نام کاربری</th>
+                                    <th>تاریخ ثبت</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in Model.RecentUsers)
+                                {
+                                    <tr>
+                                        <td>@u.Name @u.LastName</td>
+                                        <td dir="ltr" class="text-end">@u.Username</td>
+                                        <td>@u.CreatedAt.ToPersianDate()</td>
+                                        <td>
+                                            @if (u.IsActive)
+                                            {
+                                                <span class="badge bg-success-transparent">فعال</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-transparent">غیرفعال</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

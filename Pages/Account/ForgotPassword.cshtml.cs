@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using OrganizationIntranet.Data;
 using OrganizationIntranet.Models;
 
-namespace OrganizationIntranet.Pages
+namespace OrganizationIntranet.Pages.Account
 {
     public class ForgotPasswordModel : PageModel
     {
@@ -61,7 +61,7 @@ namespace OrganizationIntranet.Pages
             user.PasswordHash = hasher.HashPassword(user, NewPassword);
             await _db.SaveChangesAsync();
 
-            return new JsonResult(new { success = true, message = "رمز عبور با موفقیت تغییر کرد", redirectUrl = Url.Page("/Login") });
+            return new JsonResult(new { success = true, message = "رمز عبور با موفقیت تغییر کرد", redirectUrl = Url.Page("/Account/Login") });
         }
     }
 }

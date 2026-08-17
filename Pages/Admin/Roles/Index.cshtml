@@ -1,0 +1,95 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "نقش‌ها";
+    Layout = "_LayoutAdmin";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-4 mb-0">@TempData["SuccessMessage"]</div>
+}
+
+<div class="row mt-4">
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">افزودن نقش جدید</div>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+                <form method="post" asp-page-handler="Create">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">نام نقش</label>
+                        <input asp-for="RoleName" class="form-control" placeholder="مثلاً مدیر سیستم" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">کد نقش</label>
+                        <input asp-for="RoleCode" class="form-control" dir="ltr" placeholder="مثلاً ADMIN" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-wave w-100">ثبت نقش</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">لیست نقش‌ها</div>
+            </div>
+            <div class="card-body">
+                @if (Model.AllRoles.Count == 0)
+                {
+                    <p class="text-muted mb-0">نقشی ثبت نشده است.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table text-nowrap mb-0">
+                            <thead>
+                                <tr>
+                                    <th>نام نقش</th>
+                                    <th>کد</th>
+                                    <th>وضعیت</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var role in Model.AllRoles)
+                                {
+                                    <tr>
+                                        <td>@role.RoleName</td>
+                                        <td dir="ltr" class="text-end">@role.RoleCode</td>
+                                        <td>
+                                            @if (role.IsActive)
+                                            {
+                                                <span class="badge bg-success-transparent">فعال</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-transparent">غیرفعال</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form method="post" asp-page-handler="Toggle" asp-route-roleId="@role.RoleId">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-light-secondary btn-sm">
+                                                    @(role.IsActive ? "غیرفعال کردن" : "فعال کردن")
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

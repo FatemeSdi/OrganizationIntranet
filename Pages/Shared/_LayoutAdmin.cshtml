@@ -1,0 +1,117 @@
+@{
+    var currentPath = Context.Request.Path.Value ?? "";
+    string NavClass(string prefix) => currentPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "side-menu__item active" : "side-menu__item";
+    string DashboardNavClass() => currentPath.Equals("/Admin", StringComparison.OrdinalIgnoreCase) ? "side-menu__item active" : "side-menu__item";
+}
+<!DOCTYPE html>
+<html dir="rtl" data-header-styles="light" data-menu-styles="dark" data-nav-layout="vertical" data-theme-mode="light" data-toggled="close" data-vertical-style="overlay" lang="fa">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - پنل مدیریت</title>
+    <link href="~/assets/images/brand-logos/favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="~/assets/libs/bootstrap/css/bootstrap.rtl.min.css" rel="stylesheet" />
+    <link href="~/assets/css/vazir-font.css" rel="stylesheet" />
+    <link href="~/assets/css/styles.css" rel="stylesheet" />
+    <link href="~/assets/css/icons.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/dist/css/toastr.min.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div class="page">
+        <aside class="app-sidebar" id="sidebar">
+            <div class="main-sidebar-header">
+                <a href="/Admin" class="header-logo d-flex align-items-center gap-2 px-3">
+                    <img src="~/assets/images/brand-logos/logo-pmo.png" alt="لوگو" style="height:32px;filter:brightness(0) invert(1)" />
+                    <span class="fw-semibold text-white fs-14">پنل مدیریت</span>
+                </a>
+            </div>
+            <div class="main-sidebar" id="sidebar-scroll">
+                <nav class="main-menu-container nav nav-pills flex-column sub-open">
+                    <div class="slide-left" id="slide-left" style="display:none"></div>
+                    <ul class="main-menu">
+                        <li class="slide__category"><span class="category-name">مدیریت</span></li>
+                        <li class="slide">
+                            <a href="/Admin" class="@DashboardNavClass()">
+                                <i class="ti ti-layout-dashboard side-menu__icon"></i>
+                                <span class="side-menu__label">داشبورد</span>
+                            </a>
+                        </li>
+                        <li class="slide">
+                            <a href="/Admin/Users" class="@NavClass("/Admin/Users")">
+                                <i class="ti ti-users side-menu__icon"></i>
+                                <span class="side-menu__label">کاربران</span>
+                            </a>
+                        </li>
+                        <li class="slide">
+                            <a href="/Admin/Roles" class="@NavClass("/Admin/Roles")">
+                                <i class="ti ti-shield-lock side-menu__icon"></i>
+                                <span class="side-menu__label">نقش‌ها</span>
+                            </a>
+                        </li>
+                        <li class="slide">
+                            <a href="/Admin/Applications" class="@NavClass("/Admin/Applications")">
+                                <i class="ti ti-apps side-menu__icon"></i>
+                                <span class="side-menu__label">سامانه‌ها</span>
+                            </a>
+                        </li>
+                        <li class="slide__category"><span class="category-name">پورتال</span></li>
+                        <li class="slide">
+                            <a href="/Portal" class="side-menu__item">
+                                <i class="ti ti-home side-menu__icon"></i>
+                                <span class="side-menu__label">بازگشت به پورتال</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="slide-right" id="slide-right" style="display:none"></div>
+                </nav>
+            </div>
+        </aside>
+
+        <header class="app-header">
+            <div class="main-header-container container-fluid">
+                <div class="header-content-left d-flex align-items-center gap-2">
+                    <div class="header-element">
+                        <a aria-label="نمایش/مخفی‌سازی منو" class="sidemenu-toggle header-link animated-arrow" href="javascript:void(0);" id="mainSidebarToggle">
+                            <i class="ti ti-menu-2 fs-20"></i>
+                        </a>
+                    </div>
+                    <div class="header-element">
+                        <b>@ViewData["Title"]</b>
+                    </div>
+                </div>
+                <div class="header-content-right d-flex align-items-center gap-2">
+                    <div class="header-element">
+                        <span class="fs-13 text-muted"><i class="ti ti-user me-1"></i>@User.Identity?.Name</span>
+                    </div>
+                    <div class="header-element">
+                        <a href="/Account/Logout" class="btn btn-sm btn-danger-light">
+                            <i class="ti ti-logout me-1"></i>خروج
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="responsive-overlay" id="responsive-overlay"></div>
+
+        <main class="main-content app-content">
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="footer text-center text-muted py-3 fs-12">
+            پنل مدیریت اینترانت — اداره کل بنادر و دریانوردی استان هرمزگان
+        </footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/defaultmenu.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/toastr.min.js"></script>
+    <link href="~/assets/libs/toastify-js/src/toastify.css" rel="stylesheet" />
+    <script src="~/assets/libs/toastify-js/src/toastify.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
