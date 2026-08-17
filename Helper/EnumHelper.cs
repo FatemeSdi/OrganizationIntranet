@@ -1,9 +1,8 @@
-﻿// IdentityManagementSystem.UI/Helpers/EnumHelper.cs
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace IdentityManagementSystem.UI.Helpers
+namespace OrganizationIntranet.Helper
 {
     public static class EnumHelper
     {

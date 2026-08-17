@@ -1,14 +1,14 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using DNTCaptcha.Core;
-using IdentityManagementSystem.UI.Areas.Security.Models;
+using OrganizationIntranet.Areas.Security.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace IdentityManagementSystem.UI.Areas.Security.Controllers
+namespace OrganizationIntranet.Areas.Security.Controllers
 {
     [Area("Security")]
     public class AccountController : Controller

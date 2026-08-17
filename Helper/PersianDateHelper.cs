@@ -1,4 +1,4 @@
-﻿namespace IdentityManagementSystem.UI.Helper
+﻿namespace OrganizationIntranet.Helper
 {
     public static class PersianDateHelper
     {

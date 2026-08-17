@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IdentityManagementSystem.UI.Areas.Security.Models
+namespace OrganizationIntranet.Areas.Security.Models
 {
     public class ChangePasswordViewModel
     {
