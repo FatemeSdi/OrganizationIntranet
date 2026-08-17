@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
+// DNTCaptcha serves its captcha image through its own internal MVC controller,
+// so plain controller routing must be registered even though this app has none of its own.
+builder.Services.AddControllers();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -44,6 +48,7 @@ app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/Account/Login"));
 
+app.MapControllers();
 app.MapRazorPages();
 
 app.Run();
