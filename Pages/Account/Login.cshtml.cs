@@ -89,7 +89,8 @@ namespace OrganizationIntranet.Pages.Account
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties { IsPersistent = RememberMe });
 
-            return new JsonResult(new { success = true, redirectUrl = Url.Page("/Portal/Index") });
+            var redirectPage = roleCodes.Contains("ADMIN") ? "/Admin/Index" : "/Portal/Index";
+            return new JsonResult(new { success = true, redirectUrl = Url.Page(redirectPage) });
         }
     }
 }

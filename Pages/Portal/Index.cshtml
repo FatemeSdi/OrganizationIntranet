@@ -344,19 +344,19 @@
 
       <div class="profile-wrap">
         <button class="user-chip" id="userBtn" aria-haspopup="true" aria-expanded="false">
-          <div class="avatar">ف.ص</div>
+          <div class="avatar">@Model.Initials</div>
           <div class="info">
-            <b>فاطمه صادقی</b>
-            <small>کارشناس نرم‌افزار</small>
+            <b>@Model.DisplayName</b>
+            <small>@Model.RoleNames</small>
           </div>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <div class="profile-menu" id="profileMenu">
           <div class="pm-head">
-            <div class="avatar">ف.ص</div>
+            <div class="avatar">@Model.Initials</div>
             <div>
-              <b>فاطمه صادقی</b>
-              <span>کارشناس نرم‌افزار — واحد امور بندری</span>
+              <b>@Model.DisplayName</b>
+              <span>@Model.RoleNames</span>
             </div>
           </div>
           <ul>
@@ -364,7 +364,7 @@
             {
                 <li><a href="/Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>پنل مدیریت</a></li>
             }
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>پروفایل من</a></li>
+            <li><a href="/Account/Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>پروفایل من</a></li>
             <li><a href="#systems"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>سامانه‌های من</a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>تنظیمات حساب</a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>درخواست دسترسی جدید</a></li>
@@ -387,8 +387,8 @@
     </svg>
     <div class="container hero-grid">
       <div>
-        <h1 class="hero-title">خوش آمدید، <em>فاطمه صادقی</em></h1>
-        <p class="hero-role">شما با نقش <b>کارشناس نرم‌افزار</b> در <b>واحد امور بندری</b> وارد شده‌اید. تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
+        <h1 class="hero-title">خوش آمدید، <em>@Model.DisplayName</em></h1>
+        <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
         <form class="hero-search" role="search" onsubmit="return false;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CB1C1" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input id="systemSearch" type="text" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
@@ -532,10 +532,9 @@
    ========================================================================== */
 
 const currentUser = {
-  name: "فاطمه صادقی",
-  role: "کارشناس نرم‌افزار",
-  unit: "واحد امور بندری",
-  initials: "ف.ص"
+  name: @Html.Raw(Json.Serialize(Model.DisplayName)),
+  role: @Html.Raw(Json.Serialize(Model.RoleNames)),
+  initials: @Html.Raw(Json.Serialize(Model.Initials))
 };
 
 // همه سامانه‌های ثبت‌شده در سازمان (کاتالوگ کامل)
