@@ -5,13 +5,15 @@
     Layout = "_LayoutAdmin";
 }
 
-<div class="my-4">
-    <nav>
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="/Admin/Users">کاربران</a></li>
-            <li class="breadcrumb-item active">@ViewData["Title"]</li>
-        </ol>
-    </nav>
+<div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <nav>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Admin/Users">کاربران</a></li>
+                <li aria-current="page" class="breadcrumb-item active">@ViewData["Title"]</li>
+            </ol>
+        </nav>
+    </div>
 </div>
 
 <div class="card custom-card">

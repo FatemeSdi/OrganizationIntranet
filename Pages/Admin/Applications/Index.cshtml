@@ -5,12 +5,23 @@
     Layout = "_LayoutAdmin";
 }
 
+<div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+        <nav>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="javascript:void(0);">مدیریت</a></li>
+                <li aria-current="page" class="breadcrumb-item active">سامانه‌ها</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success mt-4 mb-0">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success mb-4">@TempData["SuccessMessage"]</div>
 }
 
-<div class="row mt-4">
+<div class="row">
     <div class="col-xl-4">
         <div class="card custom-card">
             <div class="card-header">
