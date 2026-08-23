@@ -25,7 +25,7 @@ namespace OrganizationIntranet.Pages.Portal
             var name = User.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
             var lastName = User.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
             DisplayName = $"{name} {lastName}".Trim();
-            Initials = string.Concat(name.Take(1), lastName.Take(1));
+            Initials = (name.Length > 0 ? name[..1] : "") + (lastName.Length > 0 ? lastName[..1] : "");
 
             var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var roleNames = await _db.UserRoles

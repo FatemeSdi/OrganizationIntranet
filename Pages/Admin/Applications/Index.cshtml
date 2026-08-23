@@ -7,30 +7,38 @@
 
 <div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div>
-        <nav>
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="javascript:void(0);">مدیریت</a></li>
-                <li aria-current="page" class="breadcrumb-item active">سامانه‌ها</li>
-            </ol>
-        </nav>
+        <h4 class="mb-1 fw-semibold">سامانه‌های سازمانی</h4>
+        <p class="mb-0 text-muted fs-13">مدیریت سامانه‌های متصل به اینترانت</p>
     </div>
+    <nav>
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
+            <li aria-current="page" class="breadcrumb-item active">سامانه‌ها</li>
+        </ol>
+    </nav>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success mb-4">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="ti ti-circle-check me-1"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
 
 <div class="row">
     <div class="col-xl-4">
         <div class="card custom-card">
             <div class="card-header">
-                <div class="card-title">افزودن سامانه جدید</div>
+                <div class="card-title d-flex align-items-center gap-2">
+                    <span class="avatar avatar-sm avatar-rounded bg-info-transparent"><i class="ti ti-square-rounded-plus fs-14"></i></span>
+                    افزودن سامانه جدید
+                </div>
             </div>
             <div class="card-body">
                 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
                 {
-                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                    <div class="alert alert-danger"><i class="ti ti-alert-circle me-1"></i>@Model.ErrorMessage</div>
                 }
                 <form method="post" asp-page-handler="Create">
                     @Html.AntiForgeryToken()
@@ -54,7 +62,7 @@
                         <label class="form-label">ترتیب نمایش</label>
                         <input asp-for="DisplayOrder" type="number" class="form-control" />
                     </div>
-                    <button type="submit" class="btn btn-primary btn-wave w-100">ثبت سامانه</button>
+                    <button type="submit" class="btn btn-primary btn-wave w-100"><i class="ti ti-plus me-1"></i>ثبت سامانه</button>
                 </form>
             </div>
         </div>
@@ -63,12 +71,19 @@
     <div class="col-xl-8">
         <div class="card custom-card">
             <div class="card-header">
-                <div class="card-title">لیست سامانه‌ها</div>
+                <div class="card-title d-flex align-items-center gap-2">
+                    <span class="avatar avatar-sm avatar-rounded bg-info-transparent"><i class="ti ti-apps fs-14"></i></span>
+                    لیست سامانه‌ها
+                    <span class="badge bg-info-transparent rounded-pill">@Model.AllApplications.Count</span>
+                </div>
             </div>
             <div class="card-body">
                 @if (Model.AllApplications.Count == 0)
                 {
-                    <p class="text-muted mb-0">سامانه‌ای ثبت نشده است.</p>
+                    <div class="text-center py-5">
+                        <i class="ti ti-apps fs-40 text-muted op-5 d-block mb-2"></i>
+                        <p class="text-muted mb-0">سامانه‌ای ثبت نشده است.</p>
+                    </div>
                 }
                 else
                 {
@@ -87,8 +102,8 @@
                                 @foreach (var app in Model.AllApplications)
                                 {
                                     <tr>
-                                        <td>@app.ApplicationName</td>
-                                        <td dir="ltr" class="text-end">@app.ApplicationCode</td>
+                                        <td class="fw-medium">@app.ApplicationName</td>
+                                        <td dir="ltr" class="text-end"><span class="badge bg-light text-default border">@app.ApplicationCode</span></td>
                                         <td>@app.DisplayOrder</td>
                                         <td>
                                             @if (app.IsActive)
@@ -103,7 +118,7 @@
                                         <td>
                                             <form method="post" asp-page-handler="Toggle" asp-route-applicationId="@app.ApplicationId">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-light-secondary btn-sm">
+                                                <button type="submit" class="btn btn-sm btn-wave @(app.IsActive ? "btn-danger-light" : "btn-success-light")">
                                                     @(app.IsActive ? "غیرفعال کردن" : "فعال کردن")
                                                 </button>
                                             </form>

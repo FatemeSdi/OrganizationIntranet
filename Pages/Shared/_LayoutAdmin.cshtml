@@ -26,6 +26,7 @@
     <link href="~/assets/css/icons.css" rel="stylesheet" />
     <link href="~/assets/libs/node-waves/waves.min.css" rel="stylesheet" />
     <link href="~/assets/libs/simplebar/simplebar.min.css" rel="stylesheet" />
+    <link href="~/assets/libs/flatpickr/flatpickr.min.css" rel="stylesheet" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -45,9 +46,9 @@
                 <!-- Start::header-element - Logo -->
                 <div class="header-element">
                     <div class="horizontal-logo">
-                        <a class="header-logo" href="/Admin">
-                            <span class="desktop-logo fw-bold fs-5 text-white">پنل مدیریت</span>
-                            <span class="desktop-dark fw-bold fs-5 text-white">پنل مدیریت</span>
+                        <a class="header-logo d-flex align-items-center gap-2" href="/Admin">
+                            <img src="~/assets/images/brand-logos/logo-pmo.png" alt="لوگو" height="30" style="filter:brightness(0) invert(1)" />
+                            <span class="fw-bold fs-5 text-white">پنل مدیریت</span>
                         </a>
                     </div>
                 </div>
@@ -115,9 +116,9 @@
     <aside class="app-sidebar sticky" id="sidebar">
         <!-- Start::main-sidebar-header -->
         <div class="main-sidebar-header">
-            <a class="header-logo" href="/Admin">
-                <span class="desktop-logo fw-bold fs-5 text-white">پنل مدیریت</span>
-                <span class="desktop-dark fw-bold fs-5 text-white">پنل مدیریت</span>
+            <a class="header-logo d-flex align-items-center gap-2" href="/Admin">
+                <img src="~/assets/images/brand-logos/logo-pmo.png" alt="لوگو" height="32" style="filter:brightness(0) invert(1)" />
+                <span class="fw-bold fs-5 text-white">پنل مدیریت</span>
             </a>
         </div>
         <!-- End::main-sidebar-header -->
@@ -248,6 +249,7 @@
     <script src="~/assets/js/defaultmenu.min.js"></script>
     <script src="~/assets/libs/node-waves/waves.min.js"></script>
     <script src="~/assets/js/sticky.js"></script>
+    <script src="~/assets/libs/flatpickr/flatpickr.min.js"></script>
     <script src="~/assets/js/custom.js"></script>
     <!-- Toastify JS -->
     <link href="~/assets/libs/toastify-js/src/toastify.css" rel="stylesheet" />

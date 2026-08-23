@@ -50,41 +50,91 @@
 
                 <div class="card-body p-0 position-relative mx-3 main-card-body mt-4">
                     <div class="profile-content">
-                        <ul class="list-group list-group-flush border rounded-3 mb-4">
-                            <li class="list-group-item p-3">
-                                <div class="row gy-2 align-items-center">
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">نام کاربری:</span>
+                        <div class="row gy-3 mb-4">
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-primary-transparent flex-shrink-0">
+                                            <i class="ti ti-user fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">نام کاربری</span>
+                                            <span class="d-block fw-medium text-truncate" dir="ltr">@Model.Username</span>
+                                        </div>
                                     </div>
-                                    <div class="col-xl-9" dir="ltr">@Model.Username</div>
-
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">کد ملی:</span>
-                                    </div>
-                                    <div class="col-xl-9" dir="ltr">@(Model.NationalId ?? "—")</div>
-
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">شماره همراه:</span>
-                                    </div>
-                                    <div class="col-xl-9" dir="ltr">@(Model.MobileNumber ?? "—")</div>
-
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">ایمیل:</span>
-                                    </div>
-                                    <div class="col-xl-9" dir="ltr">@(Model.Email ?? "—")</div>
-
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">تاریخ عضویت:</span>
-                                    </div>
-                                    <div class="col-xl-9">@Model.CreatedAt.ToPersianDate()</div>
-
-                                    <div class="col-xl-3">
-                                        <span class="fw-medium">آخرین ورود:</span>
-                                    </div>
-                                    <div class="col-xl-9">@Model.LastLogin.ToPersianDate()</div>
                                 </div>
-                            </li>
-                        </ul>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-secondary-transparent flex-shrink-0">
+                                            <i class="ti ti-id fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">کد ملی</span>
+                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.NationalId ?? "—")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-success-transparent flex-shrink-0">
+                                            <i class="ti ti-device-mobile fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">شماره همراه</span>
+                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.MobileNumber ?? "—")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-warning-transparent flex-shrink-0">
+                                            <i class="ti ti-mail fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">ایمیل</span>
+                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.Email ?? "—")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-info-transparent flex-shrink-0">
+                                            <i class="ti ti-calendar fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">تاریخ عضویت</span>
+                                            <span class="d-block fw-medium text-truncate">@Model.CreatedAt.ToPersianDate()</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card custom-card border shadow-none mb-0 h-100">
+                                    <div class="card-body d-flex align-items-center gap-3 p-3">
+                                        <span class="avatar avatar-md avatar-rounded bg-danger-transparent flex-shrink-0">
+                                            <i class="ti ti-clock fs-16"></i>
+                                        </span>
+                                        <div class="overflow-hidden">
+                                            <span class="d-block fs-12 text-muted">آخرین ورود</span>
+                                            <span class="d-block fw-medium text-truncate">@Model.LastLogin.ToPersianDate()</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <form id="changePasswordForm">
                             @Html.AntiForgeryToken()

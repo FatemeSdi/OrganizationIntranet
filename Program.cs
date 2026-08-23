@@ -41,6 +41,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// جلوگیری از کش شدن صفحات پویا در مرورگر، تا دکمه‌ی "بازگشت" بعد از خروج از حساب
+// دوباره همان صفحه‌ی محافظت‌شده را از حافظه‌ی مرورگر نشان ندهد.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+    context.Response.Headers.Pragma = "no-cache";
+    context.Response.Headers.Expires = "-1";
+    await next();
+});
+
 app.UseRouting();
 
 app.UseAuthentication();

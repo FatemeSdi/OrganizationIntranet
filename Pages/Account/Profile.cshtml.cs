@@ -80,7 +80,7 @@ namespace OrganizationIntranet.Pages.Account
             }
 
             DisplayName = $"{user.Name} {user.LastName}".Trim();
-            Initials = string.Concat(user.Name.Take(1), user.LastName.Take(1));
+            Initials = (user.Name.Length > 0 ? user.Name[..1] : "") + (user.LastName.Length > 0 ? user.LastName[..1] : "");
             Username = user.Username;
             NationalId = user.NationalId;
             MobileNumber = user.MobileNumber;
