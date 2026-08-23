@@ -5,19 +5,11 @@
     Layout = "_LayoutAdmin";
 }
 
-<div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-        <h4 class="mb-1 fw-semibold">@ViewData["Title"]</h4>
-        <p class="mb-0 text-muted fs-13">@(Model.IsNew ? "ثبت کاربر جدید در سامانه اینترانت" : "ویرایش اطلاعات و دسترسی‌های کاربر")</p>
-    </div>
-    <nav>
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
-            <li class="breadcrumb-item"><a href="/Admin/Users">کاربران</a></li>
-            <li aria-current="page" class="breadcrumb-item active">@ViewData["Title"]</li>
-        </ol>
-    </nav>
-</div>
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
+    <li class="breadcrumb-item"><a href="/Admin/Users">کاربران</a></li>
+    <li aria-current="page" class="breadcrumb-item active">@ViewData["Title"]</li>
+</ol>
 
 <div class="card custom-card">
     <div class="card-header">

@@ -5,18 +5,10 @@
     Layout = "_LayoutAdmin";
 }
 
-<div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-        <h4 class="mb-1 fw-semibold">نقش‌ها و سطوح دسترسی</h4>
-        <p class="mb-0 text-muted fs-13">تعریف و مدیریت نقش‌های سازمانی کاربران</p>
-    </div>
-    <nav>
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
-            <li aria-current="page" class="breadcrumb-item active">نقش‌ها</li>
-        </ol>
-    </nav>
-</div>
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
+    <li aria-current="page" class="breadcrumb-item active">نقش‌ها</li>
+</ol>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -76,13 +68,12 @@
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table text-nowrap mb-0">
+                        <table class="table text-nowrap text-center mb-0">
                             <thead>
                                 <tr>
                                     <th>نام نقش</th>
                                     <th>کد</th>
                                     <th>وضعیت</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -90,23 +81,18 @@
                                 {
                                     <tr>
                                         <td class="fw-medium">@role.RoleName</td>
-                                        <td dir="ltr" class="text-end"><span class="badge bg-light text-default border">@role.RoleCode</span></td>
-                                        <td>
-                                            @if (role.IsActive)
-                                            {
-                                                <span class="badge bg-success-transparent">فعال</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger-transparent">غیرفعال</span>
-                                            }
-                                        </td>
+                                        <td dir="ltr"><span class="badge bg-light text-default border">@role.RoleCode</span></td>
                                         <td>
                                             <form method="post" asp-page-handler="Toggle" asp-route-roleId="@role.RoleId">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-wave @(role.IsActive ? "btn-danger-light" : "btn-success-light")">
-                                                    @(role.IsActive ? "غیرفعال کردن" : "فعال کردن")
-                                                </button>
+                                                <label class="form-check form-switch status-switch d-inline-flex align-items-center gap-2 justify-content-center mb-0">
+                                                    <input class="form-check-input" type="checkbox" role="switch"
+                                                           checked="@role.IsActive" onchange="this.form.submit()"
+                                                           title="@(role.IsActive ? "برای غیرفعال کردن کلیک کنید" : "برای فعال کردن کلیک کنید")" />
+                                                    <span class="status-switch-label @(role.IsActive ? "text-success" : "text-danger")">
+                                                        @(role.IsActive ? "فعال" : "غیرفعال")
+                                                    </span>
+                                                </label>
                                             </form>
                                         </td>
                                     </tr>

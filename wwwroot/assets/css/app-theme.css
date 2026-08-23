@@ -1,0 +1,31 @@
+/*
+  پالت رنگی سازمانی اداره کل بنادر و دریانوردی هرمزگان.
+  رنگ ثانویه‌ی پیش‌فرض تمپلیت بنفش است؛ اینجا با آبی نفتی جایگزین می‌شود
+  تا در سراسر سامانه (نشان‌ها، دکمه‌ها، گرادیان‌ها) بنفش دیده نشود.
+*/
+:root {
+    --secondary-rgb: 8, 66, 91;
+}
+
+/* کارت‌های آماری داشبورد */
+.stat-card {
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .08);
+}
+
+/* کلید فعال/غیرفعال در جدول‌ها */
+.status-switch {
+    cursor: pointer;
+}
+.status-switch .form-check-input {
+    width: 2.5em;
+    height: 1.35em;
+    cursor: pointer;
+}
+.status-switch .status-switch-label {
+    font-size: .8125rem;
+    font-weight: 500;
+}

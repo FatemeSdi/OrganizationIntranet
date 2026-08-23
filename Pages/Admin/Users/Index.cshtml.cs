@@ -17,6 +17,7 @@ namespace OrganizationIntranet.Pages.Admin.Users
         }
 
         public List<UserRow> UserRows { get; set; } = new();
+        public List<string> AllRoleNames { get; set; } = new();
 
         public class UserRow
         {
@@ -45,6 +46,12 @@ namespace OrganizationIntranet.Pages.Admin.Users
                     LastLogin = u.LastLogin,
                     Roles = string.Join("، ", u.UserRoles.Select(ur => ur.Role.RoleName)),
                 })
+                .ToListAsync();
+
+            AllRoleNames = await _db.Roles
+                .Where(r => r.IsActive)
+                .OrderBy(r => r.RoleName)
+                .Select(r => r.RoleName)
                 .ToListAsync();
         }
     }
