@@ -24,6 +24,11 @@
 
     window.showToast = function (message, type) {
         if (!message) return;
+        if (typeof bootstrap === 'undefined' || !bootstrap.Toast) {
+            // اگر bootstrap.bundle.min.js قبل از این فایل لود نشده باشد، به‌جای شکست بی‌صدا این خطا در کنسول دیده می‌شود.
+            console.error('showToast: bootstrap.Toast در دسترس نیست؛ ترتیب لود اسکریپت‌ها را بررسی کنید.');
+            return;
+        }
         type = (type && ICONS[type]) ? type : 'info';
 
         var container = ensureContainer();

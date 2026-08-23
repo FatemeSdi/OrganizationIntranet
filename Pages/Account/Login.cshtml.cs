@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using OrganizationIntranet.Authorization;
 using OrganizationIntranet.Data;
 using OrganizationIntranet.Models;
 
@@ -74,6 +75,15 @@ namespace OrganizationIntranet.Pages.Account
                 .Select(ur => ur.Role.RoleCode)
                 .ToListAsync();
 
+            // کدهای Permission ای که از طریق نقش‌های کاربر به او می‌رسند (User → Role → RolePermission → Permission).
+            var permissionCodes = await _db.UserRoles
+                .Where(ur => ur.UserId == user.UserId)
+                .SelectMany(ur => ur.Role.RolePermissions)
+                .Where(rp => rp.Permission.IsActive)
+                .Select(rp => rp.Permission.PermissionCode)
+                .Distinct()
+                .ToListAsync();
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.UserId.ToString()),
@@ -82,6 +92,7 @@ namespace OrganizationIntranet.Pages.Account
                 new(ClaimTypes.Surname, user.LastName),
             };
             claims.AddRange(roleCodes.Select(r => new Claim(ClaimTypes.Role, r)));
+            claims.AddRange(permissionCodes.Select(p => new Claim(PermissionClaimTypes.Permission, p)));
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(
