@@ -244,6 +244,8 @@
         </span>
     </div>
     <div id="responsive-overlay"></div>
+    <!-- Toast Container -->
+    <div id="appToastContainer" class="toast-container position-fixed top-0 start-0 p-3" style="z-index:1080"></div>
     <!-- ========== SCRIPTS ========== -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -252,11 +254,8 @@
     <script src="~/assets/js/sticky.js"></script>
     <script src="~/assets/libs/flatpickr/flatpickr.min.js"></script>
     <script src="~/assets/js/custom.js"></script>
-    <!-- Toastify JS -->
-    <link href="~/assets/libs/toastify-js/src/toastify.css" rel="stylesheet" />
-    <script src="~/assets/libs/toastify-js/src/toastify.js"></script>
-    <!-- Toast JS -->
-    <script src="~/assets/js/toasts.js"></script>
+    <!-- App Toast JS -->
+    <script src="~/assets/js/app-toast.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

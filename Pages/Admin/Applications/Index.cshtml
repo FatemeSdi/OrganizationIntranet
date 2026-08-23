@@ -12,10 +12,11 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="ti ti-circle-check me-1"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div id="successMessageData" class="d-none">@TempData["SuccessMessage"]</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div id="errorMessageData" class="d-none">@Model.ErrorMessage</div>
 }
 
 <div class="row">
@@ -28,10 +29,6 @@
                 </div>
             </div>
             <div class="card-body">
-                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-                {
-                    <div class="alert alert-danger"><i class="ti ti-alert-circle me-1"></i>@Model.ErrorMessage</div>
-                }
                 <form method="post" asp-page-handler="Create">
                     @Html.AntiForgeryToken()
                     <div class="mb-3">
@@ -119,3 +116,14 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var successEl = document.getElementById('successMessageData');
+            if (successEl) showToast(successEl.textContent, 'success');
+            var errorEl = document.getElementById('errorMessageData');
+            if (errorEl) showToast(errorEl.textContent, 'danger');
+        })();
+    </script>
+}

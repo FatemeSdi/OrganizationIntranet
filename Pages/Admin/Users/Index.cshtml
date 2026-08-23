@@ -13,10 +13,7 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="ti ti-circle-check me-1"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div id="successMessageData" class="d-none">@TempData["SuccessMessage"]</div>
 }
 
 <div class="card custom-card mb-4">
@@ -142,6 +139,10 @@
 
 @section Scripts {
     <script>
+        (function () {
+            var successEl = document.getElementById('successMessageData');
+            if (successEl) showToast(successEl.textContent, 'success');
+        })();
         (function () {
             var searchInput = document.getElementById('searchInput');
             var roleFilter = document.getElementById('roleFilter');

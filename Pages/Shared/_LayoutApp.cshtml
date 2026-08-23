@@ -9,6 +9,8 @@
 </head>
 <body>
     @RenderBody()
+    <!-- Toast Container -->
+    <div id="appToastContainer" class="toast-container position-fixed top-0 start-0 p-3" style="z-index:1080"></div>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -200,17 +200,8 @@
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/app-toast.js"></script>
     <script>
-        function showToast(msg, isSuccess) {
-            Toastify({
-                text: msg,
-                duration: 3000,
-                gravity: "top",
-                position: "left",
-                style: { background: isSuccess ? "#28a745" : "#dc3545" }
-            }).showToast();
-        }
-
         $(document).ready(function () {
             $("#changePasswordForm").submit(function (e) {
                 e.preventDefault();
@@ -224,14 +215,14 @@
                     dataType: "json",
                     success: function (response) {
                         if (response && response.success) {
-                            showToast(response.message || "رمز عبور با موفقیت تغییر کرد", true);
+                            showToast(response.message || "رمز عبور با موفقیت تغییر کرد", "success");
                             form[0].reset();
                         } else {
-                            showToast(response?.message || "خطا در تغییر رمز عبور", false);
+                            showToast(response?.message || "خطا در تغییر رمز عبور", "danger");
                         }
                     },
                     error: function () {
-                        showToast("خطا در ارتباط با سرور", false);
+                        showToast("خطا در ارتباط با سرور", "danger");
                     },
                     complete: function () {
                         btn.prop("disabled", false);
@@ -254,6 +245,4 @@
             });
         });
     </script>
-    <link href="~/assets/libs/toastify-js/src/toastify.css" rel="stylesheet" />
-    <script src="~/assets/libs/toastify-js/src/toastify.js"></script>
 }

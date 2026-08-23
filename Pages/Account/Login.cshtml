@@ -374,12 +374,6 @@
 
 @section Scripts {
     <script>
-        function showToast(msg, isSuccess) {
-            Toastify({
-                text: msg, duration: 3000, gravity: "top", position: "left",
-                style: { background: isSuccess ? "#22c55e" : "#ef4444" }
-            }).showToast();
-        }
         $('#loginForm').submit(function (e) {
             e.preventDefault();
             const btn = $("#loginBtn"), spinner = $("#loginSpinner"), text = $("#loginText");
@@ -390,13 +384,13 @@
                     if (res.success) { text.text("ورود موفق"); window.location.href = res.redirectUrl; }
                     else {
                         spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
-                        showToast(res.message || "خطا در ورود", false);
+                        showToast(res.message || "خطا در ورود", "danger");
                         $('.captcha-refresh').click(); $('.captchaInput').val('');
                     }
                 },
                 error: function () {
                     spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
-                    showToast("خطای سرور", false);
+                    showToast("خطای سرور", "danger");
                     $('.captcha-refresh').click(); $('.captchaInput').val('');
                 }
             });
