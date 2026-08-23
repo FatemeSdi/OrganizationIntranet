@@ -8,6 +8,7 @@ public class Notification
     public string? NotificationType { get; set; }
     public long? CreatedBy { get; set; }
     public int ApplicationId { get; set; }
+    public string? TargetUrl { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public User? CreatedByUser { get; set; }

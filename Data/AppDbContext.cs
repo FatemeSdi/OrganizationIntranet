@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Application> Applications => Set<Application>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
 
@@ -116,6 +117,29 @@ public class AppDbContext : DbContext
                 .HasConstraintName("FK_UserPermission_Permission");
         });
 
+        modelBuilder.Entity<RolePermission>(e =>
+        {
+            e.ToTable("RolePermission", "Sec");
+            e.HasKey(x => x.RolePermissionId);
+            // ستون واقعی در دیتابیس DATETIME2 با پیش‌فرض GETDATE() است (نه DATETIME/GETUTCDATE() مثل بقیه‌ی جدول‌ها).
+            e.Property(x => x.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("GETDATE()");
+            e.HasIndex(x => new { x.RoleId, x.PermissionId }).IsUnique().HasDatabaseName("UX_RolePermission_Role_Permission");
+
+            // در اسکریپت SQL این دو FK بدون ON DELETE CASCADE ساخته شدند (پیش‌فرض SQL Server یعنی NO ACTION)،
+            // پس اینجا هم صریحاً NoAction تنظیم می‌شود تا با رفتار واقعی دیتابیس یکی باشد.
+            e.HasOne(x => x.Role)
+                .WithMany(r => r.RolePermissions)
+                .HasForeignKey(x => x.RoleId)
+                .HasConstraintName("FK_RolePermission_Role")
+                .OnDelete(DeleteBehavior.NoAction);
+
+            e.HasOne(x => x.Permission)
+                .WithMany(p => p.RolePermissions)
+                .HasForeignKey(x => x.PermissionId)
+                .HasConstraintName("FK_RolePermission_Permission")
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
         modelBuilder.Entity<Notification>(e =>
         {
             e.ToTable("Notification", "Notify");
@@ -123,6 +147,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.Title).HasMaxLength(200).IsRequired();
             e.Property(x => x.Message).IsRequired();
             e.Property(x => x.NotificationType).HasMaxLength(50);
+            e.Property(x => x.TargetUrl).HasMaxLength(500);
             e.Property(x => x.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("GETUTCDATE()");
 
             e.HasOne(x => x.CreatedByUser)

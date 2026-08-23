@@ -12,4 +12,5 @@ public class Permission
 
     public Application Application { get; set; } = null!;
     public ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }
