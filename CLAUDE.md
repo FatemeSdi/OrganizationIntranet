@@ -60,8 +60,7 @@ OrganizationIntranet
 │   ├── Applications                                             ← هنوز ایجاد نشده
 │   ├── Notifications                                            ← هنوز ایجاد نشده
 │   ├── Admin
-│   │   ├── Index, Users, Roles, Applications                    ✅ موجود
-│   │   └── Permissions                                          ← هنوز ایجاد نشده
+│   │   └── Index, Users, Roles, Applications, Permissions        ✅ موجود
 │   └── Shared
 │
 └── wwwroot
@@ -83,7 +82,7 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 | `Sec.Role` | ✅ پیاده‌سازی شده | |
 | `Sec.UserRole` | ✅ پیاده‌سازی شده | |
 | `Sec.Permission` | ✅ پیاده‌سازی شده | وابسته به `Application` |
-| `Sec.RolePermission` | ✅ پیاده‌سازی شده (جدول + Entity + EF Config) | مسیر Role→Permission در دیتابیس و کد وجود دارد؛ **ولی هنوز هیچ Authorization Handler ای از آن استفاده نمی‌کند** — `[Authorize(Roles=...)]` فعلاً همچنان تنها مسیر است. سیدکردن داده و ساخت Permission-based Authorization Handler مرحله‌ی بعدی است |
+| `Sec.RolePermission` | ✅ جدول + Entity + EF Config + صفحه‌ی مدیریت (`Admin/Permissions`) | از طریق `Admin/Permissions` می‌شود Permission ساخت و به Roleها اختصاص داد؛ **ولی هنوز هیچ Authorization Handler ای از این داده استفاده نمی‌کند** — `[Authorize(Roles=...)]` فعلاً همچنان تنها مسیر Enforcement است |
 | `Sec.UserPermission` | ✅ در دیتابیس هست، ولی **در هیچ‌جای کد استفاده نمی‌شود** (فقط در Models/AppDbContext تعریف شده) | طبق سند: قبل از حذف باید وابستگی‌ها بررسی و مزایا/معایب نگه‌داشتن توضیح داده شود — هنوز این بررسی/تصمیم نهایی انجام نشده |
 | `App.Application` | ✅ پیاده‌سازی شده | |
 | `Notify.Notification` | ✅ پیاده‌سازی شده | ستون `TargetUrl` (nvarchar(500), nullable) اضافه شد؛ هنوز هیچ Notification ای واقعی آن را پر نمی‌کند چون صفحه/سرویس Notification هنوز ساخته نشده |
@@ -91,12 +90,13 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 
 ## Authorization — وضعیت فعلی
 
-فعلاً همه‌جا از `[Authorize(Roles = "ADMIN")]` استفاده می‌شود (Role-based، نه Permission-based). این با قانون «Admin بودن را با IsAdmin flag پیاده نکن» در تضاد نیست (چون از Role/RoleCode استفاده شده، نه یک Flag خام)، ولی هنوز به مدل کامل هدف «User → Role → RolePermission → Permission → Application» نرسیده. جدول و Entity مربوط به `Sec.RolePermission` ساخته شده، اما هنوز:
-- هیچ داده‌ای در آن Seed نشده (هیچ Roleی هنوز Permission ندارد)،
-- هیچ Authorization Handler ای بر اساس Permission Code چک نمی‌کند،
-- هیچ صفحه‌ی Admin/Permissions برای مدیریت این رابطه از UI وجود ندارد.
+فعلاً همه‌جا از `[Authorize(Roles = "ADMIN")]` استفاده می‌شود (Role-based، نه Permission-based). این با قانون «Admin بودن را با IsAdmin flag پیاده نکن» در تضاد نیست (چون از Role/RoleCode استفاده شده، نه یک Flag خام)، ولی هنوز به مدل کامل هدف «User → Role → RolePermission → Permission → Application» نرسیده.
 
-این سه مورد، مرحله‌ی بعدی مهاجرت هستند.
+جدول/Entity مربوط به `Sec.RolePermission` ساخته شده و صفحه‌ی `Admin/Permissions` (`Index` برای ساخت/فعال‌سازی Permission، `Assign` برای اختصاص آن به Roleها) هم اضافه شده — یعنی الان از طریق UI می‌شود داده‌ی Role→Permission را واقعاً ساخت. اما هنوز:
+- هیچ Authorization Handler ای بر اساس Permission Code چک نمی‌کند (Login/Claims هم فقط Role را در Claim می‌گذارد، نه Permission Codeها را)،
+- بنابراین اختصاص یک Permission به یک Role، فعلاً هیچ اثر عملی روی دسترسی واقعی کاربر ندارد — فقط داده ذخیره می‌شود.
+
+ساخت Authorization Handler (و تصمیم اینکه Permission Codeهای کاربر در Claims لاگین بارگذاری شوند یا هر بار از دیتابیس خوانده شوند) مرحله‌ی بعدی مهاجرت است.
 
 ## قوانین معماری — الزامی در همه تغییرات آینده
 

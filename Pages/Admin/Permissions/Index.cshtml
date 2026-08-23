@@ -1,0 +1,148 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Permissionها";
+    Layout = "_LayoutAdmin";
+}
+
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="/Admin">مدیریت</a></li>
+    <li aria-current="page" class="breadcrumb-item active">Permissionها</li>
+</ol>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="successMessageData" class="d-none">@TempData["SuccessMessage"]</div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div id="errorMessageData" class="d-none">@Model.ErrorMessage</div>
+}
+
+<div class="row">
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title d-flex align-items-center gap-2">
+                    <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-square-rounded-plus fs-14"></i></span>
+                    افزودن Permission جدید
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Create">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">سامانه</label>
+                        <select asp-for="ApplicationId" class="form-select" required>
+                            <option value="">انتخاب کنید</option>
+                            @foreach (var app in Model.AllApplications)
+                            {
+                                <option value="@app.ApplicationId">@app.ApplicationName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نام Permission</label>
+                        <input asp-for="PermissionName" class="form-control" placeholder="مثلاً مشاهده گزارش تردد" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">کد Permission</label>
+                        <input asp-for="PermissionCode" class="form-control" dir="ltr" placeholder="مثلاً ACCESS_REPORT_VIEW" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات</label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-wave w-100"><i class="ti ti-plus me-1"></i>ثبت Permission</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title d-flex align-items-center gap-2">
+                    <span class="avatar avatar-sm avatar-rounded bg-info-transparent"><i class="ti ti-key fs-14"></i></span>
+                    لیست Permissionها
+                    <span class="badge bg-info-transparent rounded-pill">@Model.AllPermissions.Count</span>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.AllPermissions.Count == 0)
+                {
+                    <div class="text-center py-5">
+                        <i class="ti ti-key fs-40 text-muted op-5 d-block mb-2"></i>
+                        <p class="text-muted mb-0">Permission ای ثبت نشده است.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table text-nowrap text-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>سامانه</th>
+                                    <th>نام Permission</th>
+                                    <th>کد</th>
+                                    <th>تعداد نقش</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var permission in Model.AllPermissions)
+                                {
+                                    <tr>
+                                        <td><span class="badge bg-primary-transparent fs-12">@permission.ApplicationName</span></td>
+                                        <td class="fw-medium">@permission.PermissionName</td>
+                                        <td dir="ltr"><span class="badge bg-light text-default border">@permission.PermissionCode</span></td>
+                                        <td>
+                                            @if (permission.RoleCount == 0)
+                                            {
+                                                <span class="text-muted fs-12">بدون نقش</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning-transparent rounded-pill">@permission.RoleCount</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form method="post" asp-page-handler="Toggle" asp-route-permissionId="@permission.PermissionId">
+                                                @Html.AntiForgeryToken()
+                                                <label class="form-check form-switch status-switch d-inline-flex align-items-center gap-2 justify-content-center mb-0">
+                                                    <input class="form-check-input" type="checkbox" role="switch"
+                                                           checked="@permission.IsActive" onchange="this.form.submit()"
+                                                           title="@(permission.IsActive ? "برای غیرفعال کردن کلیک کنید" : "برای فعال کردن کلیک کنید")" />
+                                                    <span class="status-switch-label @(permission.IsActive ? "text-success" : "text-danger")">
+                                                        @(permission.IsActive ? "فعال" : "غیرفعال")
+                                                    </span>
+                                                </label>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <a href="/Admin/Permissions/Assign?id=@permission.PermissionId" class="btn btn-primary-light btn-icon btn-sm" title="مدیریت نقش‌ها">
+                                                <i class="ti ti-shield-lock"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var successEl = document.getElementById('successMessageData');
+            if (successEl) showToast(successEl.textContent, 'success');
+            var errorEl = document.getElementById('errorMessageData');
+            if (errorEl) showToast(errorEl.textContent, 'danger');
+        })();
+    </script>
+}
