@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using OrganizationIntranet.Data;
@@ -16,6 +17,9 @@ namespace OrganizationIntranet.Pages.Admin
         {
             _db = db;
         }
+
+        [BindProperty(SupportsGet = true)]
+        public bool Welcome { get; set; }
 
         public int TotalUsers { get; set; }
         public int ActiveUsers { get; set; }

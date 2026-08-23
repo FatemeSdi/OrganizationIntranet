@@ -374,6 +374,10 @@
 
 @section Scripts {
     <script>
+        @if (Model.LoggedOut)
+        {
+            <text>showToast('با موفقیت از سیستم خارج شدید', 'success');</text>
+        }
         $('#loginForm').submit(function (e) {
             e.preventDefault();
             const btn = $("#loginBtn"), spinner = $("#loginSpinner"), text = $("#loginText");

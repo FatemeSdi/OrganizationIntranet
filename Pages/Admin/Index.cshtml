@@ -124,3 +124,12 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (Model.Welcome)
+    {
+        <script>
+            showToast(@Html.Raw(Json.Serialize($"خوش آمدید، {Model.AdminDisplayName}")), 'success');
+        </script>
+    }
+}

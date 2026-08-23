@@ -329,7 +329,10 @@ if (document.querySelector("#switcher-canvas")) {
   /* Choices JS */
 
   /* footer year */
-  document.getElementById("year").innerHTML = new Date().getFullYear();
+  var yearEl = document.getElementById("year");
+  if (yearEl) {
+    yearEl.innerHTML = new Date().getFullYear();
+  }
   /* footer year */
 
   /* node waves */

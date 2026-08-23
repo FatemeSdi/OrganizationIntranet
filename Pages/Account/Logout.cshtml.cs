@@ -14,7 +14,7 @@ namespace OrganizationIntranet.Pages.Account
         private async Task<IActionResult> SignOutAndRedirectAsync()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToPage("/Account/Login");
+            return RedirectToPage("/Account/Login", new { loggedOut = true });
         }
     }
 }

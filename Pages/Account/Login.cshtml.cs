@@ -32,6 +32,9 @@ namespace OrganizationIntranet.Pages.Account
         [BindProperty]
         public bool RememberMe { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public bool LoggedOut { get; set; }
+
         public void OnGet()
         {
         }
@@ -100,8 +103,11 @@ namespace OrganizationIntranet.Pages.Account
                 new ClaimsPrincipal(identity),
                 new AuthenticationProperties { IsPersistent = RememberMe });
 
-            var redirectPage = roleCodes.Contains("ADMIN") ? "/Admin/Index" : "/Portal/Index";
-            return new JsonResult(new { success = true, redirectUrl = Url.Page(redirectPage) });
+            var isAdmin = roleCodes.Contains("ADMIN");
+            var redirectUrl = isAdmin
+                ? Url.Page("/Admin/Index", new { welcome = true })
+                : Url.Page("/Portal/Index");
+            return new JsonResult(new { success = true, redirectUrl });
         }
     }
 }
