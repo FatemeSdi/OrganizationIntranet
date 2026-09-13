@@ -20,6 +20,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDNTCaptcha(options =>
 {
     options.UseCookieStorageProvider()
+           .ShowThousandsSeparators(false)
            .WithEncryptionKey(builder.Configuration["DNTCaptcha:EncryptionKey"] ?? "OrganizationIntranet-Captcha-Key");
 });
 
