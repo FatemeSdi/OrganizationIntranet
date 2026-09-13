@@ -58,7 +58,7 @@
         closeBtn.type = 'button';
         closeBtn.className = 'btn-close me-2 m-auto';
         closeBtn.setAttribute('data-bs-dismiss', 'toast');
-        closeBtn.setAttribute('aria-label', 'Close');
+        closeBtn.setAttribute('aria-label', 'بستن پیام');
 
         flex.appendChild(body);
         flex.appendChild(closeBtn);
@@ -68,6 +68,7 @@
         var toast = new bootstrap.Toast(toastEl, { delay: 4000 });
         toast.show();
         toastEl.addEventListener('hidden.bs.toast', function () {
+            toast.dispose();
             toastEl.remove();
         });
     };

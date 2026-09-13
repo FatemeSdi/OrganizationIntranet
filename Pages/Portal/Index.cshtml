@@ -391,7 +391,7 @@
         <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
         <form class="hero-search" role="search" onsubmit="return false;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CB1C1" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input id="systemSearch" type="text" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
+          <input id="systemSearch" type="text" aria-label="جست‌وجو در سامانه‌ها" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
           <button type="button" onclick="document.getElementById('systems').scrollIntoView({behavior:'smooth'})">جست‌وجو</button>
         </form>
       </div>
@@ -418,7 +418,7 @@
         <p class="section-desc">فقط سامانه‌هایی که بر اساس نقش سازمانی شما تخصیص یافته نمایش داده می‌شوند. ورود به هرکدام بدون نیاز به لاگین جداگانه انجام می‌شود.</p>
       </div>
       <div class="systems-grid" id="systemsGrid"></div>
-      <p class="no-results" id="noResults">سامانه‌ای با این عنوان در دسترس شما یافت نشد.</p>
+      <p class="no-results" id="noResults" role="status">سامانه‌ای با این عنوان در دسترس شما یافت نشد.</p>
     </div>
   </section>
 
@@ -675,6 +675,16 @@ function setupDropdown(btnId, panelId){
 }
 setupDropdown('bellBtn','bellDropdown');
 setupDropdown('userBtn','profileMenu');
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Escape') return;
+  const openPanel = document.querySelector('.dropdown.open, .profile-menu.open');
+  if(!openPanel) return;
+  const trigger = document.getElementById(openPanel.id === 'bellDropdown' ? 'bellBtn' : 'userBtn');
+  openPanel.classList.remove('open');
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.focus();
+});
 
 document.addEventListener('click', ()=>{
   document.querySelectorAll('.dropdown.open, .profile-menu.open').forEach(p=>p.classList.remove('open'));
