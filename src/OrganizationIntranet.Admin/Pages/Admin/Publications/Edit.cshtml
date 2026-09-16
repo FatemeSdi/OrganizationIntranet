@@ -1,0 +1,17 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Publications.EditModel
+@{ ViewData["Title"] = Model.Id.HasValue ? "ویرایش محتوا" : "افزودن محتوا"; Layout = "_LayoutAdmin"; }
+<div class="card custom-card"><div class="card-body">
+<h1 class="h4">@ViewData["Title"]</h1>
+<form method="post">
+<input type="hidden" asp-for="Id" />
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<div class="mb-3"><label asp-for="Input.Kind" class="form-label">نوع محتوا</label><select asp-for="Input.Kind" class="form-select"><option value="News">خبر</option><option value="Announcement">اطلاعیه</option><option value="Circular">بخشنامه</option></select></div>
+<div class="mb-3"><label asp-for="Input.Title" class="form-label">عنوان</label><input asp-for="Input.Title" required maxlength="200" class="form-control" /></div>
+<div class="mb-3"><label asp-for="Input.Summary" class="form-label">خلاصه</label><textarea asp-for="Input.Summary" required maxlength="1000" rows="3" class="form-control"></textarea></div>
+<div class="mb-3"><label asp-for="Input.Body" class="form-label">متن کامل</label><textarea asp-for="Input.Body" required maxlength="50000" rows="14" class="form-control"></textarea><small class="text-muted">متن به صورت ساده نمایش داده می‌شود.</small></div>
+<div class="form-check mb-3"><input asp-for="Input.IsPublished" class="form-check-input" /><label asp-for="Input.IsPublished" class="form-check-label">انتشار برای تمام کاربران سازمان</label></div>
+<p class="text-muted">با برداشتن گزینه انتشار و ذخیره، مطلب به پیش‌نویس تبدیل می‌شود.</p>
+<button type="submit" class="btn btn-primary">ذخیره</button>
+<a asp-page="Index" class="btn btn-light">بازگشت</a>
+</form></div></div>

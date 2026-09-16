@@ -1,0 +1,15 @@
+@page "{id:long}"
+@model OrganizationIntranet.Pages.Publications.DetailsModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@section Styles { <partial name="_PublicationStyles" /> }
+@{ ViewData["Title"] = Model.Item.Title; Layout = "_LayoutApp"; }
+<article class="card custom-card"><div class="card-body">
+<span class="badge bg-primary">@PublicationKinds.Label(Model.Item.Kind)</span>
+<h1 class="h3 mt-3" style="overflow-wrap:anywhere">@Model.Item.Title</h1>
+<p class="text-muted">تاریخ انتشار: @Model.Item.PublishedAt.ToPersianDate()</p>
+<p class="fw-semibold" style="white-space:pre-wrap;overflow-wrap:anywhere">@Model.Item.Summary</p>
+<hr />
+<div style="white-space:pre-wrap;overflow-wrap:anywhere">@Model.Item.Body</div>
+</div></article>
+<a asp-page="Index" class="btn btn-light">همه مطالب</a>

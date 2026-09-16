@@ -1,0 +1,266 @@
+@using System.Security.Claims
+@{
+    var currentPath = Context.Request.Path.Value ?? "";
+    string NavClass(string prefix) => currentPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "side-menu__item active" : "side-menu__item";
+    string DashboardNavClass() => currentPath.Equals("/Admin", StringComparison.OrdinalIgnoreCase) ? "side-menu__item active" : "side-menu__item";
+    var adminGivenName = User.FindFirstValue(System.Security.Claims.ClaimTypes.GivenName);
+    var adminSurname = User.FindFirstValue(System.Security.Claims.ClaimTypes.Surname);
+    var adminDisplayName = $"{adminGivenName} {adminSurname}".Trim();
+}
+<!DOCTYPE html>
+<html dir="rtl" data-header-styles="light" data-menu-styles="dark" data-nav-layout="vertical" data-theme-mode="light" data-toggled="close" data-width="fullwidth" lang="fa">
+<head>
+    <!-- Meta Data -->
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <title>@ViewData["Title"] - پنل مدیریت</title>
+    <!-- Favicon -->
+    <link href="~/assets/images/brand-logos/favicon.ico" rel="icon" type="image/x-icon" />
+    <!-- Start::Styles -->
+    <script src="~/assets/js/main.js"></script>
+    <link href="~/assets/libs/bootstrap/css/bootstrap.rtl.min.css" rel="stylesheet" />
+    <link href="~/assets/css/vazir-font.css" rel="stylesheet" />
+    <link href="~/assets/css/styles.css" rel="stylesheet" />
+    <link href="~/assets/css/app-theme.css" rel="stylesheet" />
+    <link href="~/assets/css/icons.css" rel="stylesheet" />
+    <link href="~/assets/libs/node-waves/waves.min.css" rel="stylesheet" />
+    <link href="~/assets/libs/simplebar/simplebar.min.css" rel="stylesheet" />
+    <link href="~/assets/libs/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div id="loader"></div>
+    <!-- ========== HEADER ========== -->
+    <header class="app-header sticky" id="header">
+        <div class="main-header-container container-fluid px-0">
+            <!-- Start::header-content-left -->
+            <div class="header-content-left">
+                <!-- Start::header-element - Toggle Sidebar -->
+                <div class="header-element mx-lg-0 mx-2">
+                    <a aria-label="نمایش/مخفی‌سازی منو" class="sidemenu-toggle header-link animated-arrow" href="javascript:void(0);" id="mainSidebarToggle">
+                        <span></span>
+                    </a>
+                </div>
+                <!-- End::header-element -->
+                <!-- Start::header-element - Logo -->
+                <div class="header-element">
+                    <div class="horizontal-logo">
+                        <a class="header-logo d-flex align-items-center gap-2" href="@(Configuration["Sites:Admin"] + "/Admin")">
+                            <img src="~/assets/images/brand-logos/logo-pmo.png" alt="لوگو" height="30" style="filter:brightness(0) invert(1)" />
+                            <span class="fw-bold fs-5 text-fixed-white">پنل مدیریت اینترانت</span>
+                        </a>
+                    </div>
+                </div>
+                <!-- End::header-element -->
+            </div>
+            <!-- End::header-content-left -->
+            <!-- Start::header-content-right -->
+            <ul class="header-content-right">
+                <!-- Start::header-element - Theme Mode -->
+                <li class="header-element header-theme-mode">
+                    <a class="header-link layout-setting" href="javascript:void(0);" aria-label="تغییر حالت روشن و تیره">
+                        <span class="light-layout">
+                            <svg class="header-link-icon" height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path color="currentColor" d="M21.5 14.078A8.557 8.557 0 0 1 9.922 2.5C5.668 3.497 2.5 7.315 2.5 11.873a9.627 9.627 0 0 0 9.627 9.627c4.558 0 8.376-3.168 9.373-7.422" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+                            </svg>
+                        </span>
+                        <span class="dark-layout">
+                            <svg class="header-link-icon" height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path color="currentColor" d="M17 12a5 5 0 1 1-10 0a5 5 0 0 1 10 0M12 2v1.5m0 17V22m7.07-2.929l-1.06-1.06M5.99 5.989L4.928 4.93M22 12h-1.5m-17 0H2m17.071-7.071l-1.06 1.06M5.99 18.011l-1.06 1.06" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+                            </svg>
+                        </span>
+                    </a>
+                </li>
+                <!-- End::header-element -->
+                <!-- Start::header-element - Profile Dropdown -->
+                <li class="header-element dropdown">
+                    <a class="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:void(0);" id="mainHeaderProfile" aria-label="منوی حساب کاربری" aria-expanded="false">
+                        <div class="d-flex align-items-center">
+                            <span class="avatar avatar-xs avatar-rounded bg-primary-transparent">
+                                <i class="ti ti-user fs-14"></i>
+                            </span>
+                        </div>
+                    </a>
+                    <ul aria-labelledby="mainHeaderProfile" class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="/Account/Profile">
+                                <i class="ti ti-user me-2 fs-16"></i>
+                                @adminDisplayName
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#supportModal">
+                                <i class="ti ti-headset me-2 fs-16"></i>پشتیبانی
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="@(Configuration["Sites:Portal"] + "/Portal")">
+                                <i class="ti ti-home me-2 fs-16"></i>بازگشت به پورتال
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="/Account/Logout">
+                                <i class="ti ti-logout me-2 fs-16"></i>خروج از سیستم
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- End::header-element -->
+            </ul>
+            <!-- End::header-content-right -->
+        </div>
+    </header>
+    <!-- ========== END HEADER ========== -->
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="app-sidebar sticky" id="sidebar">
+        <!-- Start::main-sidebar-header -->
+        <div class="main-sidebar-header">
+            <a class="header-logo d-flex align-items-center gap-2" href="@(Configuration["Sites:Admin"] + "/Admin")">
+                <img src="~/assets/images/brand-logos/logo-pmo.png" alt="لوگو" height="32" style="filter:brightness(0) invert(1)" />
+                <span class="fw-bold fs-5 text-fixed-white">پنل مدیریت</span>
+            </a>
+        </div>
+        <!-- End::main-sidebar-header -->
+        <!-- Start::main-sidebar -->
+        <div class="main-sidebar" id="sidebar-scroll">
+            <!-- Start::nav -->
+            <nav class="main-menu-container nav nav-pills flex-column sub-open">
+                <div class="slide-left" id="slide-left" style="display:none">
+                    <svg fill="#7b8191" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path>
+                    </svg>
+                </div>
+                <ul class="main-menu">
+                    <li class="slide__category">
+                        <span class="category-name">مدیریت</span>
+                    </li>
+                    <li class="slide">
+                        <a class="@DashboardNavClass()" href="@(Configuration["Sites:Admin"] + "/Admin")">
+                            <i class="ti ti-layout-dashboard side-menu__icon"></i>
+                            <span class="side-menu__label">داشبورد</span>
+                        </a>
+                    </li>
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/Users")" href="/Admin/Users">
+                            <i class="ti ti-users side-menu__icon"></i>
+                            <span class="side-menu__label">کاربران</span>
+                        </a>
+                    </li>
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/Roles")" href="/Admin/Roles">
+                            <i class="ti ti-shield-lock side-menu__icon"></i>
+                            <span class="side-menu__label">نقش‌ها</span>
+                        </a>
+                    </li>
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/Applications")" href="/Admin/Applications">
+                            <i class="ti ti-apps side-menu__icon"></i>
+                            <span class="side-menu__label">سامانه‌ها</span>
+                        </a>
+                    </li>
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/Permissions")" href="/Admin/Permissions">
+                            <i class="ti ti-key side-menu__icon"></i>
+                            <span class="side-menu__label">Permissionها</span>
+                        </a>
+                    </li>
+                    <li class="slide__category">
+                        <span class="category-name">پورتال</span>
+                    </li>
+                    <li class="slide">
+                        <a class="side-menu__item" href="@(Configuration["Sites:Portal"] + "/Portal")">
+                            <i class="ti ti-home side-menu__icon"></i>
+                            <span class="side-menu__label">بازگشت به پورتال</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="slide-right" id="slide-right" style="display:none">
+                    <svg fill="#7b8191" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path>
+                    </svg>
+                </div>
+            </nav>
+            <!-- End::nav -->
+        </div>
+        <!-- End::main-sidebar -->
+    </aside>
+    <!-- ========== END SIDEBAR ========== -->
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content app-content">
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </div>
+    <!-- ========== END MAIN CONTENT ========== -->
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer mt-auto py-3 bg-white text-center">
+        <div class="container">
+            <span class="text-muted">
+                <a class="text-dark fw-medium" href="javascript:void(0);">اداره کل بنادر و دریانوردی هرمزگان</a>
+                — پنل مدیریت اینترانت — تمام حقوق محفوظ است
+            </span>
+        </div>
+    </footer>
+    <!-- ========== END FOOTER ========== -->
+    <!-- Support Modal -->
+    <div class="modal fade support-modal" id="supportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-headset"></i>
+                        شماره‌های پشتیبانی
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="support-numbers">
+                        <div class="support-number-item">
+                            <i class="ti ti-phone"></i>
+                            <div>
+                                <div class="label">اداره فاوا واحد نرم‌افزار (ساعت اداری)</div>
+                                <div class="number">۰۹۹۴۰۶۵۷۷۵۳ — فاطمه صادقی</div>
+                            </div>
+                        </div>
+                        <div class="support-number-item">
+                            <i class="ti ti-phone"></i>
+                            <div>
+                                <div class="label">داخلی</div>
+                                <div class="number">۴۶۴۷</div>
+                            </div>
+                        </div>
+                        <div class="support-number-item">
+                            <i class="ti ti-mail"></i>
+                            <div>
+                                <div class="label">ایمیل پشتیبانی</div>
+                                <div class="number">sdi10fateme@@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scroll To Top -->
+    <div class="scrollToTop">
+        <span class="arrow lh-1">
+            <i class="ti ti-caret-up fs-20"></i>
+        </span>
+    </div>
+    <div id="responsive-overlay"></div>
+    <!-- Toast Container -->
+    <div id="appToastContainer" class="toast-container position-fixed top-0 start-0 p-3" style="z-index:1080"></div>
+    <!-- ========== SCRIPTS ========== -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/defaultmenu.min.js"></script>
+    <script src="~/assets/libs/node-waves/waves.min.js"></script>
+    <script src="~/assets/js/sticky.js"></script>
+    <script src="~/assets/libs/flatpickr/flatpickr.min.js"></script>
+    <script src="~/assets/js/custom.js"></script>
+    <!-- App Toast JS -->
+    <script src="~/assets/js/app-toast.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

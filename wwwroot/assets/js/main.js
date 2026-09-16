@@ -5,6 +5,12 @@
     document.querySelector("html").setAttribute("data-menu-styles", "dark");
     document.querySelector("html").setAttribute("data-header-styles", "transparent");
   }
+  // Admin has one supported navigation layout; demo preferences must not
+  // schedule callbacks into defaultmenu.js or override its RTL menu.
+  if (document.documentElement.hasAttribute("data-admin-shell")) {
+    document.documentElement.setAttribute("loader", "disable");
+    return;
+  }
   if (localStorage.yzenrtl) {
     let html = document.querySelector("html");
     html.setAttribute("dir", "rtl");

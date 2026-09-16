@@ -1,0 +1,135 @@
+@page
+@model IndexModel
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "داشبورد";
+    Layout = "_LayoutAdmin";
+}
+
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
+    <li aria-current="page" class="breadcrumb-item active">داشبورد</li>
+</ol>
+
+<div class="card custom-card border-0 mb-4 text-white overflow-hidden position-relative"
+     style="background: linear-gradient(120deg, var(--primary-color) 0%, rgba(var(--secondary-rgb), 1) 100%);">
+    <i class="ti ti-building-skyscraper position-absolute op-2" style="font-size:8rem; left:1rem; bottom:-1rem;"></i>
+    <div class="card-body position-relative py-4">
+        <h5 class="fw-semibold mb-1 text-fixed-white">خوش آمدید، @Model.AdminDisplayName</h5>
+        <p class="mb-0 fs-13 text-fixed-white op-8">پرتال داخلی اداره کل بنادر و دریانوردی استان هرمزگان &mdash; @Model.TodayPersian</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card stat-card overflow-hidden position-relative">
+            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
+                <span class="avatar avatar-xl avatar-rounded bg-primary flex-shrink-0"><i class="ti ti-users fs-24 text-fixed-white"></i></span>
+                <div>
+                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalUsers</div>
+                    <div class="fs-14 fw-medium text-default">کل کاربران</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card stat-card overflow-hidden position-relative">
+            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
+                <span class="avatar avatar-xl avatar-rounded bg-success flex-shrink-0"><i class="ti ti-user-check fs-24 text-fixed-white"></i></span>
+                <div>
+                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.ActiveUsers</div>
+                    <div class="fs-14 fw-medium text-default">کاربران فعال</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card stat-card overflow-hidden position-relative">
+            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
+                <span class="avatar avatar-xl avatar-rounded bg-warning flex-shrink-0"><i class="ti ti-shield-lock fs-24 text-fixed-white"></i></span>
+                <div>
+                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalRoles</div>
+                    <div class="fs-14 fw-medium text-default">نقش‌ها</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card custom-card stat-card overflow-hidden position-relative">
+            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
+                <span class="avatar avatar-xl avatar-rounded bg-info flex-shrink-0"><i class="ti ti-apps fs-24 text-fixed-white"></i></span>
+                <div>
+                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalApplications</div>
+                    <div class="fs-14 fw-medium text-default">سامانه‌ها</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card custom-card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-title d-flex align-items-center gap-2">
+                    <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-clock-hour-4 fs-14"></i></span>
+                    آخرین کاربران ثبت‌شده
+                </div>
+                <a href="/Admin/Users" class="fs-13 fw-medium">مشاهده همه <i class="ti ti-arrow-left"></i></a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentUsers.Count == 0)
+                {
+                    <div class="text-center py-4">
+                        <i class="ti ti-users fs-40 text-muted op-5 d-block mb-2"></i>
+                        <p class="text-muted mb-0">کاربری ثبت نشده است.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table text-nowrap text-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th>کاربر</th>
+                                    <th>نام کاربری</th>
+                                    <th>تاریخ ثبت</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var u in Model.RecentUsers)
+                                {
+                                    <tr>
+                                        <td>@u.Name @u.LastName</td>
+                                        <td dir="ltr">@u.Username</td>
+                                        <td>@u.CreatedAt.ToPersianDate()</td>
+                                        <td>
+                                            @if (u.IsActive)
+                                            {
+                                                <span class="badge bg-success-transparent">فعال</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-transparent">غیرفعال</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.Welcome)
+    {
+        <script>
+            showToast(@Html.Raw(Json.Serialize($"خوش آمدید، {Model.AdminDisplayName}")), 'success');
+        </script>
+    }
+}

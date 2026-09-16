@@ -1,0 +1,183 @@
+@page
+@model IndexModel
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "کاربران";
+    Layout = "_LayoutAdmin";
+}
+
+<ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
+    <li aria-current="page" class="breadcrumb-item active">کاربران</li>
+</ol>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="successMessageData" class="d-none">@TempData["SuccessMessage"]</div>
+}
+
+<div class="card custom-card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <label class="form-label fs-13 text-muted mb-1">جستجو</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="ti ti-search"></i></span>
+                    <input type="text" class="form-control" placeholder="نام، نام خانوادگی یا نام کاربری" id="searchInput">
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <label class="form-label fs-13 text-muted mb-1">نقش</label>
+                <select class="form-select" id="roleFilter">
+                    <option value="">همه نقش‌ها</option>
+                    @foreach (var roleName in Model.AllRoleNames)
+                    {
+                        <option value="@roleName">@roleName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-3 col-6">
+                <label class="form-label fs-13 text-muted mb-1">وضعیت</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">همه وضعیت‌ها</option>
+                    <option value="active">فعال</option>
+                    <option value="inactive">غیرفعال</option>
+                </select>
+            </div>
+            <div class="col-lg-1 col-12">
+                <button type="button" id="clearFilters" class="btn btn-light border w-100" title="پاک‌کردن فیلترها">
+                    <i class="ti ti-filter-off"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card custom-card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="card-title d-flex align-items-center gap-2">
+            <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-users fs-14"></i></span>
+            لیست کاربران
+            <span class="badge bg-primary-transparent rounded-pill" id="resultCount">@Model.UserRows.Count</span>
+        </div>
+        <a href="/Admin/Users/Edit" class="btn btn-primary btn-wave">
+            <i class="ti ti-plus me-1"></i>افزودن کاربر
+        </a>
+    </div>
+    <div class="card-body">
+        @if (Model.UserRows.Count == 0)
+        {
+            <div class="text-center py-5">
+                <i class="ti ti-users fs-40 text-muted op-5 d-block mb-2"></i>
+                <p class="text-muted mb-0">کاربری ثبت نشده است.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table text-nowrap text-center mb-0" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>کاربر</th>
+                            <th>نام کاربری</th>
+                            <th>نقش‌ها</th>
+                            <th>تاریخ ثبت</th>
+                            <th>آخرین ورود</th>
+                            <th>وضعیت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var u in Model.UserRows)
+                        {
+                            <tr class="user-row"
+                                data-search="@($"{u.Name} {u.LastName} {u.Username}".ToLower())"
+                                data-roles="@u.Roles"
+                                data-status="@(u.IsActive ? "active" : "inactive")">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2 justify-content-center">
+                                        <span class="avatar avatar-md avatar-rounded bg-primary-transparent"><i class="ti ti-user fs-16"></i></span>
+                                        <span class="fw-semibold">@u.Name @u.LastName</span>
+                                    </div>
+                                </td>
+                                <td dir="ltr">@u.Username</td>
+                                <td>
+                                    @if (string.IsNullOrEmpty(u.Roles))
+                                    {
+                                        <span class="text-muted fs-12">بدون نقش</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info-transparent fs-12">@u.Roles</span>
+                                    }
+                                </td>
+                                <td>@u.CreatedAt.ToPersianDate()</td>
+                                <td>@u.LastLogin.ToPersianDate()</td>
+                                <td>
+                                    @if (u.IsActive)
+                                    {
+                                        <span class="badge bg-success-transparent">فعال</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-transparent">غیرفعال</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="/Admin/Users/Edit?id=@u.UserId" class="btn btn-primary-light btn-icon btn-sm" title="ویرایش">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var successEl = document.getElementById('successMessageData');
+            if (successEl) showToast(successEl.textContent, 'success');
+        })();
+        (function () {
+            var searchInput = document.getElementById('searchInput');
+            var roleFilter = document.getElementById('roleFilter');
+            var statusFilter = document.getElementById('statusFilter');
+            var resultCount = document.getElementById('resultCount');
+            var rows = document.querySelectorAll('.user-row');
+
+            function applyFilters() {
+                var term = searchInput.value.trim().toLowerCase();
+                var role = roleFilter.value;
+                var status = statusFilter.value;
+                var visible = 0;
+
+                rows.forEach(function (row) {
+                    var matchesTerm = !term || row.dataset.search.includes(term);
+                    var matchesRole = !role || row.dataset.roles.includes(role);
+                    var matchesStatus = !status || row.dataset.status === status;
+                    var show = matchesTerm && matchesRole && matchesStatus;
+                    row.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+
+                if (resultCount) resultCount.textContent = visible;
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            roleFilter.addEventListener('change', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+
+            document.getElementById('clearFilters').addEventListener('click', function () {
+                searchInput.value = '';
+                roleFilter.value = '';
+                statusFilter.value = '';
+                applyFilters();
+            });
+        })();
+    </script>
+}

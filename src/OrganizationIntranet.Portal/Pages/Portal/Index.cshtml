@@ -1,0 +1,687 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "پورتال داخلی | بندر شهید رجایی";
+    Layout = "_LayoutApp";
+}
+@section Styles {
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+  :root{
+    --navy-950:#0A2036;
+    --navy-900:#0D2C48;
+    --navy-800:#123A5C;
+    --blue-600:#1573B8;
+    --blue-500:#2489D1;
+    --teal-500:#17A6B6;
+    --gold-500:#D6A24C;
+    --gold-600:#C08A34;
+    --sand-50:#F6F4EE;
+    --sand-100:#EFEBE0;
+    --card:#FFFFFF;
+    --ink-900:#152230;
+    --ink-700:#33434F;
+    --ink-500:#5C6C78;
+    --line:#E3DFD2;
+    --danger:#D65B4C;
+    --radius:16px;
+    --shadow:0 8px 28px -12px rgba(10,32,54,.18);
+    --shadow-lg:0 20px 46px -18px rgba(10,32,54,.32);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:'Vazirmatn', sans-serif;
+    background:var(--sand-50);
+    color:var(--ink-900);
+    line-height:1.7;
+  }
+  a{color:inherit; text-decoration:none}
+  ul{margin:0; padding:0; list-style:none}
+  button{font-family:inherit}
+  img{max-width:100%; display:block}
+  .container{max-width:1240px; margin:0 auto; padding:0 28px}
+  .skip-link{position:absolute; right:-999px; top:0; background:var(--gold-500); color:var(--navy-950); padding:10px 16px; border-radius:0 0 8px 8px; z-index:999; font-weight:700}
+  .skip-link:focus{right:0}
+
+  /* ---------- header ---------- */
+  header.site{
+    position:sticky; top:0; z-index:80;
+    background:rgba(10,32,54,.97);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .header-inner{display:flex; align-items:center; gap:20px; height:78px}
+  .brand{display:flex; align-items:center; gap:14px; color:#fff}
+  .brand img{height:42px; width:auto; filter:brightness(0) invert(1)}
+  .brand-text{display:flex; flex-direction:column; line-height:1.3}
+  .brand-text b{font-size:15.5px; font-weight:800; letter-spacing:.2px}
+  .brand-text span{font-size:11.5px; color:#AFC4D6; font-weight:400}
+  .template-badge{
+    display:inline-flex; align-items:center; gap:6px; background:rgba(214,162,76,.14); color:var(--gold-500);
+    border:1px solid rgba(214,162,76,.35); font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px;
+    margin-inline-start:6px;
+  }
+  .template-badge span.dot{width:5px; height:5px; border-radius:50%; background:var(--gold-500); display:inline-block}
+
+  nav.main{display:flex; gap:4px; margin-inline-start:14px}
+  nav.main a{
+    color:#D9E4EC; font-size:14.5px; font-weight:500; padding:10px 14px; border-radius:10px;
+    transition:background .2s, color .2s;
+  }
+  nav.main a:hover, nav.main a:focus-visible{background:rgba(255,255,255,.08); color:#fff}
+  nav.main a.active{background:var(--gold-500); color:var(--navy-950); font-weight:700}
+
+  .header-actions{display:flex; align-items:center; gap:12px; margin-inline-start:auto; position:relative}
+
+  /* notification bell + dropdown */
+  .bell-wrap{position:relative}
+  .icon-btn{
+    width:40px; height:40px; border-radius:11px; display:grid; place-items:center;
+    background:rgba(255,255,255,.06); color:#EDEDED; border:1px solid rgba(255,255,255,.1);
+    cursor:pointer; position:relative;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.14)}
+  .badge-dot{
+    position:absolute; top:6px; left:6px; min-width:16px; height:16px; padding:0 4px; border-radius:100px;
+    background:var(--danger); color:#fff; font-size:10px; font-weight:800; display:grid; place-items:center;
+    border:2px solid var(--navy-950);
+  }
+  .dropdown{
+    position:absolute; top:calc(100% + 12px); left:0; width:360px; background:#fff; color:var(--ink-900);
+    border-radius:16px; box-shadow:var(--shadow-lg); border:1px solid var(--line); overflow:hidden;
+    opacity:0; visibility:hidden; transform:translateY(-8px); transition:opacity .16s, transform .16s, visibility .16s;
+    z-index:100;
+  }
+  .dropdown.open{opacity:1; visibility:visible; transform:translateY(0)}
+  .dropdown-head{
+    display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line);
+  }
+  .dropdown-head b{font-size:14.5px}
+  .dropdown-head a{font-size:12.5px; color:var(--blue-600); font-weight:700}
+  .notif-list{max-height:340px; overflow-y:auto}
+  .notif-item{
+    display:flex; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); align-items:flex-start;
+  }
+  .notif-item:last-child{border-bottom:none}
+  .notif-item .src-icon{
+    flex-shrink:0; width:36px; height:36px; border-radius:10px; display:grid; place-items:center; color:#fff;
+    background:linear-gradient(135deg,var(--navy-900),var(--blue-600));
+  }
+  .notif-item .src-icon svg{width:18px; height:18px}
+  .notif-item.unread{background:#F7FAFD}
+  .notif-body{flex:1; min-width:0}
+  .notif-body .top-line{display:flex; justify-content:space-between; gap:8px}
+  .notif-body .source{font-size:11px; color:var(--blue-600); font-weight:700}
+  .notif-body .time{font-size:11px; color:var(--ink-500); white-space:nowrap}
+  .notif-body h5{margin:3px 0 2px; font-size:13.5px; font-weight:700}
+  .notif-body p{margin:0; font-size:12.5px; color:var(--ink-500); overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
+  .dropdown-foot{padding:12px 18px; text-align:center; border-top:1px solid var(--line)}
+  .dropdown-foot a{font-size:13px; font-weight:700; color:var(--blue-600)}
+
+  /* profile chip + dropdown */
+  .profile-wrap{position:relative}
+  .user-chip{
+    display:flex; align-items:center; gap:10px; padding:6px 10px 6px 6px; background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1); border-radius:100px; color:#fff; cursor:pointer;
+  }
+  .user-chip:hover{background:rgba(255,255,255,.12)}
+  .user-chip .avatar{
+    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--teal-500),var(--blue-600));
+    display:grid; place-items:center; font-size:12px; font-weight:800; flex-shrink:0;
+  }
+  .user-chip .info{line-height:1.25; text-align:right}
+  .user-chip .info b{font-size:13px; display:block}
+  .user-chip .info small{color:#AFC4D6; font-size:11px; font-weight:400}
+  .user-chip .chev{width:14px; height:14px; color:#AFC4D6; transition:transform .16s}
+  .user-chip[aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+  .profile-menu{
+    position:absolute; top:calc(100% + 12px); left:0; width:270px; background:#fff; color:var(--ink-900);
+    border-radius:16px; box-shadow:var(--shadow-lg); border:1px solid var(--line); overflow:hidden;
+    opacity:0; visibility:hidden; transform:translateY(-8px); transition:opacity .16s, transform .16s, visibility .16s;
+    z-index:100;
+  }
+  .profile-menu.open{opacity:1; visibility:visible; transform:translateY(0)}
+  .profile-menu .pm-head{display:flex; align-items:center; gap:12px; padding:18px; background:var(--sand-100)}
+  .profile-menu .pm-head .avatar{
+    width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--teal-500),var(--blue-600));
+    display:grid; place-items:center; color:#fff; font-weight:800; font-size:14px; flex-shrink:0;
+  }
+  .profile-menu .pm-head b{display:block; font-size:14.5px}
+  .profile-menu .pm-head span{font-size:12px; color:var(--ink-500)}
+  .profile-menu ul{padding:8px}
+  .profile-menu ul li a{
+    display:flex; align-items:center; gap:12px; padding:10px 12px; font-size:13.5px; border-radius:10px; color:var(--ink-700);
+  }
+  .profile-menu ul li a:hover{background:var(--sand-100)}
+  .profile-menu ul li a svg{width:17px; height:17px; color:var(--ink-500); flex-shrink:0}
+  .profile-menu ul li a.pm-danger{color:var(--danger)}
+  .profile-menu ul li a.pm-danger svg{color:var(--danger)}
+
+  /* ---------- hero (personalized) ---------- */
+  .hero{
+    position:relative;
+    background:radial-gradient(1100px 480px at 18% -10%, #163F63 0%, transparent 60%),
+               linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 55%, var(--navy-800) 100%);
+    color:#fff; overflow:hidden; padding:56px 0 40px;
+  }
+  .hero-wheel{
+    position:absolute; inset-inline-end:-140px; top:-110px; width:520px; height:520px; opacity:.13;
+    animation:spin 90s linear infinite;
+  }
+  @@media (prefers-reduced-motion: reduce){ .hero-wheel{animation:none} }
+  @@keyframes spin{from{transform:rotate(0)} to{transform:rotate(360deg)}}
+  .hero-grid{position:relative; display:grid; grid-template-columns:1.15fr .85fr; gap:40px; align-items:center}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; color:var(--gold-500); font-weight:700; font-size:13px;
+    letter-spacing:.3px; margin-bottom:16px;
+  }
+  .eyebrow::before{content:""; width:26px; height:2px; background:var(--gold-500); display:inline-block}
+  h1.hero-title{font-size:clamp(28px, 3.6vw, 42px); font-weight:900; margin:0 0 8px; line-height:1.3; letter-spacing:-.4px}
+  h1.hero-title em{font-style:normal; color:var(--gold-500)}
+  .hero-role{font-size:15px; color:#C6D5E1; margin:0 0 26px; font-weight:400}
+  .hero-role b{color:#fff; font-weight:700}
+  .hero-search{
+    display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.16); border-radius:14px; padding:6px 8px 6px 18px; max-width:560px;
+  }
+  .hero-search input{flex:1; background:transparent; border:0; outline:0; color:#fff; font-family:inherit; font-size:15px; padding:12px 4px}
+  .hero-search input::placeholder{color:#9CB1C1}
+  .hero-search button{
+    background:var(--gold-500); color:var(--navy-950); border:0; border-radius:10px; padding:12px 22px;
+    font-weight:800; font-size:14.5px; cursor:pointer; white-space:nowrap;
+  }
+  .hero-search button:hover{background:#e2b160}
+
+  .hero-card{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:20px; padding:26px; backdrop-filter:blur(4px)}
+  .hero-card h3{margin:0 0 4px; font-size:14px; color:#AFC4D6; font-weight:600}
+  .hero-card .big{font-size:15px; font-weight:700; margin-bottom:18px; color:#fff}
+  .stat-row{display:flex; justify-content:space-between; gap:10px}
+  .stat{text-align:center; flex:1}
+  .stat b{display:block; font-size:26px; font-weight:900; color:var(--gold-500)}
+  .stat span{font-size:11.5px; color:#B8C9D6}
+  .stat + .stat{border-inline-start:1px solid rgba(255,255,255,.14)}
+
+  .wave{display:block; width:100%; height:64px; margin-bottom:-2px}
+
+  /* ---------- section shell ---------- */
+  section{padding:60px 0}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:30px; flex-wrap:wrap}
+  .section-head .eyebrow{color:var(--blue-600)}
+  .section-head .eyebrow::before{background:var(--blue-600)}
+  h2.section-title{font-size:clamp(21px,2.4vw,28px); font-weight:800; margin:0; letter-spacing:-.3px}
+  .section-desc{color:var(--ink-500); font-size:14.5px; max-width:420px; margin:0}
+
+  /* ---------- systems grid (role-based) ---------- */
+  .systems-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:20px}
+  .sys-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px;
+    display:flex; flex-direction:column; gap:12px; transition:transform .18s, box-shadow .18s, border-color .18s; position:relative;
+  }
+  .sys-card:hover{transform:translateY(-4px); box-shadow:var(--shadow); border-color:transparent}
+  .sys-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+  .sys-icon{
+    width:46px; height:46px; border-radius:12px; display:grid; place-items:center;
+    background:linear-gradient(135deg, var(--navy-900), var(--blue-600)); color:#fff; flex-shrink:0;
+  }
+  .sys-icon svg{width:23px; height:23px}
+  .sys-unread{
+    background:var(--danger); color:#fff; font-size:11px; font-weight:800; border-radius:100px; padding:2px 8px; height:fit-content;
+  }
+  .sys-card h3{font-size:16px; font-weight:700; margin:0}
+  .sys-card p{font-size:13px; color:var(--ink-500); margin:0; flex:1}
+  .sys-card .go{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--blue-600); margin-top:auto}
+  .sys-card .go svg{width:15px; height:15px; transform:scaleX(-1)}
+  .sys-card[hidden]{display:none}
+  .no-results{display:none; text-align:center; color:var(--ink-500); padding:40px 0; font-size:14.5px}
+  .no-results.show{display:block}
+
+  .request-access-card{
+    border:1.5px dashed var(--line); background:transparent; box-shadow:none; align-items:center; text-align:center;
+    justify-content:center; color:var(--ink-500);
+  }
+  .request-access-card:hover{border-color:var(--blue-600); transform:none; box-shadow:none}
+  .request-access-card .sys-icon{background:var(--sand-100); color:var(--ink-500)}
+  .request-access-card .go{color:var(--ink-500)}
+
+  /* ---------- announcements ---------- */
+  .news-wrap{display:grid; grid-template-columns:1.3fr 1fr; gap:22px}
+  .news-feature{
+    background:linear-gradient(150deg, var(--navy-950), var(--navy-800)); color:#fff; border-radius:20px; padding:34px;
+    display:flex; flex-direction:column; justify-content:flex-end; min-height:260px; position:relative; overflow:hidden;
+  }
+  .news-feature .tag{align-self:flex-start; background:var(--gold-500); color:var(--navy-950); font-weight:800; font-size:12px; padding:5px 12px; border-radius:100px; margin-bottom:auto}
+  .news-feature h3{font-size:21px; font-weight:800; margin:16px 0 8px}
+  .news-feature p{color:#C6D5E1; font-size:13.5px; margin:0 0 14px}
+  .news-feature .meta{font-size:12.5px; color:#9CB1C1}
+  .news-side{display:flex; flex-direction:column; gap:16px}
+  .news-item{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; display:flex; gap:14px; align-items:flex-start}
+  .news-item .date{flex-shrink:0; width:54px; height:54px; border-radius:12px; background:var(--sand-100); color:var(--navy-800); display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800}
+  .news-item .date b{font-size:17px; line-height:1}
+  .news-item .date span{font-size:10px; color:var(--ink-500); font-weight:600}
+  .news-item h4{margin:0 0 4px; font-size:14px; font-weight:700}
+  .news-item p{margin:0; font-size:12.5px; color:var(--ink-500)}
+
+  /* ---------- quick links ---------- */
+  .quick-links{background:var(--sand-100); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+  .ql-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:0}
+  .ql-col{padding:0 30px; border-inline-start:1px solid var(--line)}
+  .ql-col:first-child{border-inline-start:none; padding-inline-start:0}
+  .ql-col h3{display:flex; align-items:center; gap:10px; font-size:15px; font-weight:800; margin:0 0 16px; color:var(--navy-900)}
+  .ql-col h3 svg{width:18px; height:18px; color:var(--gold-600)}
+  .ql-col ul li{margin-bottom:10px}
+  .ql-col ul li a{display:flex; justify-content:space-between; font-size:13.5px; color:var(--ink-700); padding:4px 0; border-bottom:1px dashed transparent}
+  .ql-col ul li a:hover{color:var(--blue-600); border-color:var(--line)}
+  .ql-col ul li a .count{color:var(--ink-500); font-size:12px; font-weight:600}
+
+  /* ---------- footer ---------- */
+  footer.site{background:var(--navy-950); color:#AFC4D6; padding:40px 0 22px}
+  .footer-top{display:flex; justify-content:space-between; align-items:center; gap:24px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,.1); flex-wrap:wrap}
+  .footer-brand{display:flex; align-items:center; gap:14px; color:#fff}
+  .footer-brand img{height:34px; filter:brightness(0) invert(1)}
+  .footer-brand b{font-size:14.5px}
+  .footer-links{display:flex; gap:24px; flex-wrap:wrap; font-size:13.5px}
+  .footer-links a:hover{color:#fff}
+  .footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:18px; font-size:12px; flex-wrap:wrap; gap:10px; color:#8AA0B2}
+  .footer-bottom .tpl-tag{color:#6E8194}
+
+  @@media (max-width:960px){
+    nav.main{display:none}
+    .hero-grid{grid-template-columns:1fr}
+    .systems-grid{grid-template-columns:repeat(2,1fr)}
+    .news-wrap{grid-template-columns:1fr}
+    .ql-grid{grid-template-columns:1fr; gap:26px}
+    .ql-col{border-inline-start:none; padding-inline-start:0; padding-bottom:20px; border-bottom:1px solid var(--line)}
+    .dropdown, .profile-menu{left:auto; right:0}
+  }
+  @@media (max-width:600px){
+    .systems-grid{grid-template-columns:1fr}
+    .container{padding:0 18px}
+    .header-inner{height:66px}
+    .user-chip .info{display:none}
+    .dropdown{width:92vw}
+  }
+</style>
+}
+
+<a href="#main" class="skip-link">رفتن به محتوای اصلی</a>
+
+<header class="site">
+  <div class="container header-inner">
+    <div class="brand">
+      <img src="~/assets/images/brand-logos/logo-pmo.png" alt="نشان مجتمع بندری شهید رجایی">
+      <div class="brand-text">
+        <b>مجتمع بندری شهید رجایی</b>
+        <span>پورتال داخلی سازمان</span>
+      </div>
+    </div>
+    <nav class="main">
+      <a href="#main" class="active">خانه</a>
+      <a href="#systems">سامانه‌های من</a>
+      <a href="#news">اطلاعیه‌ها</a>
+      <a href="#quicklinks">مقررات و فرم‌ها</a>
+    </nav>
+    <div class="header-actions">
+
+      <div class="bell-wrap">
+        <button class="icon-btn" id="bellBtn" aria-haspopup="true" aria-expanded="false" aria-label="اعلانات">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          <span class="badge-dot" id="bellCount">5</span>
+        </button>
+        <div class="dropdown" id="bellDropdown">
+          <div class="dropdown-head">
+            <b>اعلانات سامانه‌ها</b>
+            <a href="#" id="markAllRead">علامت‌گذاری همه به‌عنوان خوانده‌شده</a>
+          </div>
+          <div class="notif-list" id="notifList"></div>
+          <div class="dropdown-foot"><a href="#">مشاهده همه اعلانات</a></div>
+        </div>
+      </div>
+
+      <div class="profile-wrap">
+        <button class="user-chip" id="userBtn" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar">@Model.Initials</div>
+          <div class="info">
+            <b>@Model.DisplayName</b>
+            <small>@Model.RoleNames</small>
+          </div>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="profile-menu" id="profileMenu">
+          <div class="pm-head">
+            <div class="avatar">@Model.Initials</div>
+            <div>
+              <b>@Model.DisplayName</b>
+              <span>@Model.RoleNames</span>
+            </div>
+          </div>
+          <ul>
+            @if (User.IsInRole("ADMIN"))
+            {
+                <li><a href="@(Configuration["Sites:Admin"] + "/Admin")"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>پنل مدیریت</a></li>
+            }
+            <li><a href="/Account/Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>پروفایل من</a></li>
+            <li><a href="#systems"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>سامانه‌های من</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>تنظیمات حساب</a></li>
+            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>درخواست دسترسی جدید</a></li>
+            <li><a href="/Account/Logout" class="pm-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>خروج از حساب (همه سامانه‌ها)</a></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <svg class="hero-wheel" viewBox="0 0 200 200" fill="none" stroke="#fff" stroke-width="2">
+      <circle cx="100" cy="100" r="70"/><circle cx="100" cy="100" r="46"/><circle cx="100" cy="100" r="6" fill="#fff"/>
+      <g><line x1="100" y1="8" x2="100" y2="192"/><line x1="8" y1="100" x2="192" y2="100"/><line x1="33" y1="33" x2="167" y2="167"/><line x1="167" y1="33" x2="33" y2="167"/></g>
+      <circle cx="100" cy="30" r="8"/><circle cx="100" cy="170" r="8"/><circle cx="30" cy="100" r="8"/><circle cx="170" cy="100" r="8"/>
+      <circle cx="53" cy="53" r="8"/><circle cx="147" cy="147" r="8"/><circle cx="147" cy="53" r="8"/><circle cx="53" cy="147" r="8"/>
+    </svg>
+    <div class="container hero-grid">
+      <div>
+        <h1 class="hero-title">خوش آمدید، <em>@Model.DisplayName</em></h1>
+        <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
+        <form class="hero-search" role="search" onsubmit="return false;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CB1C1" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="systemSearch" type="text" aria-label="جست‌وجو در سامانه‌ها" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
+          <button type="button" onclick="document.getElementById('systems').scrollIntoView({behavior:'smooth'})">جست‌وجو</button>
+        </form>
+      </div>
+      <div class="hero-card">
+        <h3>خلاصه وضعیت شما</h3>
+        <div class="big">۱ ورود، دسترسی به همه سامانه‌های مجاز</div>
+        <div class="stat-row">
+          <div class="stat"><b id="myCount">—</b><span>سامانه در اختیار من</span></div>
+          <div class="stat"><b id="unreadCount">—</b><span>اعلان خوانده‌نشده</span></div>
+          <div class="stat"><b>@Model.Publications.Total</b><span>مطلب سازمانی</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0 20 C 240 60 480 0 720 20 C 960 40 1200 60 1440 20 L1440 60 L0 60 Z" fill="#F6F4EE"/></svg>
+
+  <section id="systems">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">دسترسی من</div>
+          <h2 class="section-title">سامانه‌های در اختیار شما</h2>
+        </div>
+        <p class="section-desc">فقط سامانه‌هایی که بر اساس نقش سازمانی شما تخصیص یافته نمایش داده می‌شوند. ورود به هرکدام بدون نیاز به لاگین جداگانه انجام می‌شود.</p>
+      </div>
+      <div class="systems-grid" id="systemsGrid"></div>
+      <p class="no-results" id="noResults" role="status">سامانه‌ای با این عنوان در دسترس شما یافت نشد.</p>
+    </div>
+  </section>
+
+  <section id="news" style="background:var(--sand-100)">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">اخبار سازمان</div>
+          <h2 class="section-title">اطلاعیه‌ها و رویدادها</h2>
+        </div>
+        <p class="section-desc">این بخش برای همه پرسنل یکسان است و مستقل از سامانه‌های تخصیص‌یافته نمایش داده می‌شود.</p>
+      </div>
+      <a href="/Publications">مشاهده همه اخبار، اطلاعیه‌ها و بخشنامه‌ها</a>
+      <div class="news-wrap">
+        @foreach (var item in Model.Publications.Items.Take(4))
+        {
+          <article class="news-feature">
+            <span class="tag">@OrganizationIntranet.Contracts.PublicationKinds.Label(item.Kind)</span>
+            <h3 style="overflow-wrap:anywhere"><a href="/Publications/Details/@item.PublicationId">@item.Title</a></h3>
+            <p style="white-space:pre-wrap;overflow-wrap:anywhere">@item.Summary</p>
+          </article>
+        }
+        @if (Model.Publications.Total == 0) { <p>هنوز مطلبی منتشر نشده است.</p> }
+      </div>
+    </div>
+  </section>
+  <section id="quicklinks" class="quick-links">
+    <div class="container">
+      <div class="ql-grid">
+        <div class="ql-col">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg> قوانین و مقررات</h3>
+          <ul>
+            <li><a href="#">کنوانسیون‌ها <span class="count">۳۱</span></a></li>
+            <li><a href="#">مصوبات هیأت عامل <span class="count">۳</span></a></li>
+            <li><a href="#">دستورالعمل‌ها <span class="count">۷۸</span></a></li>
+            <li><a href="#">استانداردها <span class="count">۲۰</span></a></li>
+            <li><a href="#">اداری و استخدامی <span class="count">۱۵</span></a></li>
+            <li><a href="#">آموزش <span class="count">۹</span></a></li>
+            <li><a href="#">آیین‌نامه‌ها <span class="count">۶</span></a></li>
+          </ul>
+        </div>
+        <div class="ql-col">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/></svg> انتشارات و پشتیبانی</h3>
+          <ul>
+            <li><a href="#">راهنمای سیستم مدیریت دانش <span class="count">۱۱</span></a></li>
+            <li><a href="#">کتاب‌ها <span class="count">۱۸</span></a></li>
+            <li><a href="#">آموزش ارسال فکس در اتوماسیون <span class="count">۱</span></a></li>
+            <li><a href="#">آموزش ارسال پست الکترونیک <span class="count">۱</span></a></li>
+            <li><a href="#">راهنمای کاربری درگاه واحد سازمان <span class="count">۱</span></a></li>
+            <li><a href="#">راهنمای کاربری پایانه‌داران <span class="count">۱</span></a></li>
+            <li><a href="#">راهنمای کاربری امور بندری <span class="count">۱</span></a></li>
+          </ul>
+        </div>
+        <div class="ql-col">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg> فرم‌های سازمانی</h3>
+          <ul>
+            <li><a href="#">اداری و مالی <span class="count">۲۱</span></a></li>
+            <li><a href="#">فناوری اطلاعات (فاوا) <span class="count">۱۸</span></a></li>
+            <li><a href="#">اداره برق و تأسیسات <span class="count">—</span></a></li>
+            <li><a href="#">بیانیه خط‌مشی ISMS <span class="count">۱</span></a></li>
+            <li><a href="#">گواهینامه استاندارد ISMS <span class="count">۳</span></a></li>
+            <li><a href="#">فهرست گروه‌های تخصصی امنیت اطلاعات <span class="count">۲</span></a></li>
+            <li><a href="#">آگاهی‌رسانی امنیت اطلاعات <span class="count">۲۸</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="~/assets/images/brand-logos/logo-pmo.png" alt="نشان مجتمع بندری شهید رجایی">
+        <div><b>مجتمع بندری شهید رجایی</b></div>
+      </div>
+      <nav class="footer-links">
+        <a href="#systems">سامانه‌های من</a>
+        <a href="#news">اطلاعیه‌ها</a>
+        <a href="#quicklinks">مقررات و فرم‌ها</a>
+        <a href="#">تماس با فناوری اطلاعات</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>تمامی حقوق متعلق به این سایت برای اداره کل بندر و دریانوردی استان هرمزگان محفوظ می‌باشد.</span>
+    </div>
+  </div>
+</footer>
+
+
+@section Scripts {
+    <script>
+
+/* ==========================================================================
+   داده‌های نمونه — در پیاده‌سازی واقعی این بخش از API مرکزی SSO/HR
+   (بر اساس هویت کاربر لاگین‌شده) دریافت می‌شود، نه اینکه در همین فایل باشد.
+   ساختار زیر همان قراردادی است که سایر سامانه‌های سازمان هنگام اتصال به
+   قالب یکپارچه پورتال داخلی باید از آن پیروی کنند.
+   ========================================================================== */
+
+const currentUser = {
+  name: @Html.Raw(Json.Serialize(Model.DisplayName)),
+  role: @Html.Raw(Json.Serialize(Model.RoleNames)),
+  initials: @Html.Raw(Json.Serialize(Model.Initials))
+};
+
+// همه سامانه‌های ثبت‌شده در سازمان (کاتالوگ کامل)
+const allSystems = [
+  { id:"payslip",   name:"مشاهده فیش حقوق",        desc:"مشاهده و دریافت فیش حقوقی پرسنل",                          hasAccess:true,  unread:0,
+    icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>' },
+  { id:"attendance",name:"حضور و غیاب",             desc:"ثبت و پیگیری حضور و غیاب پرسنل",                            hasAccess:true,  unread:2,
+    icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>' },
+  { id:"automation",name:"اتوماسیون اداری فرزین",   desc:"گردش مکاتبات و نامه‌های اداری سازمان",                      hasAccess:true,  unread:3,
+    icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 13h8"/>' },
+  { id:"gateway",   name:"درگاه واحد سازمان",       desc:"خدمات الکترونیک واحدهای بندری و دریانوردی",                 hasAccess:true,  unread:0,
+    icon:'<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/>' },
+  { id:"mobin",     name:"سامانه مبین",             desc:"ثبت و پیگیری درخواست کارها",                                hasAccess:true,  unread:0,
+    icon:'<path d="M4 4h16v12H8l-4 4Z"/><path d="M8 9h8M8 12h5"/>' },
+  { id:"customers", name:"اطلاعات مشتریان",         desc:"سامانه اطلاعات مشتریان بندر شهید رجایی",                    hasAccess:true,  unread:1,
+    icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>' },
+  { id:"docinquiry",name:"استعلام سند",             desc:"استعلام و پیگیری وضعیت اسناد ثبت‌شده",                      hasAccess:false, unread:0,
+    icon:'<circle cx="10" cy="10" r="6"/><path d="m20 20-4.3-4.3"/><path d="M8 10h4"/>' },
+  { id:"fileupload",name:"سامانه ورود فایل",        desc:"بارگذاری و ثبت فایل‌های ورودی سازمان",                      hasAccess:false, unread:0,
+    icon:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/>' },
+  { id:"filesharing",name:"اشتراک فایل",            desc:"اشتراک‌گذاری فایل میان واحدهای مختلف",                      hasAccess:false, unread:0,
+    icon:'<path d="M4 7a2 2 0 0 1 2-2h4l2 3h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>' },
+  { id:"archive",   name:"آرشیو الکترونیکی",        desc:"بایگانی و جست‌وجوی اسناد الکترونیکی",                       hasAccess:false, unread:0,
+    icon:'<rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M8 7h.01M8 17h.01"/>' },
+  { id:"tasks",     name:"مدیریت وظایف",            desc:"ثبت و گزارش‌گیری از وظایف محوله",                           hasAccess:false, unread:0,
+    icon:'<path d="m9 12 2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>' },
+  { id:"demand",    name:"دیماند",                  desc:"مدیریت درخواست‌های عملیاتی بندر",                           hasAccess:false, unread:0,
+    icon:'<path d="M3 17h4v-6H3ZM10 17h4V7h-4ZM17 17h4v-9h-4Z"/>' },
+];
+
+const notifications = [
+  { system:"اتوماسیون اداری فرزین", title:"۳ نامه جدید در کارتابل شما ثبت شد", time:"۱۰ دقیقه پیش", unread:true },
+  { system:"حضور و غیاب", title:"درخواست مرخصی شما تأیید شد", time:"۱ ساعت پیش", unread:true },
+  { system:"حضور و غیاب", title:"یادآوری: ثبت تردد پایان ماه", time:"دیروز", unread:true },
+  { system:"اطلاعات مشتریان", title:"یک پرونده جدید به شما ارجاع شد", time:"دیروز", unread:true },
+  { system:"اتوماسیون اداری فرزین", title:"نامه‌ی «فوری» از مدیریت امور بندری", time:"۲ روز پیش", unread:true },
+];
+
+/* ---------------- render: systems ---------------- */
+const grid = document.getElementById('systemsGrid');
+const mySystems = allSystems.filter(s => s.hasAccess);
+
+function iconSvg(pathData, extra=''){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${pathData}</svg>`;
+}
+
+mySystems.forEach(sys=>{
+  const card = document.createElement('a');
+  card.className = 'sys-card';
+  card.href = '#';
+  card.dataset.name = sys.name + ' ' + sys.desc;
+  card.innerHTML = `
+    <div class="sys-top">
+      <div class="sys-icon">${iconSvg(sys.icon)}</div>
+      ${sys.unread ? `<span class="sys-unread">${sys.unread} جدید</span>` : ''}
+    </div>
+    <h3>${sys.name}</h3>
+    <p>${sys.desc}</p>
+    <span class="go">ورود بدون نیاز به لاگین ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
+  `;
+  grid.appendChild(card);
+});
+
+// کارت درخواست دسترسی، همیشه آخرین آیتم
+const reqCard = document.createElement('a');
+reqCard.className = 'sys-card request-access-card';
+reqCard.href = '#';
+reqCard.innerHTML = `
+  <div class="sys-icon">${iconSvg('<path d="M12 5v14M5 12h14"/>')}</div>
+  <h3>درخواست دسترسی جدید</h3>
+  <p>سامانه مورد نیاز خود را از فهرست کامل سازمان درخواست دهید.</p>
+  <span class="go">ثبت درخواست ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
+`;
+grid.appendChild(reqCard);
+
+document.getElementById('myCount').textContent = mySystems.length;
+
+/* ---------------- render: notifications ---------------- */
+const notifList = document.getElementById('notifList');
+const bellCount = document.getElementById('bellCount');
+let unreadTotal = notifications.filter(n=>n.unread).length;
+
+function renderNotifs(){
+  notifList.innerHTML = notifications.map(n=>`
+    <div class="notif-item ${n.unread ? 'unread' : ''}">
+      <div class="src-icon">${iconSvg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/>')}</div>
+      <div class="notif-body">
+        <div class="top-line"><span class="source">${n.system}</span><span class="time">${n.time}</span></div>
+        <h5>${n.title}</h5>
+      </div>
+    </div>
+  `).join('');
+  bellCount.textContent = unreadTotal;
+  bellCount.style.display = unreadTotal > 0 ? 'grid' : 'none';
+  document.getElementById('unreadCount').textContent = unreadTotal;
+}
+renderNotifs();
+
+document.getElementById('markAllRead').addEventListener('click', (e)=>{
+  e.preventDefault();
+  notifications.forEach(n=>n.unread=false);
+  unreadTotal = 0;
+  renderNotifs();
+});
+
+/* ---------------- search filter (scoped to my systems) ---------------- */
+const noResults = document.getElementById('noResults');
+const searchInput = document.getElementById('systemSearch');
+searchInput.addEventListener('input', ()=>{
+  const term = searchInput.value.trim().toLowerCase();
+  let visible = 0;
+  Array.from(grid.querySelectorAll('.sys-card:not(.request-access-card)')).forEach(c=>{
+    const match = !term || c.dataset.name.toLowerCase().includes(term);
+    c.hidden = !match;
+    if(match) visible++;
+  });
+  noResults.classList.toggle('show', visible === 0);
+});
+
+/* ---------------- dropdown toggles ---------------- */
+function setupDropdown(btnId, panelId){
+  const btn = document.getElementById(btnId);
+  const panel = document.getElementById(panelId);
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const isOpen = panel.classList.contains('open');
+    document.querySelectorAll('.dropdown.open, .profile-menu.open').forEach(p=>{
+      p.classList.remove('open');
+      p.previousElementSibling && p.previousElementSibling.setAttribute && p.previousElementSibling.setAttribute('aria-expanded','false');
+    });
+    if(!isOpen){
+      panel.classList.add('open');
+      btn.setAttribute('aria-expanded','true');
+    } else {
+      btn.setAttribute('aria-expanded','false');
+    }
+  });
+}
+setupDropdown('bellBtn','bellDropdown');
+setupDropdown('userBtn','profileMenu');
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Escape') return;
+  const openPanel = document.querySelector('.dropdown.open, .profile-menu.open');
+  if(!openPanel) return;
+  const trigger = document.getElementById(openPanel.id === 'bellDropdown' ? 'bellBtn' : 'userBtn');
+  openPanel.classList.remove('open');
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.focus();
+});
+
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.dropdown.open, .profile-menu.open').forEach(p=>p.classList.remove('open'));
+  document.getElementById('bellBtn').setAttribute('aria-expanded','false');
+  document.getElementById('userBtn').setAttribute('aria-expanded','false');
+});
+document.querySelectorAll('.dropdown, .profile-menu').forEach(p=>p.addEventListener('click', e=>e.stopPropagation()));
+
+    </script>
+}
+

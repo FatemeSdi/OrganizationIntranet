@@ -1,0 +1,35 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Publications.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{ ViewData["Title"] = "اطلاع‌رسانی سازمانی"; Layout = "_LayoutAdmin"; }
+<div class="card custom-card">
+<div class="card-header d-flex justify-content-between align-items-center">
+<h1 class="h4">اخبار، اطلاعیه‌ها و بخشنامه‌ها</h1>
+<a asp-page="Edit" class="btn btn-primary">افزودن محتوا</a>
+</div>
+<div class="card-body">
+@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
+<form method="get" class="row g-3 mb-4">
+<div class="col-md-6"><label asp-for="Search" class="form-label">جست‌وجو در عنوان و خلاصه</label><input asp-for="Search" maxlength="200" class="form-control" /></div>
+<div class="col-md-4"><label asp-for="Kind" class="form-label">نوع محتوا</label><select asp-for="Kind" class="form-select"><option value="">همه</option><option value="News">خبر</option><option value="Announcement">اطلاعیه</option><option value="Circular">بخشنامه</option></select></div>
+<div class="col-md-2 align-self-end"><button class="btn btn-primary" type="submit">جست‌وجو</button></div>
+</form>
+<p class="text-muted">@Model.Result.Total مطلب</p>
+@if (Model.Result.Items.Count == 0) { <p>مطلبی یافت نشد.</p> }
+@foreach (var item in Model.Result.Items)
+{
+<article class="border rounded p-3 mb-3">
+<span class="badge bg-primary">@PublicationKinds.Label(item.Kind)</span>
+<span class="badge bg-secondary">@(item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
+<h2 class="h5 mt-2"><a asp-page="Edit" asp-route-id="@item.PublicationId">@item.Title</a></h2>
+<p style="white-space:pre-wrap;overflow-wrap:anywhere">@item.Summary</p>
+<small class="text-muted">@(item.PublishedAt.HasValue ? "تاریخ انتشار: " + item.PublishedAt.ToPersianDate() : "تاریخ ایجاد: " + item.CreatedAt.ToPersianDate())</small>
+</article>
+}
+<nav aria-label="صفحه‌بندی">
+@if (Model.PageNumber > 1) { <a asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-kind="@Model.Kind" asp-route-search="@Model.Search" class="btn btn-light">قبلی</a> }
+@if ((long)Model.PageNumber * Model.Result.PageSize < Model.Result.Total) { <a asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-kind="@Model.Kind" asp-route-search="@Model.Search" class="btn btn-light">بعدی</a> }
+</nav>
+</div></div>
+

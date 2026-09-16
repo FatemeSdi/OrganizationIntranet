@@ -15,4 +15,5 @@
     </PackageReference>
   </ItemGroup>
 
+<ItemGroup><Compile Remove="src/**;shared/**;tests/**" /><Content Remove="src/**;shared/**;tests/**" /><None Remove="src/**;shared/**;tests/**" /></ItemGroup>
 </Project>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="~/assets/images/brand-logos/favicon.ico" rel="icon" type="image/x-icon" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    @RenderBody()
+    <!-- Toast Container -->
+    <div id="appToastContainer" class="toast-container position-fixed top-0 start-0 p-3" style="z-index:1080"></div>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

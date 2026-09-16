@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+ <ItemGroup><ProjectReference Include="../OrganizationIntranet.Domain/OrganizationIntranet.Domain.csproj" /></ItemGroup>
+<ItemGroup><Compile Include="../../shared/Contracts/**/*.cs" Link="Contracts/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup></Project>
+
