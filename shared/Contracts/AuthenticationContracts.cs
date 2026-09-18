@@ -10,11 +10,11 @@ public sealed class AuthenticationSettingsDto
     public bool TwoFactorEnabled { get; set; }
     public bool AuthenticatorEnabled { get; set; } = true;
     public bool SmsEnabled { get; set; }
-    [MaxLength(253)] public string LdapHost { get; set; } = "";
+    [MaxLength(253), DisplayFormat(ConvertEmptyStringToNull = false)] public string LdapHost { get; set; } = "";
     [Range(1, 65535)] public int LdapPort { get; set; } = 636;
-    [MaxLength(253)] public string LdapDomain { get; set; } = "";
-    [MaxLength(2000)] public string SmsEndpoint { get; set; } = "";
-    [MaxLength(100)] public string SmsSender { get; set; } = "";
+    [MaxLength(253), DisplayFormat(ConvertEmptyStringToNull = false)] public string LdapDomain { get; set; } = "";
+    [MaxLength(2000), DisplayFormat(ConvertEmptyStringToNull = false)] public string SmsEndpoint { get; set; } = "";
+    [MaxLength(100), DisplayFormat(ConvertEmptyStringToNull = false)] public string SmsSender { get; set; } = "";
     // Write-only: GET always clears this field; empty means preserve the stored key.
     [MaxLength(2000)] public string? SmsApiKey { get; set; }
     public bool HasSmsApiKey { get; set; }

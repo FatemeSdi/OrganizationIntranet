@@ -39,4 +39,4 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor)
     }
 }
 
-public record TokenResponse(string AccessToken, int ExpiresIn, string RefreshToken);
+public record TokenResponse(string AccessToken = "", int ExpiresIn = 0, string RefreshToken = "", string? ChallengeToken = null, string[]? Methods = null);

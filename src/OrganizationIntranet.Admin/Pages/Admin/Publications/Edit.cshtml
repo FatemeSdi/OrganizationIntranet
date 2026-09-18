@@ -5,6 +5,7 @@
 <h1 class="h4">@ViewData["Title"]</h1>
 <form method="post">
 <input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="Input.Revision" />
 <div asp-validation-summary="All" class="text-danger" role="alert"></div>
 <div class="mb-3"><label asp-for="Input.Kind" class="form-label">نوع محتوا</label><select asp-for="Input.Kind" class="form-select"><option value="News">خبر</option><option value="Announcement">اطلاعیه</option><option value="Circular">بخشنامه</option></select></div>
 <div class="mb-3"><label asp-for="Input.Title" class="form-label">عنوان</label><input asp-for="Input.Title" required maxlength="200" class="form-control" /></div>

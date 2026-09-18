@@ -139,7 +139,7 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
         u.LastAuthenticatorStep = step;
         return true;
     }
-    public async Task<User> VerifyLoginAsync(VerifyLoginRequest request)
+    public async Task<(User User, string LoginMethod)> VerifyLoginAsync(VerifyLoginRequest request)
     {
         var (c, u, s) = await ChallengeAsync(request.ChallengeToken, "login");
         c.Attempts++;
@@ -150,9 +150,9 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
             _ => false
         });
         if (!valid) { await FailureAsync(u, "second-factor"); throw new ArgumentException(Invalid); }
-        c.Consumed = true;
+        c.Consumed = true; c.CodeHash = null;
         await CompleteAsync(u);
-        return u;
+        return (u, c.LoginMethod);
     }
     private static bool IsCode(string? code) => code is not null && Regex.IsMatch(code, "^[0-9]{6}$");
     public async Task<AuthenticationChallengeDto> ForgotAsync(ForgotPasswordRequest request)
@@ -178,7 +178,7 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
         ValidateNewPassword(request.NewPassword, request.ConfirmNewPassword);
         c.Attempts++;
         if (!IsCode(request.Code) || !SmsMatches(c, request.ChallengeToken, request.Code)) { await FailureAsync(u, "reset"); throw new ArgumentException(Invalid); }
-        c.Consumed = true;
+        c.Consumed = true; c.CodeHash = null;
         u.PasswordHash = passwords.Hash(u, request.NewPassword);
         u.SecurityStamp = Guid.NewGuid().ToString("N"); u.FailedLoginAttempts = 0; u.LockedUntil = null;
         await store.SaveAsync();
@@ -188,6 +188,18 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
     {
         if (string.IsNullOrWhiteSpace(password) || password.Length is < 10 or > 128 || password != confirm)
             throw new ArgumentException("رمز جدید باید بین ۱۰ تا ۱۲۸ کاراکتر و با تأیید آن یکسان باشد");
+    }
+    public async Task ChangePasswordAsync(long id, ChangePasswordRequest request)
+    {
+        var s = await SettingsAsync();
+        var u = await users.FindUserAsync(id) ?? throw new KeyNotFoundException();
+        if (!await CredentialsAsync(u, new(u.Username, request.CurrentPassword), s))
+        { await FailureAsync(u, "password-change"); throw new ArgumentException(Invalid); }
+        ValidateNewPassword(request.NewPassword, request.ConfirmNewPassword);
+        u.PasswordHash = passwords.Hash(u, request.NewPassword);
+        u.SecurityStamp = Guid.NewGuid().ToString("N");
+        await store.SaveAsync();
+        providers.Audit("password-changed", id, true);
     }
     public async Task<AuthenticationStatusDto> StatusAsync(long id)
     {
@@ -216,7 +228,7 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
         long step = -1;
         if (!IsCode(request.Code) || c.ProtectedSecret is null || !providers.VerifyAuthenticator(providers.Unprotect(c.ProtectedSecret), request.Code, out step))
         { await FailureAsync(u, "authenticator-enroll"); throw new ArgumentException(Invalid); }
-        c.Consumed = true; u.AuthenticatorSecret = c.ProtectedSecret; u.LastAuthenticatorStep = step;
+        c.Consumed = true; u.AuthenticatorSecret = c.ProtectedSecret; c.ProtectedSecret = null; u.LastAuthenticatorStep = step;
         u.SecurityStamp = Guid.NewGuid().ToString("N");
         await store.SaveAsync();
         providers.Audit("authenticator-enrolled", id, true);

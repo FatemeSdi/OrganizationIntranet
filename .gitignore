@@ -363,3 +363,22 @@ MigrationBackup/
 FodyWeavers.xsd
 /database
 /tools
+!/tools/
+/tools/*
+!/tools/Invoke-DatabaseScript.ps1
+!/tools/sql/
+/tools/sql/*
+!/tools/sql/001-publications-*.sql
+!/tools/sql/002-publications-integrity-*.sql
+
+# Version-controlled database design/migrations; generated backups and data exports remain excluded.
+!/database/
+/database/*
+!/database/migrations/
+/database/migrations/*
+!/database/migrations/001_DatabaseConsistency.*.sql
+!/database/migrations/002_AuthenticationSchema.*.sql
+!/database/architecture-audit.readonly.sql
+!/database/architecture-verify.readonly.sql
+!/database/architecture-migration-test.sql
+!/database/backup.sql

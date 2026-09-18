@@ -3,7 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
-public class AppDbContext : DbContext
+public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ConfigureAuthenticationIntegrity(modelBuilder);
         modelBuilder.Entity<AuthenticationSettings>(e =>
         {
             e.ToTable("AuthenticationSettings", "Sec");
@@ -48,12 +49,17 @@ public class AppDbContext : DbContext
         });
         modelBuilder.Entity<Publication>(e =>
         {
-            e.ToTable("Publication", "Notify");
+            e.ToTable("Publication", "Notify", t =>
+            {
+                t.HasCheckConstraint("CK_Publication_Kind", "[Kind] IN ('News', 'Announcement', 'Circular')");
+                t.HasCheckConstraint("CK_Publication_PublishState", "([IsPublished] = 0 AND [PublishedAt] IS NULL) OR ([IsPublished] = 1 AND [PublishedAt] IS NOT NULL)");
+            });
             e.HasKey(p => p.PublicationId);
             e.Property(p => p.Title).HasMaxLength(200).IsRequired();
             e.Property(p => p.Summary).HasMaxLength(1000).IsRequired();
             e.Property(p => p.Body).HasMaxLength(50000).IsRequired();
             e.Property(p => p.Kind).HasMaxLength(20).IsRequired();
+            e.Property(p => p.Revision).IsConcurrencyToken();
             e.HasIndex(p => new { p.IsPublished, p.PublishedAt, p.PublicationId });
             e.HasIndex(p => p.Kind);
             e.HasOne<User>().WithMany().HasForeignKey(p => p.CreatedBy).OnDelete(DeleteBehavior.NoAction);

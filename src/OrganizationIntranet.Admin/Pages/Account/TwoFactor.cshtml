@@ -1,0 +1,27 @@
+@page
+@model OrganizationIntranet.Pages.Account.TwoFactorModel
+@{ ViewData["Title"] = "تأیید دومرحله‌ای"; Layout = "_LayoutAuth"; }
+<link rel="stylesheet" href="~/assets/css/authentication.css" asp-append-version="true" />
+<main class="auth-shell" dir="rtl">
+<section class="auth-panel">
+<h1>تأیید دومرحله‌ای</h1>
+<p>کد شش‌رقمی را وارد کنید. این مرحله تا ۵ دقیقه معتبر است.</p>
+<div asp-validation-summary="All" class="text-danger" role="alert"></div>
+@if (Model.Message is not null) { <p class="alert alert-success" role="status">@Model.Message</p> }
+<form method="post">
+<label asp-for="Method">روش تأیید</label>
+<select asp-for="Method" class="form-select mb-3">
+@foreach (var method in Model.Pending?.Methods ?? []) {
+<option value="@method">@(method == "sms" ? "پیامک" : "Google Authenticator")</option>
+}
+</select>
+<label asp-for="Code">کد تأیید</label>
+<input asp-for="Code" class="form-control mb-3" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" dir="ltr" required />
+<button class="btn btn-primary w-100" type="submit">تأیید و ورود</button>
+</form>
+@if (Model.Pending?.Methods.Contains("sms") == true) {
+<form method="post" asp-page-handler="SendSms" class="mt-3"><button class="btn btn-outline-primary w-100" type="submit">ارسال / ارسال مجدد پیامک</button></form>
+}
+<a asp-page="/Account/Login" class="d-block mt-3">شروع دوباره ورود</a>
+</section>
+</main>

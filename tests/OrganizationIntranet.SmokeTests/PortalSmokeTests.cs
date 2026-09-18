@@ -141,7 +141,7 @@ public sealed class PortalSmokeTests : IDisposable
         var permission = (await client.GetFromJsonAsync<List<PermissionDto>>("/api/admin/permissions"))!.Single();
         (await client.PostAsJsonAsync($"/api/admin/permissions/{permission.PermissionId}/roles", new RolesRequest([id, id]))).EnsureSuccessStatusCode();
         Assert.Single((await client.GetFromJsonAsync<PermissionDto>($"/api/admin/permissions/{permission.PermissionId}"))!.SelectedRoleIds);
-        (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Name = "جدید", LastName = "آزمایش", Username = "new", NewPassword = "initial", SelectedRoleIds = [id, id] })).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Name = "جدید", LastName = "آزمایش", Username = "new", NewPassword = "initial-password", SelectedRoleIds = [id, id] })).EnsureSuccessStatusCode();
         var user = (await client.GetFromJsonAsync<List<UserDto>>("/api/admin/users"))!.Single(u => u.Username == "new");
         Assert.Single(user.SelectedRoleIds);
         (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Id = user.UserId, Name = "ویرایش", LastName = user.LastName, Username = user.Username, SelectedRoleIds = [] })).EnsureSuccessStatusCode();
@@ -151,10 +151,11 @@ public sealed class PortalSmokeTests : IDisposable
         Assert.False((await client.GetFromJsonAsync<List<RoleDto>>("/api/admin/roles"))!.Single(r => r.RoleId == id).IsActive);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Name = "bad", LastName = "bad", Username = "invalid-role", NewPassword = "test", SelectedRoleIds = [999] })).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/api/admin/roles", new RoleRequest("تکرار", "ADMIN"))).StatusCode);
-        (await client.PostAsJsonAsync("/api/account/change-password", new ChangePasswordRequest("test-password", "changed", "changed"))).EnsureSuccessStatusCode();
-        await Login("admin", "changed");
-        (await client.PostAsJsonAsync("/api/account/forgot-password", new ResetPasswordRequest("admin", "1111111111", "09120000000", "reset", "reset"))).EnsureSuccessStatusCode();
-        await Login("admin", "reset");
+        (await client.PostAsJsonAsync("/api/account/change-password", new ChangePasswordRequest("test-password", "changed-password", "changed-password"))).EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/account/me")).StatusCode);
+        await Login("admin", "changed-password");
+        // Identity information alone can no longer reset a password; SMS recovery defaults to disabled.
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/account/forgot-password", new ResetPasswordRequest("admin", "1111111111", "09120000000", "reset", "reset"))).StatusCode);
     }
     [Fact]
     public async Task Publications_enforce_visibility_validation_and_admin_access()
@@ -173,6 +174,7 @@ public sealed class PortalSmokeTests : IDisposable
         Assert.Empty((await client.GetFromJsonAsync<PublicationListDto>("/api/publications"))!.Items);
         await Login();
         request.IsPublished = true;
+        request.Revision = draft.Revision;
         (await client.PostAsJsonAsync($"/api/admin/publications/{draft.PublicationId}", request)).EnsureSuccessStatusCode();
         foreach (var kind in new[] { "Announcement", "Circular" })
         {
@@ -201,8 +203,34 @@ public sealed class PortalSmokeTests : IDisposable
         Assert.Contains("&lt;script&gt;", html);
         Assert.DoesNotContain("<script>alert(1)</script>", html);
         await Login(); request.IsPublished = false;
+        request.Revision = published.Revision;
         (await client.PostAsJsonAsync($"/api/admin/publications/{draft.PublicationId}", request)).EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.NotFound, (await browser.GetAsync($"/Publications/Details/{draft.PublicationId}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Publication_stale_or_missing_revision_cannot_overwrite_saved_content()
+    {
+        await Login();
+        var request = new PublicationEditRequest { Title = "نسخه اول", Summary = "خلاصه", Body = "متن", Kind = "News", IsPublished = true };
+        var created = await client.PostAsJsonAsync("/api/admin/publications", request);
+        created.EnsureSuccessStatusCode();
+        var original = (await created.Content.ReadFromJsonAsync<PublicationDto>())!;
+        var url = $"/api/admin/publications/{original.PublicationId}";
+        request.Title = "نسخه دوم";
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync(url, request)).StatusCode);
+        request.Revision = original.Revision;
+        var saved = await client.PostAsJsonAsync(url, request);
+        saved.EnsureSuccessStatusCode();
+        var current = (await saved.Content.ReadFromJsonAsync<PublicationDto>())!;
+        Assert.Equal(original.Revision + 1, current.Revision);
+        Assert.Equal(original.PublishedAt, current.PublishedAt);
+        request.Title = "ویرایش قدیمی";
+        request.IsPublished = false;
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync(url, request)).StatusCode);
+        var visible = (await client.GetFromJsonAsync<PublicationDto>($"/api/publications/{original.PublicationId}"))!;
+        Assert.Equal("نسخه دوم", visible.Title);
+        Assert.True(visible.IsPublished);
     }
 
     [Fact]
@@ -219,7 +247,19 @@ public sealed class PortalSmokeTests : IDisposable
         Assert.Equal(HttpStatusCode.Redirect, (await browser.PostAsync("/Admin/Publications/Edit", new FormUrlEncodedContent(values))).StatusCode);
         var item = Assert.Single((await client.GetFromJsonAsync<PublicationListDto>("/api/publications"))!.Items);
         Assert.Equal("Circular", item.Kind);
-        (await browser.GetAsync($"/Admin/Publications/Edit?id={item.PublicationId}")).EnsureSuccessStatusCode();
+        var editUrl = $"/Admin/Publications/Edit?id={item.PublicationId}";
+        var editor = await browser.GetStringAsync(editUrl);
+        Assert.Contains("name=\"Input.Revision\"", editor);
+        values["Id"] = item.PublicationId.ToString();
+        values["Input.Revision"] = item.Revision.ToString();
+        values["Input.Title"] = "Updated through editor";
+        values["__RequestVerificationToken"] = await Antiforgery(browser, editUrl);
+        Assert.Equal(HttpStatusCode.Redirect, (await browser.PostAsync(editUrl, new FormUrlEncodedContent(values))).StatusCode);
+        values["Input.Title"] = "Unsaved stale editor text";
+        var conflict = await browser.PostAsync(editUrl, new FormUrlEncodedContent(values));
+        Assert.Equal(HttpStatusCode.OK, conflict.StatusCode);
+        Assert.Contains("Unsaved stale editor text", await conflict.Content.ReadAsStringAsync());
+        Assert.Equal("Updated through editor", (await client.GetFromJsonAsync<PublicationDto>($"/api/admin/publications/{item.PublicationId}"))!.Title);
         (await browser.GetAsync("/Admin/Publications")).EnsureSuccessStatusCode();
     }
 

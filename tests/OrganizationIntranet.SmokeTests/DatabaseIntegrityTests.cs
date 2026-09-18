@@ -11,6 +11,39 @@ namespace OrganizationIntranet.SmokeTests;
 public sealed class DatabaseIntegrityTests
 {
     [Fact]
+    public async Task Publications_enforce_database_constraints_and_concurrent_writes()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        connection.CreateFunction("GETUTCDATE", () => DateTime.UtcNow);
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
+        await using var first = new AppDbContext(options);
+        await first.Database.EnsureCreatedAsync();
+        var user = new User { Username = "editor", Name = "Test", LastName = "Editor" };
+        first.Users.Add(user);
+        await first.SaveChangesAsync();
+        var publication = new Publication { Title = "Title", Summary = "Summary", Body = "Body", CreatedBy = user.UserId, UpdatedBy = user.UserId };
+        first.Publications.Add(publication);
+        await first.SaveChangesAsync();
+        await using var second = new AppDbContext(options);
+        var stale = await second.Publications.SingleAsync();
+        publication.Title = "Saved";
+        publication.Revision++;
+        await first.SaveChangesAsync();
+        stale.Title = "Stale";
+        stale.Revision++;
+        await Assert.ThrowsAsync<OrganizationIntranet.Application.Abstractions.PublicationConflictException>(
+            () => new PublicationRepository(second).SaveAsync());
+        publication.Kind = "Invalid";
+        await Assert.ThrowsAsync<DbUpdateException>(() => first.SaveChangesAsync());
+        publication.Kind = "News";
+        publication.IsPublished = true;
+        await Assert.ThrowsAsync<DbUpdateException>(() => first.SaveChangesAsync());
+        publication.PublishedAt = DateTime.UtcNow;
+        await first.SaveChangesAsync();
+    }
+
+    [Fact]
     public void SqlServer_model_preserves_types_global_permission_codes_and_restrictive_deletes()
     {
         using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()

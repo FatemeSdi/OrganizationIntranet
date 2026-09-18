@@ -15,7 +15,7 @@ public class EditModel(ApiClient api) : PageModel
         if (Id.HasValue)
         {
             var p = await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}");
-            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished };
+            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, Revision = p.Revision };
         }
     }
     public async Task<IActionResult> OnPostAsync()

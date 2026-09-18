@@ -1,0 +1,40 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Authentication.IndexModel
+@{ ViewData["Title"] = "تنظیمات ورود"; Layout = "_LayoutAdmin"; }
+<div class="container-fluid py-4">
+<h1 class="h4">تنظیمات ورود و امنیت</h1>
+<p>تنظیمات برای پورتال و پنل مدیریت مشترک است. با ذخیره، همه نشست‌های قبلی پایان می‌یابد.</p>
+<div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+<form method="post" autocomplete="off">
+<input asp-for="Input.Revision" type="hidden" />
+<div class="card custom-card"><div class="card-body">
+<h2 class="h5">روش‌های ورود</h2>
+<div class="form-check form-switch mb-3"><input asp-for="Input.PasswordEnabled" class="form-check-input" role="switch" /><label asp-for="Input.PasswordEnabled" class="form-check-label">ورود با نام کاربری و رمز محلی</label></div>
+<div class="form-check form-switch mb-3"><input asp-for="Input.LdapEnabled" class="form-check-input" role="switch" /><label asp-for="Input.LdapEnabled" class="form-check-label">ورود با LDAP</label></div>
+<p>برای خاموش‌کردن رمز محلی، ابتدا LDAP را تنظیم و با آن وارد شوید. کاربران LDAP باید از قبل در سامانه تعریف شده باشند.</p>
+<div class="row">
+<div class="col-md-5 mb-3"><label asp-for="Input.LdapHost" class="form-label">میزبان LDAP</label><input asp-for="Input.LdapHost" class="form-control" dir="ltr" placeholder="dc.example.org" /></div>
+<div class="col-md-2 mb-3"><label asp-for="Input.LdapPort" class="form-label">پورت LDAPS</label><input asp-for="Input.LdapPort" class="form-control" /></div>
+<div class="col-md-5 mb-3"><label asp-for="Input.LdapDomain" class="form-label">دامنه ورود (UPN)</label><input asp-for="Input.LdapDomain" class="form-control" dir="ltr" placeholder="example.org" /></div>
+</div>
+<p>اتصال LDAP فقط رمزنگاری‌شده است و گواهی سرور باید مورد اعتماد میزبان API باشد.</p>
+</div></div>
+<div class="card custom-card"><div class="card-body">
+<h2 class="h5">احراز هویت دومرحله‌ای و بازیابی</h2>
+<div class="form-check form-switch mb-3"><input asp-for="Input.TwoFactorEnabled" class="form-check-input" role="switch" /><label asp-for="Input.TwoFactorEnabled" class="form-check-label">الزام ورود دومرحله‌ای برای همه کاربران</label></div>
+<div class="form-check form-switch mb-3"><input asp-for="Input.AuthenticatorEnabled" class="form-check-input" role="switch" /><label asp-for="Input.AuthenticatorEnabled" class="form-check-label">روش Google Authenticator</label></div>
+<div class="form-check form-switch mb-3"><input asp-for="Input.SmsEnabled" class="form-check-input" role="switch" /><label asp-for="Input.SmsEnabled" class="form-check-label">روش پیامک</label></div>
+<div class="form-check form-switch mb-3"><input asp-for="Input.ForgotPasswordEnabled" class="form-check-input" role="switch" /><label asp-for="Input.ForgotPasswordEnabled" class="form-check-label">فراموشی رمز با کد پیامکی</label></div>
+<p>پیش از اجباری‌کردن ورود دومرحله‌ای، کاربران باید Google Authenticator را تنظیم کرده یا شماره همراه ثبت‌شده و سرویس پیامک فعال داشته باشند.</p>
+<a asp-page="/Account/Security">تنظیم Google Authenticator حساب من</a>
+</div></div>
+<div class="card custom-card"><div class="card-body">
+<h2 class="h5">پیکربندی سرویس پیامک</h2>
+<label asp-for="Input.SmsEndpoint" class="form-label">نشانی HTTPS درگاه پیامک</label><input asp-for="Input.SmsEndpoint" class="form-control mb-3" dir="ltr" placeholder="https://sms.example.org/send" />
+<label asp-for="Input.SmsSender" class="form-label">شناسه فرستنده</label><input asp-for="Input.SmsSender" class="form-control mb-3" dir="ltr" />
+<label asp-for="Input.SmsApiKey" class="form-label">کلید سرویس پیامک</label><input asp-for="Input.SmsApiKey" type="password" class="form-control mb-3" autocomplete="new-password" value="" />
+<p>@(Model.Input.HasSmsApiKey ? "کلید قبلاً ذخیره شده است؛ خالی گذاشتن یعنی حفظ کلید فعلی." : "هنوز کلیدی ذخیره نشده است.")</p>
+<p>درگاه باید درخواست POST با فیلدهای to، sender و message و هدر Authorization: Bearer را بپذیرد. اگر ارائه‌دهنده قالب دیگری دارد، درگاه واسط سازمان را وارد کنید.</p>
+</div></div>
+<button class="btn btn-primary" type="submit">ذخیره تنظیمات و ورود مجدد</button>
+</form></div>

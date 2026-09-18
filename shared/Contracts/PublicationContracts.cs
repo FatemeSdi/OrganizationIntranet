@@ -14,6 +14,7 @@ public sealed class PublicationEditRequest
     [Required, StringLength(50000)] public string Body { get; set; } = "";
     [Required] public string Kind { get; set; } = "News";
     public bool IsPublished { get; set; }
+    [Range(0, long.MaxValue)] public long? Revision { get; set; }
 }
-public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt);
+public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt, long Revision = 0);
 public record PublicationListDto(List<PublicationDto> Items, int Total, int Page, int PageSize);

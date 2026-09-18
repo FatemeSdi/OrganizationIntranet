@@ -6,7 +6,7 @@ namespace OrganizationIntranet.Application.Services;
 
 public sealed class PublicationService(IPublicationRepository repository)
 {
-    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt);
+    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision);
     public async Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page)
     {
         if (kind is not null && !PublicationKinds.IsValid(kind)) throw new ArgumentException("نوع محتوا معتبر نیست");
@@ -23,9 +23,11 @@ public sealed class PublicationService(IPublicationRepository repository)
         if (!PublicationKinds.IsValid(request.Kind)) throw new ArgumentException("نوع محتوا معتبر نیست");
         var now = DateTime.UtcNow;
         var p = id.HasValue ? await repository.FindAsync(id.Value, false) ?? throw new KeyNotFoundException() : new Publication { CreatedAt = now, CreatedBy = actor };
+        if (id.HasValue && request.Revision != p.Revision) throw new PublicationConflictException();
         p.Title = request.Title.Trim(); p.Summary = request.Summary.Trim(); p.Body = request.Body.Trim(); p.Kind = request.Kind;
         p.PublishedAt = request.IsPublished ? p.PublishedAt ?? now : null;
         p.IsPublished = request.IsPublished; p.UpdatedAt = now; p.UpdatedBy = actor;
+        p.Revision = checked(p.Revision + 1);
         if (!id.HasValue) repository.Add(p);
         await repository.SaveAsync();
         return Map(p);

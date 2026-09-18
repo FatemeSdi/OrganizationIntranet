@@ -13,6 +13,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.Authorization;
 using Microsoft.OpenApi.Models;
 using OrganizationIntranet.Api.OpenApi;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 var clientKey = builder.Configuration["Api:ClientKey"];
@@ -24,6 +25,14 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conn
 builder.Services.AddScoped<IIntranetRepository, IntranetRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IntranetService>();
+builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
+builder.Services.AddScoped<IAuthenticationProviders, AuthenticationProviders>();
+builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddHttpClient("authentication-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+var authKeysPath = builder.Configuration["Authentication:DataProtectionKeysPath"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OrganizationIntranet", "ApiKeys");
+var authProtection = builder.Services.AddDataProtection().SetApplicationName("OrganizationIntranet.Api").PersistKeysToFileSystem(new DirectoryInfo(authKeysPath));
+if (OperatingSystem.IsWindows()) authProtection.ProtectKeysWithDpapi();
 builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
 builder.Services.AddScoped<PublicationService>();
 builder.Services.AddControllers();
@@ -84,6 +93,11 @@ app.Use(async (context, next) =>
         context.Response.StatusCode = 401; return;
     }
     try { await next(); }
+    catch (PublicationConflictException ex)
+    {
+        context.Response.StatusCode = 409;
+        await context.Response.WriteAsJsonAsync(new OperationResult(false, ex.Message));
+    }
     catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException or DbUpdateException)
     {
         context.Response.StatusCode = ex is KeyNotFoundException ? 404 : ex is DbUpdateException ? 409 : 400;
@@ -99,6 +113,7 @@ app.Use(async (context, next) =>
 });
 app.UseRouting();
 app.UseAuthentication();
+app.UseMiddleware<AuthenticationSessionMiddleware>();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();

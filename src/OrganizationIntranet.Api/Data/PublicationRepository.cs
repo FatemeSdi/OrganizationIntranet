@@ -15,10 +15,14 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
         var count = await query.CountAsync();
         var items = await query.OrderByDescending(p => p.PublishedAt ?? p.CreatedAt).ThenByDescending(p => p.PublicationId)
             .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt }).ToListAsync();
+            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision }).ToListAsync();
         return (items, count);
     }
     public Task<Publication?> FindAsync(long id, bool publishedOnly) => db.Publications.FirstOrDefaultAsync(p => p.PublicationId == id && (!publishedOnly || p.IsPublished));
     public void Add(Publication publication) => db.Publications.Add(publication);
-    public Task SaveAsync() => db.SaveChangesAsync();
+    public async Task SaveAsync()
+    {
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateConcurrencyException) { throw new PublicationConflictException(); }
+    }
 }

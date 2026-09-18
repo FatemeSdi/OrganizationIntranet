@@ -1,0 +1,7 @@
+.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: #eef1f5; }
+.auth-panel { width: 100%; max-width: 520px; min-width: 0; padding: 28px; border-radius: 18px; background: #fff; box-shadow: 0 12px 40px rgba(36,75,139,.12); overflow-wrap: anywhere; }
+.auth-panel h1 { font-size: 1.4rem; margin-bottom: 18px; }
+.auth-panel label { display: block; margin-bottom: 6px; }
+.auth-panel input, .auth-panel select { min-width: 0; max-width: 100%; }
+.auth-secret { display: block; direction: ltr; user-select: all; overflow-wrap: anywhere; padding: 12px; background: #eef1f5; }
+@media (max-width: 480px) { .auth-panel { padding: 20px; } }

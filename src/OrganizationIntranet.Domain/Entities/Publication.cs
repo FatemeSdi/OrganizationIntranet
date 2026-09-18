@@ -13,4 +13,5 @@ public sealed class Publication
     public DateTime? PublishedAt { get; set; }
     public long CreatedBy { get; set; }
     public long UpdatedBy { get; set; }
+    public long Revision { get; set; }
 }

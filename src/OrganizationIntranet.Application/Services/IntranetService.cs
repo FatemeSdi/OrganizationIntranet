@@ -20,49 +20,13 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
     private static UserDto Map(User u) => new(u.UserId, u.Name, u.LastName, u.Username, u.NationalId, u.MobileNumber, u.Email, u.IsActive, u.CreatedAt, u.LastLogin, string.Join("، ", u.UserRoles.Select(r => r.Role.RoleName)), u.UserRoles.Select(r => r.RoleId).ToList());
     private static ProfileDto Profile(User u) => new(u.UserId, u.Username, u.Name, u.LastName, u.NationalId, u.MobileNumber, u.Email, u.CreatedAt, u.LastLogin,
         u.UserRoles.Count > 0 ? string.Join("، ", u.UserRoles.Select(r => r.Role.RoleName)) : "بدون نقش",
-        u.UserRoles.Select(r => r.Role.RoleCode).ToList(),
-        u.UserRoles.SelectMany(r => r.Role.RolePermissions).Where(r => r.Permission.IsActive).Select(r => r.Permission.PermissionCode).Distinct().ToList());
+        u.UserRoles.Where(r => r.Role.IsActive).Select(r => r.Role.RoleCode).ToList(),
+        u.UserRoles.Where(r => r.Role.IsActive).SelectMany(r => r.Role.RolePermissions).Where(r => r.Permission.IsActive).Select(r => r.Permission.PermissionCode).Distinct().ToList());
 
-    public async Task<ProfileDto?> LoginAsync(LoginRequest request)
-    {
-        Required(request.Username, 100, "نام کاربری"); Required(request.Password, 1024, "رمز عبور");
-        var user = await repository.FindUserAsync(request.Username);
-        if (user is null || !user.IsActive) return null;
-        // Preserve the existing first-login activation contract during this structural migration.
-        if (string.IsNullOrEmpty(user.PasswordHash)) user.PasswordHash = passwords.Hash(user, request.Password);
-        else if (!passwords.Verify(user, request.Password)) return null;
-        user.LastLogin = DateTime.UtcNow;
-        await repository.SaveAsync();
-        return Profile(user);
-    }
     public async Task<ProfileDto?> ProfileAsync(long id)
     {
         var user = await repository.FindUserAsync(id);
         return user is null ? null : Profile(user);
-    }
-    public async Task ResetPasswordAsync(ResetPasswordRequest request)
-    {
-        Required(request.Username, 100, "نام کاربری"); Required(request.NationalId, 10, "کد ملی"); Required(request.MobileNumber, 20, "شماره همراه");
-        ValidatePassword(request.NewPassword, request.ConfirmNewPassword);
-        var user = await repository.FindUserAsync(request.Username);
-        if (user is null || !user.IsActive || user.NationalId != request.NationalId || user.MobileNumber != request.MobileNumber)
-            throw new ArgumentException("اطلاعات هویتی با کاربری در سامانه مطابقت ندارد");
-        user.PasswordHash = passwords.Hash(user, request.NewPassword);
-        await repository.SaveAsync();
-    }
-    public async Task ChangePasswordAsync(long id, ChangePasswordRequest request)
-    {
-        var user = await repository.FindUserAsync(id) ?? throw new KeyNotFoundException();
-        Required(request.CurrentPassword, 1024, "رمز عبور فعلی");
-        if (!passwords.Verify(user, request.CurrentPassword)) throw new ArgumentException("رمز عبور فعلی اشتباه است");
-        ValidatePassword(request.NewPassword, request.ConfirmNewPassword);
-        user.PasswordHash = passwords.Hash(user, request.NewPassword);
-        await repository.SaveAsync();
-    }
-    private static void ValidatePassword(string value, string confirm)
-    {
-        Required(value, 1024, "رمز عبور");
-        if (value != confirm) throw new ArgumentException("رمز عبور جدید و تأیید آن یکسان نیستند");
     }
     public async Task<List<UserDto>> UsersAsync() => (await repository.GetUsersAsync()).OrderBy(u => u.Name).Select(Map).ToList();
     public async Task<UserDto?> UserAsync(long id)
@@ -86,7 +50,13 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         if (isNew) { Required(request.NewPassword, 1024, "رمز عبور"); repository.AddUser(user); }
         user.Name = request.Name; user.LastName = request.LastName; user.Username = request.Username;
         user.NationalId = Optional(request.NationalId); user.MobileNumber = Optional(request.MobileNumber); user.Email = Optional(request.Email); user.IsActive = request.IsActive;
-        if (!string.IsNullOrWhiteSpace(request.NewPassword)) user.PasswordHash = passwords.Hash(user, request.NewPassword);
+        if (!string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            AuthenticationService.ValidateNewPassword(request.NewPassword, request.NewPassword);
+            user.PasswordHash = passwords.Hash(user, request.NewPassword);
+        }
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        user.AuthenticationVersion = Guid.NewGuid();
         repository.SetUserRoles(user, ids);
         await repository.SaveAsync(); // One SaveChanges transaction also covers a new user's role assignments.
     }
