@@ -8,7 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
+    <link rel="stylesheet" href="~/css/portal-access-requests.css" asp-append-version="true" />
+<style>
   :root{
     --navy-950:#0A2036;
     --navy-900:#0D2C48;
@@ -330,14 +331,14 @@
       <div class="bell-wrap">
         <button class="icon-btn" id="bellBtn" aria-haspopup="true" aria-expanded="false" aria-label="اعلانات">
           <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
-          <span class="badge-dot" id="bellCount">5</span>
+          <span class="badge-dot" id="bellCount" style="@(Model.UnreadTotal == 0 ? "display:none" : "")">@Model.UnreadTotal</span>
         </button>
         <div class="dropdown" id="bellDropdown">
           <div class="dropdown-head">
             <b>اعلانات سامانه‌ها</b>
-            <a href="#" id="markAllRead">علامت‌گذاری همه به‌عنوان خوانده‌شده</a>
+            <form method="post" asp-page-handler="ReadNotifications"><button type="submit" id="markAllRead" class="btn-link">خواندن همه اعلان‌ها</button></form>
           </div>
-          <div class="notif-list" id="notifList"></div>
+          <div class="notif-list" id="notifList"><partial name="_SupervisionAlerts" model="Model.SupervisionAlerts" /><partial name="_ApplicationNotifications" model="Model.Notifications" /></div>
           <div class="dropdown-foot"><a href="#">مشاهده همه اعلانات</a></div>
         </div>
       </div>
@@ -367,7 +368,7 @@
             <li><a href="/Account/Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>پروفایل من</a></li>
             <li><a href="#systems"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>سامانه‌های من</a></li>
             <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>تنظیمات حساب</a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>درخواست دسترسی جدید</a></li>
+            <li><a href="#access-requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>درخواست دسترسی جدید</a></li>
             <li><a href="/Account/Logout" class="pm-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>خروج از حساب (همه سامانه‌ها)</a></li>
           </ul>
         </div>
@@ -388,7 +389,7 @@
     <div class="container hero-grid">
       <div>
         <h1 class="hero-title">خوش آمدید، <em>@Model.DisplayName</em></h1>
-        <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. تمام سامانه‌هایی که به آن‌ها دسترسی دارید، بدون نیاز به ورود مجدد در دسترس‌ هستند.</p>
+        <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. سامانه‌های عمومی و دسترسی‌های اختصاص‌یافته به شما در این صفحه نمایش داده می‌شوند.</p>
         <form class="hero-search" role="search" onsubmit="return false;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CB1C1" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input id="systemSearch" type="text" aria-label="جست‌وجو در سامانه‌ها" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
@@ -399,8 +400,8 @@
         <h3>خلاصه وضعیت شما</h3>
         <div class="big">۱ ورود، دسترسی به همه سامانه‌های مجاز</div>
         <div class="stat-row">
-          <div class="stat"><b id="myCount">—</b><span>سامانه در اختیار من</span></div>
-          <div class="stat"><b id="unreadCount">—</b><span>اعلان خوانده‌نشده</span></div>
+          <div class="stat"><b id="myCount">@Model.Applications.Count</b><span>سامانه در اختیار من</span></div>
+          <div class="stat"><b id="unreadCount">@Model.UnreadTotal</b><span>اعلان خوانده‌نشده</span></div>
           <div class="stat"><b>@Model.Publications.Total</b><span>مطلب سازمانی</span></div>
         </div>
       </div>
@@ -415,13 +416,29 @@
           <div class="eyebrow">دسترسی من</div>
           <h2 class="section-title">سامانه‌های در اختیار شما</h2>
         </div>
-        <p class="section-desc">فقط سامانه‌هایی که بر اساس نقش سازمانی شما تخصیص یافته نمایش داده می‌شوند. ورود به هرکدام بدون نیاز به لاگین جداگانه انجام می‌شود.</p>
+        <p class="section-desc">سامانه‌های عمومی و سامانه‌های تخصیص‌یافته به شما یا نقش‌های فعال شما نمایش داده می‌شوند. شیوه ورود و شبکه دسترسی هر سامانه روی کارت مشخص است.</p>
       </div>
-      <div class="systems-grid" id="systemsGrid"></div>
-      <p class="no-results" id="noResults" role="status">سامانه‌ای با این عنوان در دسترس شما یافت نشد.</p>
+      <div class="systems-grid" id="systemsGrid">
+        @foreach (var app in Model.Applications)
+        {
+          <a class="sys-card" href="@app.Url" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+            <div class="sys-top">
+              <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
+              @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }
+            </div>
+            <h3>@app.Name</h3><p>@app.Description</p>
+            <small>@(app.IsInternetAccessible ? "قابل دسترسی از اینترنت" : "فقط اینترانت") · @(app.IsPublic ? "عمومی" : "اختصاص‌یافته")</small>
+            <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : app.RequiresLogin ? "ورود با لاگین" : "ورود بدون نیاز به لاگین")</span>
+          </a>
+        }
+        <partial name="_AccessRequestCard" />
+      </div>
+            <p class="no-results" id="noResults" role="status">در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. برای دریافت دسترسی، لطفاً با مدیر سامانه تماس بگیرید.</p>
     </div>
   </section>
 
+  <partial name="_AccessRequests" model="Model" />
+  <partial name="_SupervisionInbox" model="Model" />
   <section id="news" style="background:var(--sand-100)">
     <div class="container">
       <div class="section-head">
@@ -513,124 +530,11 @@
 @section Scripts {
     <script>
 
-/* ==========================================================================
-   داده‌های نمونه — در پیاده‌سازی واقعی این بخش از API مرکزی SSO/HR
-   (بر اساس هویت کاربر لاگین‌شده) دریافت می‌شود، نه اینکه در همین فایل باشد.
-   ساختار زیر همان قراردادی است که سایر سامانه‌های سازمان هنگام اتصال به
-   قالب یکپارچه پورتال داخلی باید از آن پیروی کنند.
-   ========================================================================== */
-
-const currentUser = {
-  name: @Html.Raw(Json.Serialize(Model.DisplayName)),
-  role: @Html.Raw(Json.Serialize(Model.RoleNames)),
-  initials: @Html.Raw(Json.Serialize(Model.Initials))
-};
-
-// همه سامانه‌های ثبت‌شده در سازمان (کاتالوگ کامل)
-const allSystems = [
-  { id:"payslip",   name:"مشاهده فیش حقوق",        desc:"مشاهده و دریافت فیش حقوقی پرسنل",                          hasAccess:true,  unread:0,
-    icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>' },
-  { id:"attendance",name:"حضور و غیاب",             desc:"ثبت و پیگیری حضور و غیاب پرسنل",                            hasAccess:true,  unread:2,
-    icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>' },
-  { id:"automation",name:"اتوماسیون اداری فرزین",   desc:"گردش مکاتبات و نامه‌های اداری سازمان",                      hasAccess:true,  unread:3,
-    icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 13h8"/>' },
-  { id:"gateway",   name:"درگاه واحد سازمان",       desc:"خدمات الکترونیک واحدهای بندری و دریانوردی",                 hasAccess:true,  unread:0,
-    icon:'<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/>' },
-  { id:"mobin",     name:"سامانه مبین",             desc:"ثبت و پیگیری درخواست کارها",                                hasAccess:true,  unread:0,
-    icon:'<path d="M4 4h16v12H8l-4 4Z"/><path d="M8 9h8M8 12h5"/>' },
-  { id:"customers", name:"اطلاعات مشتریان",         desc:"سامانه اطلاعات مشتریان بندر شهید رجایی",                    hasAccess:true,  unread:1,
-    icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>' },
-  { id:"docinquiry",name:"استعلام سند",             desc:"استعلام و پیگیری وضعیت اسناد ثبت‌شده",                      hasAccess:false, unread:0,
-    icon:'<circle cx="10" cy="10" r="6"/><path d="m20 20-4.3-4.3"/><path d="M8 10h4"/>' },
-  { id:"fileupload",name:"سامانه ورود فایل",        desc:"بارگذاری و ثبت فایل‌های ورودی سازمان",                      hasAccess:false, unread:0,
-    icon:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/>' },
-  { id:"filesharing",name:"اشتراک فایل",            desc:"اشتراک‌گذاری فایل میان واحدهای مختلف",                      hasAccess:false, unread:0,
-    icon:'<path d="M4 7a2 2 0 0 1 2-2h4l2 3h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>' },
-  { id:"archive",   name:"آرشیو الکترونیکی",        desc:"بایگانی و جست‌وجوی اسناد الکترونیکی",                       hasAccess:false, unread:0,
-    icon:'<rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M8 7h.01M8 17h.01"/>' },
-  { id:"tasks",     name:"مدیریت وظایف",            desc:"ثبت و گزارش‌گیری از وظایف محوله",                           hasAccess:false, unread:0,
-    icon:'<path d="m9 12 2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>' },
-  { id:"demand",    name:"دیماند",                  desc:"مدیریت درخواست‌های عملیاتی بندر",                           hasAccess:false, unread:0,
-    icon:'<path d="M3 17h4v-6H3ZM10 17h4V7h-4ZM17 17h4v-9h-4Z"/>' },
-];
-
-const notifications = [
-  { system:"اتوماسیون اداری فرزین", title:"۳ نامه جدید در کارتابل شما ثبت شد", time:"۱۰ دقیقه پیش", unread:true },
-  { system:"حضور و غیاب", title:"درخواست مرخصی شما تأیید شد", time:"۱ ساعت پیش", unread:true },
-  { system:"حضور و غیاب", title:"یادآوری: ثبت تردد پایان ماه", time:"دیروز", unread:true },
-  { system:"اطلاعات مشتریان", title:"یک پرونده جدید به شما ارجاع شد", time:"دیروز", unread:true },
-  { system:"اتوماسیون اداری فرزین", title:"نامه‌ی «فوری» از مدیریت امور بندری", time:"۲ روز پیش", unread:true },
-];
-
-/* ---------------- render: systems ---------------- */
 const grid = document.getElementById('systemsGrid');
-const mySystems = allSystems.filter(s => s.hasAccess);
-
-function iconSvg(pathData, extra=''){
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${pathData}</svg>`;
-}
-
-mySystems.forEach(sys=>{
-  const card = document.createElement('a');
-  card.className = 'sys-card';
-  card.href = '#';
-  card.dataset.name = sys.name + ' ' + sys.desc;
-  card.innerHTML = `
-    <div class="sys-top">
-      <div class="sys-icon">${iconSvg(sys.icon)}</div>
-      ${sys.unread ? `<span class="sys-unread">${sys.unread} جدید</span>` : ''}
-    </div>
-    <h3>${sys.name}</h3>
-    <p>${sys.desc}</p>
-    <span class="go">ورود بدون نیاز به لاگین ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
-  `;
-  grid.appendChild(card);
-});
-
-// کارت درخواست دسترسی، همیشه آخرین آیتم
-const reqCard = document.createElement('a');
-reqCard.className = 'sys-card request-access-card';
-reqCard.href = '#';
-reqCard.innerHTML = `
-  <div class="sys-icon">${iconSvg('<path d="M12 5v14M5 12h14"/>')}</div>
-  <h3>درخواست دسترسی جدید</h3>
-  <p>سامانه مورد نیاز خود را از فهرست کامل سازمان درخواست دهید.</p>
-  <span class="go">ثبت درخواست ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
-`;
-grid.appendChild(reqCard);
-
-document.getElementById('myCount').textContent = mySystems.length;
-
-/* ---------------- render: notifications ---------------- */
-const notifList = document.getElementById('notifList');
-const bellCount = document.getElementById('bellCount');
-let unreadTotal = notifications.filter(n=>n.unread).length;
-
-function renderNotifs(){
-  notifList.innerHTML = notifications.map(n=>`
-    <div class="notif-item ${n.unread ? 'unread' : ''}">
-      <div class="src-icon">${iconSvg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/>')}</div>
-      <div class="notif-body">
-        <div class="top-line"><span class="source">${n.system}</span><span class="time">${n.time}</span></div>
-        <h5>${n.title}</h5>
-      </div>
-    </div>
-  `).join('');
-  bellCount.textContent = unreadTotal;
-  bellCount.style.display = unreadTotal > 0 ? 'grid' : 'none';
-  document.getElementById('unreadCount').textContent = unreadTotal;
-}
-renderNotifs();
-
-document.getElementById('markAllRead').addEventListener('click', (e)=>{
-  e.preventDefault();
-  notifications.forEach(n=>n.unread=false);
-  unreadTotal = 0;
-  renderNotifs();
-});
 
 /* ---------------- search filter (scoped to my systems) ---------------- */
 const noResults = document.getElementById('noResults');
+noResults.classList.toggle('show', @Model.Applications.Count === 0);
 const searchInput = document.getElementById('systemSearch');
 searchInput.addEventListener('input', ()=>{
   const term = searchInput.value.trim().toLowerCase();
@@ -640,6 +544,7 @@ searchInput.addEventListener('input', ()=>{
     c.hidden = !match;
     if(match) visible++;
   });
+  noResults.textContent = term ? "سامانه‌ای مطابق با جست‌وجوی شما یافت نشد." : "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید.";
   noResults.classList.toggle('show', visible === 0);
 });
 

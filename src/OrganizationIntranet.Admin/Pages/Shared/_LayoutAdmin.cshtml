@@ -75,6 +75,7 @@
                 </li>
                 <!-- End::header-element -->
                 <!-- Start::header-element - Profile Dropdown -->
+                @await Component.InvokeAsync("AccessRequestBell")
                 <li class="header-element dropdown">
                     <a class="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown" href="javascript:void(0);" id="mainHeaderProfile" aria-label="منوی حساب کاربری" aria-expanded="false">
                         <div class="d-flex align-items-center">
@@ -165,6 +166,9 @@
                             <i class="ti ti-apps side-menu__icon"></i>
                             <span class="side-menu__label">سامانه‌ها</span>
                         </a>
+                    </li>
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/AccessRequests")" href="/Admin/AccessRequests"><i class="ti ti-key side-menu__icon"></i><span class="side-menu__label">درخواست‌های دسترسی</span></a>
                     </li>
                     <li class="slide">
                         <a class="@NavClass("/Admin/Publications")" href="/Admin/Publications">

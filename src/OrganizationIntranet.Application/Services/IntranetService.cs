@@ -1,7 +1,6 @@
 using OrganizationIntranet.Application.Abstractions;
 using OrganizationIntranet.Contracts;
 using OrganizationIntranet.Domain.Entities;
-using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
 namespace OrganizationIntranet.Application.Services;
 
@@ -70,19 +69,6 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
     public async Task ToggleRoleAsync(int id)
     {
         var entity = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
-        entity.IsActive = !entity.IsActive; await repository.SaveAsync();
-    }
-    public async Task<List<ApplicationDto>> ApplicationsAsync() => (await repository.GetApplicationsAsync()).OrderBy(a => a.DisplayOrder).Select(a => new ApplicationDto(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl, a.Description, a.DisplayOrder, a.IsActive)).ToList();
-    public async Task CreateApplicationAsync(ApplicationRequest request)
-    {
-        Required(request.ApplicationName, 150, "نام سامانه"); Required(request.ApplicationCode, 50, "کد سامانه"); Limit(request.BaseUrl, 500); Limit(request.Description, 500);
-        if (!string.IsNullOrWhiteSpace(request.BaseUrl) && (!Uri.TryCreate(request.BaseUrl, UriKind.Absolute, out var url) || (url.Scheme != "http" && url.Scheme != "https"))) throw new ArgumentException("آدرس سامانه باید HTTP یا HTTPS باشد");
-        repository.AddApplication(new AppEntity { ApplicationName = request.ApplicationName, ApplicationCode = request.ApplicationCode.ToUpperInvariant(), BaseUrl = Optional(request.BaseUrl), Description = Optional(request.Description), DisplayOrder = request.DisplayOrder, IsActive = true, CreatedAt = DateTime.UtcNow });
-        await repository.SaveAsync();
-    }
-    public async Task ToggleApplicationAsync(int id)
-    {
-        var entity = (await repository.GetApplicationsAsync()).FirstOrDefault(a => a.ApplicationId == id) ?? throw new KeyNotFoundException();
         entity.IsActive = !entity.IsActive; await repository.SaveAsync();
     }
     private static PermissionDto Map(Permission p) => new(p.PermissionId, p.PermissionName, p.PermissionCode, p.Description, p.Application.ApplicationName, p.IsActive, p.RolePermissions.Count, p.RolePermissions.Select(r => r.RoleId).ToList());

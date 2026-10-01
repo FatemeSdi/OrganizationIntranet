@@ -5,12 +5,12 @@ public record RefreshRequest(string RefreshToken);
 public record ResetPasswordRequest(string Username, string NationalId, string MobileNumber, string NewPassword, string ConfirmNewPassword);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword, string ConfirmNewPassword);
 public record RoleRequest(string RoleName, string RoleCode);
-public record ApplicationRequest(string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder);
+public record ApplicationRequest(string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp");
 public record PermissionRequest(string PermissionName, string PermissionCode, int ApplicationId, string? Description);
 public record RolesRequest(List<int> SelectedRoleIds);
 public record OperationResult(bool Success, string? Message = null);
 public record RoleDto(int RoleId, string RoleName, string RoleCode, bool IsActive, DateTime CreatedAt);
-public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive);
+public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp");
 public record PermissionDto(int PermissionId, string PermissionName, string PermissionCode, string? Description, string ApplicationName, bool IsActive, int RoleCount, List<int> SelectedRoleIds);
 public record UserDto(long UserId, string Name, string LastName, string Username, string? NationalId, string? MobileNumber, string? Email, bool IsActive, DateTime CreatedAt, DateTime? LastLogin, string Roles, List<int> SelectedRoleIds);
 public record ProfileDto(long UserId, string Username, string Name, string LastName, string? NationalId, string? MobileNumber, string? Email, DateTime CreatedAt, DateTime? LastLogin, string RoleNames, List<string> RoleCodes, List<string> PermissionCodes)

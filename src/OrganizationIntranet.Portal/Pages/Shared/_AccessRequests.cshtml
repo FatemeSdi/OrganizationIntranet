@@ -1,0 +1,46 @@
+@model OrganizationIntranet.Pages.Portal.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+<section id="access-requests" aria-labelledby="access-request-title">
+    <div class="container">
+        <div class="section-head"><h2 id="access-request-title" class="section-title">درخواست دسترسی به سامانه‌ها</h2></div>
+        @if (TempData["AccessRequestMessage"] is string message) { <p class="request-feedback" role="status">@message</p> }
+        @if (Model.RequestError is not null) { <p class="request-error" role="alert">@Model.RequestError</p> }
+        @if (Model.RequestableApplications.Count > 0)
+        {
+            <form method="post" asp-page-handler="RequestAccess" asp-fragment="access-requests" class="access-request-form">
+                <label asp-for="RequestedApplicationId">سامانه مورد نیاز</label>
+                <select asp-for="RequestedApplicationId" required>
+                    <option value="">سامانه را انتخاب کنید</option>
+                    @foreach (var app in Model.RequestableApplications) { <option value="@app.ApplicationId">@app.Name — @app.Description</option> }
+                </select>
+                <label asp-for="RequestReason">دلیل نیاز به دسترسی</label>
+                <textarea asp-for="RequestReason" maxlength="1000" rows="3" required placeholder="برای انجام چه کاری به این سامانه نیاز دارید؟"></textarea>
+                <button type="submit">ارسال درخواست</button>
+            </form>
+        }
+        else { <p>سامانه‌ای برای درخواست جدید موجود نیست؛ ممکن است دسترسی داشته باشید یا درخواست شما در انتظار بررسی باشد.</p> }
+        <h3>درخواست‌های من</h3>
+        @if (Model.AccessRequests.Items.Count == 0) { <p>هنوز درخواستی ثبت نکرده‌اید.</p> }
+        @foreach (var request in Model.AccessRequests.Items)
+        {
+            <article class="access-request-item">
+                <div><strong>@request.ApplicationName</strong> <span class="request-status">@AccessRequestStatuses.Label(request.Status)</span></div>
+                <p>@request.Reason</p><small>تاریخ ثبت: @request.CreatedAt.ToPersianDate()</small>
+                @if (request.ResolvedAt.HasValue) { <small> · آخرین تغییر: @request.ResolvedAt.ToPersianDate()</small> }
+                @if (request.ReviewNote is not null) { <p>پاسخ مدیر: @request.ReviewNote</p> }
+                @if (request.Status == AccessRequestStatuses.Pending)
+                {
+                    <form method="post" asp-page-handler="CancelRequest" asp-fragment="access-requests">
+                        <input type="hidden" name="requestId" value="@request.Id" /><input type="hidden" name="revision" value="@request.Revision" />
+                        <button type="submit" class="request-cancel">لغو درخواست</button>
+                    </form>
+                }
+            </article>
+        }
+        <nav aria-label="صفحه‌بندی درخواست‌های من" class="request-pages">
+            @if (Model.RequestPage > 1) { <a asp-route-requestPage="@(Model.RequestPage - 1)" asp-fragment="access-requests">صفحه قبل</a> }
+            @if ((long)Model.RequestPage * Model.AccessRequests.PageSize < Model.AccessRequests.Total) { <a asp-route-requestPage="@(Model.RequestPage + 1)" asp-fragment="access-requests">صفحه بعد</a> }
+        </nav>
+    </div>
+</section>

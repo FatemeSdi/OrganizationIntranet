@@ -19,12 +19,31 @@ var builder = WebApplication.CreateBuilder(args);
 var clientKey = builder.Configuration["Api:ClientKey"];
 if (string.IsNullOrWhiteSpace(clientKey) || clientKey.Length < 32)
     throw new InvalidOperationException("Configure Api:ClientKey (at least 32 characters) in user secrets or the deployment secret store.");
+var adminClientKey = builder.Configuration["Api:AdminClientKey"];
+if (string.IsNullOrWhiteSpace(adminClientKey) || adminClientKey.Length < 32 || adminClientKey == clientKey)
+    throw new InvalidOperationException("Configure a distinct Api:AdminClientKey (at least 32 characters) shared with Admin only.");
 var connection = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API.");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connection));
 builder.Services.AddScoped<IIntranetRepository, IntranetRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IntranetService>();
+builder.Services.AddScoped<IApplicationCatalogRepository, ApplicationCatalogRepository>();
+builder.Services.AddScoped<ApplicationCatalogService>();
+builder.Services.AddScoped<OrganizationCatalogImportService>();
+builder.Services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
+builder.Services.AddScoped<AccessRequestService>();
+builder.Services.AddScoped<ISupervisionRepository, SupervisionRepository>();
+builder.Services.AddScoped<SupervisionService>();
+builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
+builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+builder.Services.AddHostedService<OrganizationIntranet.Api.Integrations.AccessRequestSmsWorker>();
+builder.Services.AddScoped<INotificationIntegrationRepository, NotificationIntegrationRepository>();
+builder.Services.AddScoped<NotificationIntegrationService>();
+builder.Services.AddHttpClient<OrganizationIntranet.Api.Integrations.NotificationPullClient>(client => client.Timeout = TimeSpan.FromSeconds(10))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+builder.Services.AddHostedService<OrganizationIntranet.Api.Integrations.NotificationPullWorker>();
 builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
 builder.Services.AddScoped<IAuthenticationProviders, AuthenticationProviders>();
 builder.Services.AddScoped<AuthenticationService>();
@@ -49,9 +68,21 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http, Scheme = "bearer",
         Description = "Enter accessToken returned by POST /api/account/login, without the Bearer prefix."
     });
+    options.AddSecurityDefinition("AdminClient", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Intranet-Admin",
+        Description = "Reserved for the trusted Admin server. Not available to Portal or browser clients."
+    });
+    options.AddSecurityDefinition("ApplicationIntegration", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Application-Key",
+        Description = "Dedicated credential for the source application. Grants notification ingestion only."
+    });
     options.OperationFilter<ApiSecurityOperationFilter>();
 });
-builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme).AddBearerToken(options =>
+builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, ApplicationIntegrationHandler>(ApplicationIntegrationHandler.SchemeName, _ => { })
+    .AddBearerToken(options =>
 {
     options.BearerTokenExpiration = TimeSpan.FromDays(14);
     options.RefreshTokenExpiration = TimeSpan.FromDays(14);
@@ -62,6 +93,7 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("integration", context => RateLimitPartition.GetFixedWindowLimiter(context.User.FindFirst("application_code")?.Value ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("account", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 var app = builder.Build();
@@ -82,18 +114,25 @@ if (app.Environment.IsDevelopment())
         await next();
     });
 }
+app.UseRouting();
 app.Use(async (context, next) =>
 {
     context.Response.Headers.CacheControl = "no-store";
     // Only trusted server-side UI clients may call the API, including anonymous account operations.
     // This preserves the UI CAPTCHA boundary; the application never embeds the key in browser content.
     var supplied = context.Request.Headers["X-Intranet-Client"].ToString();
-    if (!CryptographicOperations.FixedTimeEquals(SHA256.HashData(Encoding.UTF8.GetBytes(supplied)), SHA256.HashData(Encoding.UTF8.GetBytes(clientKey))))
+    if (context.GetEndpoint()?.Metadata.GetMetadata<ApplicationIntegrationAttribute>() is null
+        && !CryptographicOperations.FixedTimeEquals(SHA256.HashData(Encoding.UTF8.GetBytes(supplied)), SHA256.HashData(Encoding.UTF8.GetBytes(clientKey))))
     {
         context.Response.StatusCode = 401; return;
     }
     try { await next(); }
     catch (PublicationConflictException ex)
+    {
+        context.Response.StatusCode = 409;
+        await context.Response.WriteAsJsonAsync(new OperationResult(false, ex.Message));
+    }
+    catch (AccessRequestConflictException ex)
     {
         context.Response.StatusCode = 409;
         await context.Response.WriteAsJsonAsync(new OperationResult(false, ex.Message));
@@ -111,10 +150,10 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsJsonAsync(new OperationResult(false, "خطا در ارتباط با سرویس؛ دوباره تلاش کنید"));
     }
 });
-app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<AuthenticationSessionMiddleware>();
 app.UseAuthorization();
+app.UseMiddleware<AdminClientMiddleware>();
 app.UseRateLimiter();
 app.MapControllers();
 app.Run();

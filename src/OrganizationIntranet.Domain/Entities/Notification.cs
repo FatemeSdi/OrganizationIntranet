@@ -10,6 +10,9 @@ public class Notification
     public int ApplicationId { get; set; }
     public string? TargetUrl { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? ExternalId { get; set; }
+    public long? ExternalRecipientId { get; set; }
+    public DateTime? SourceUpdatedAt { get; set; }
 
     public User? CreatedByUser { get; set; }
     public Application Application { get; set; } = null!;

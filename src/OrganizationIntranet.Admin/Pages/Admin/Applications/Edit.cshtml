@@ -1,0 +1,49 @@
+@page
+@model EditModel
+@{ ViewData["Title"] = "تنظیمات سامانه"; Layout = "_LayoutAdmin"; }
+<ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a asp-page="Index">سامانه‌ها</a></li><li class="breadcrumb-item active">تنظیمات سامانه</li></ol>
+@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
+@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
+<p><a asp-page="Supervision" asp-route-id="@Model.Id" class="btn btn-outline-primary">گروه‌های نظارت این سامانه</a></p>
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="card custom-card"><div class="card-header"><h1 class="card-title">مشخصات سامانه</h1></div><div class="card-body row g-3">
+        <div class="col-md-6"><label asp-for="Input.ApplicationName" class="form-label">نام</label><input asp-for="Input.ApplicationName" class="form-control" required maxlength="150" /></div>
+        <div class="col-md-6"><label asp-for="Input.ApplicationCode" class="form-label">کد</label><input asp-for="Input.ApplicationCode" class="form-control" dir="ltr" required maxlength="50" /></div>
+        <div class="col-md-8"><label asp-for="Input.BaseUrl" class="form-label">آدرس ورود سامانه</label><input asp-for="Input.BaseUrl" class="form-control" dir="ltr" maxlength="500" /></div>
+        <div class="col-md-4"><label asp-for="Input.DisplayOrder" class="form-label">اولویت نمایش (عدد کمتر، جلوتر)</label><input asp-for="Input.DisplayOrder" class="form-control" /></div>
+        <div class="col-md-8"><label asp-for="Input.Description" class="form-label">خلاصه کارکرد سامانه</label><textarea asp-for="Input.Description" class="form-control" maxlength="500"></textarea></div>
+        <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select">
+            @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@icon</option> }
+        </select></div>
+        <div class="col-md-4"><label><input asp-for="Input.RequiresLogin" /> ورود با لاگین</label></div>
+        <div class="col-md-4"><label><input asp-for="Input.IsInternetAccessible" /> قابل دسترسی از اینترنت</label></div>
+        <div class="col-md-4"><label><input asp-for="Input.IsPublic" /> عمومی؛ بدون نیاز به تخصیص دسترسی</label></div>
+    </div></div>
+    <div class="card custom-card"><div class="card-header"><h2 class="card-title">دسترسی کاربران و نقش‌ها</h2></div><div class="card-body">
+        <p>دسترسی مستقیم یا عضویت در یکی از نقش‌های انتخاب‌شده کافی است. کاربران و نقش‌های غیرفعال دسترسی ایجاد نمی‌کنند. سامانه عمومی برای همه کاربران فعال پورتال نمایش داده می‌شود.</p>
+        <div class="row g-3"><div class="col-md-6"><label asp-for="Input.UserIds" class="form-label">کاربران (انتخاب چندگانه)</label><select asp-for="Input.UserIds" class="form-select" size="8">
+            @foreach (var user in Model.Users) { <option value="@user.UserId">@user.Name @user.LastName (@user.Username) @(user.IsActive ? "" : "— غیرفعال")</option> }
+        </select></div><div class="col-md-6"><label asp-for="Input.RoleIds" class="form-label">نقش‌ها (انتخاب چندگانه)</label><select asp-for="Input.RoleIds" class="form-select" size="8">
+            @foreach (var role in Model.Roles) { <option value="@role.RoleId">@role.RoleName @(role.IsActive ? "" : "— غیرفعال")</option> }
+        </select></div></div>
+    </div></div>
+    <div class="card custom-card"><div class="card-header"><h2 class="card-title">سرویس‌های ثبت‌شده</h2></div><div class="card-body">
+        <p>برای نمایش اعلان‌های سامانه، سرویس با کد <code>NOTIFICATIONS</code> را فعال کنید. آدرس سرویس اختیاری است. برای افزودن سرویس، ردیف خالی را تکمیل و ذخیره کنید.</p>
+        @foreach (var sync in Model.SyncStatuses.Where(s => s.ServiceCode == "NOTIFICATIONS"))
+        { <p>آخرین واکشی موفق: @(sync.LastSyncedAt?.ToString("yyyy/MM/dd HH:mm") ?? "هنوز انجام نشده")</p>
+          @if (sync.LastSyncError is not null) { <p class="text-danger" role="status">@sync.LastSyncError</p> }
+        }
+        <div class="table-responsive"><table class="table"><thead><tr><th>کد سرویس</th><th>نام</th><th>آدرس سرویس</th><th>فعال</th><th>حذف</th></tr></thead><tbody>
+        @for (var i = 0; i < Model.Input.Services.Count; i++)
+        {
+            <tr><td><input asp-for="Input.Services[i].ServiceCode" aria-label="کد سرویس" class="form-control" dir="ltr" maxlength="50" /></td>
+                <td><input asp-for="Input.Services[i].DisplayName" aria-label="نام سرویس" class="form-control" maxlength="150" /></td>
+                <td><input asp-for="Input.Services[i].EndpointUrl" aria-label="آدرس سرویس" class="form-control" dir="ltr" maxlength="500" /></td>
+                <td><input asp-for="Input.Services[i].IsActive" aria-label="فعال" /></td><td><input asp-for="Input.Services[i].Remove" aria-label="حذف" /></td></tr>
+        }
+        </tbody></table></div>
+    </div></div>
+    <div class="mb-3"><label asp-for="Input.AccessRequestNotificationChannels" class="form-label">اطلاع‌رسانی درخواست‌های دسترسی به مدیر و گروه‌های نظارت</label><select asp-for="Input.AccessRequestNotificationChannels" class="form-select"><option value="InApp">درون‌برنامه‌ای</option><option value="Sms">پیامک موبایل</option><option value="Both">درون‌برنامه‌ای و پیامک</option></select></div>
+<button class="btn btn-primary" type="submit">ذخیره تنظیمات</button> <a asp-page="Index" class="btn btn-light">بازگشت</a>
+</form>

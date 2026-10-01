@@ -15,7 +15,6 @@ public interface IIntranetRepository
     Task<Permission?> FindPermissionAsync(int id);
     void AddUser(User user);
     void AddRole(Role role);
-    void AddApplication(AppEntity application);
     void AddPermission(Permission permission);
     void SetUserRoles(User user, IReadOnlyCollection<int> ids);
     void SetPermissionRoles(Permission permission, IReadOnlyCollection<int> ids);

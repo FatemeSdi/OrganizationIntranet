@@ -27,6 +27,10 @@ namespace OrganizationIntranet.SmokeTests;
 
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
+    public const string IntegrationKey = "source-application-test-key-00000000000000000";
+    public RecordingRequestSmsSender SmsSender { get; } = new();
+    public Func<HttpRequestMessage, HttpResponseMessage> PullResponse { get; set; } = _ => new(HttpStatusCode.ServiceUnavailable);
+    public const string AdminClientKey = "integration-admin-only-key-0000000000000000";
     public const string ClientKey = "integration-test-only-key-0000000000000000";
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public ApiFactory()
@@ -38,10 +42,19 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Api:ClientKey", ClientKey);
+        builder.UseSetting("Api:AdminClientKey", AdminClientKey);
+        builder.UseSetting("ApplicationIntegrations:TEST:PushKey", IntegrationKey);
+        builder.UseSetting("ApplicationIntegrations:TEST:PullKey", IntegrationKey);
+        builder.UseSetting("ApplicationIntegrations:TEST:PullUrl", "https://source.example/api/notifications");
         builder.UseSetting("ConnectionStrings:DefaultConnection", "unused-in-tests");
         builder.ConfigureServices(services => {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
+            foreach (var descriptor in services.Where(d => d.ImplementationType == typeof(OrganizationIntranet.Api.Integrations.NotificationPullWorker)
+                || d.ImplementationType == typeof(OrganizationIntranet.Api.Integrations.AccessRequestSmsWorker)).ToArray()) services.Remove(descriptor);
+            services.RemoveAll<OrganizationIntranet.Application.Abstractions.IAccessRequestSmsSender>();
+            services.AddSingleton<OrganizationIntranet.Application.Abstractions.IAccessRequestSmsSender>(SmsSender);
+            services.AddHttpClient<OrganizationIntranet.Api.Integrations.NotificationPullClient>().ConfigurePrimaryHttpMessageHandler(() => new NotificationTestHandler(request => PullResponse(request)));
         });
     }
     public void Seed()
@@ -63,7 +76,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) connection.Dispose(); }
 }
 
-public sealed class PortalSmokeTests : IDisposable
+public sealed partial class PortalSmokeTests : IDisposable
 {
     private readonly ApiFactory api = new();
     private readonly HttpClient client;
@@ -72,6 +85,7 @@ public sealed class PortalSmokeTests : IDisposable
     {
         client = api.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
         client.DefaultRequestHeaders.Add("X-Intranet-Client", ApiFactory.ClientKey);
+        client.DefaultRequestHeaders.Add("X-Intranet-Admin", ApiFactory.AdminClientKey);
         api.Seed();
     }
     private async Task<string> Login(string username = "admin", string password = "test-password")
@@ -99,7 +113,12 @@ public sealed class PortalSmokeTests : IDisposable
         var admin = paths.GetProperty("/api/admin/users").GetProperty("get").GetProperty("security")[0];
         Assert.True(admin.TryGetProperty("ClientKey", out _));
         Assert.True(admin.TryGetProperty("Bearer", out _));
+        Assert.True(admin.TryGetProperty("AdminClient", out _));
+        foreach (var path in paths.EnumerateObject().Where(p => p.Name.StartsWith("/api/admin", StringComparison.OrdinalIgnoreCase)))
+            foreach (var operation in path.Value.EnumerateObject())
+                Assert.True(operation.Value.GetProperty("security")[0].TryGetProperty("AdminClient", out _));
         Assert.DoesNotContain(ApiFactory.ClientKey, document);
+        Assert.DoesNotContain(ApiFactory.AdminClientKey, document);
         Assert.Equal(HttpStatusCode.Unauthorized, (await browser.GetAsync("/api/admin/users")).StatusCode);
     }
     [Fact]
@@ -266,6 +285,8 @@ public sealed class PortalSmokeTests : IDisposable
     private WebApplicationFactory<T> Ui<T>(string name) where T : class => new WebApplicationFactory<T>().WithWebHostBuilder(builder => {
         builder.UseSetting("Api:ClientKey", ApiFactory.ClientKey);
         builder.UseSetting("Ui:Name", name);
+        builder.UseSetting("Sites:Admin", "https://localhost");
+        if (name == "Admin") builder.UseSetting("Api:AdminClientKey", ApiFactory.AdminClientKey);
         builder.ConfigureServices(services => services.AddHttpClient("ApiClient").ConfigurePrimaryHttpMessageHandler(() => api.Server.CreateHandler()));
     });
     private static string Cookie(IServiceProvider services, string token, bool admin, string? refresh = null)

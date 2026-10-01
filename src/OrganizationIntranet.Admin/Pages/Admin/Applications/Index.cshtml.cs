@@ -25,6 +25,11 @@ public class IndexModel(ApiClient api) : PageModel
     [BindProperty]
     public int DisplayOrder { get; set; }
 
+    [BindProperty] public string Icon { get; set; } = "apps";
+    [BindProperty] public bool RequiresLogin { get; set; } = true;
+    [BindProperty] public bool IsInternetAccessible { get; set; }
+    [BindProperty] public bool IsPublic { get; set; }
+    [BindProperty] public string AccessRequestNotificationChannels { get; set; } = "InApp";
     public string? ErrorMessage { get; set; }
     public List<ApplicationDto> AllApplications { get; set; } = new();
 
@@ -36,7 +41,7 @@ public class IndexModel(ApiClient api) : PageModel
     {
         try
         {
-            var result = await api.PostAsync<OperationResult>("api/admin/applications", new ApplicationRequest(ApplicationName, ApplicationCode, BaseUrl, Description, DisplayOrder));
+            var result = await api.PostAsync<OperationResult>("api/admin/applications", new ApplicationRequest(ApplicationName, ApplicationCode, BaseUrl, Description, DisplayOrder, Icon, RequiresLogin, IsInternetAccessible, IsPublic, AccessRequestNotificationChannels));
             TempData["SuccessMessage"] = result.Message; return RedirectToPage();
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 409) { ErrorMessage = ex.Message; await LoadAsync(); return Page(); }

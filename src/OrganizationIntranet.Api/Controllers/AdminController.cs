@@ -5,8 +5,9 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Controllers;
 
+[OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin"), Authorize(Roles = "ADMIN")]
-public sealed class AdminController(IntranetService service) : ControllerBase
+public sealed class AdminController(IntranetService service, ApplicationCatalogService catalog, ILogger<AdminController> logger) : ControllerBase
 {
     [HttpGet("dashboard")] public Task<DashboardDto> Dashboard() => service.DashboardAsync();
     [HttpGet("users")] public Task<List<UserDto>> Users() => service.UsersAsync();
@@ -15,9 +16,17 @@ public sealed class AdminController(IntranetService service) : ControllerBase
     [HttpGet("roles")] public Task<List<RoleDto>> Roles() => service.RolesAsync();
     [HttpPost("roles")] public async Task<OperationResult> CreateRole(RoleRequest request) { await service.CreateRoleAsync(request); return new(true, "نقش جدید ایجاد شد"); }
     [HttpPost("roles/{id:int}/toggle")] public async Task<OperationResult> ToggleRole(int id) { await service.ToggleRoleAsync(id); return new(true); }
-    [HttpGet("applications")] public Task<List<ApplicationDto>> Applications() => service.ApplicationsAsync();
-    [HttpPost("applications")] public async Task<OperationResult> CreateApplication(ApplicationRequest request) { await service.CreateApplicationAsync(request); return new(true, "سامانه جدید ایجاد شد"); }
-    [HttpPost("applications/{id:int}/toggle")] public async Task<OperationResult> ToggleApplication(int id) { await service.ToggleApplicationAsync(id); return new(true); }
+    [HttpGet("applications")] public Task<List<ApplicationDto>> Applications() => catalog.ListAsync();
+    [HttpPost("applications")] public async Task<OperationResult> CreateApplication(ApplicationRequest request) { await catalog.CreateAsync(request); return new(true, "سامانه جدید ایجاد شد"); }
+    [HttpPost("applications/{id:int}/toggle")] public async Task<OperationResult> ToggleApplication(int id) { await catalog.ToggleAsync(id); return new(true); }
+    [HttpGet("applications/{id:int}")] public Task<ApplicationConfigurationDto> Application(int id) => catalog.GetAsync(id);
+    [HttpPost("applications/{id:int}")]
+    public async Task<OperationResult> SaveApplication(int id, ApplicationConfigurationRequest request)
+    {
+        await catalog.SaveAsync(id, request);
+        logger.LogInformation("Application {ApplicationId} configuration saved by {UserId}", id, User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+        return new(true, "تنظیمات و دسترسی‌های سامانه ذخیره شد");
+    }
     [HttpGet("permissions")] public Task<List<PermissionDto>> Permissions() => service.PermissionsAsync();
     [HttpGet("permissions/{id:int}")] public async Task<IActionResult> Permission(int id) { var permission = await service.PermissionAsync(id); return permission is null ? NotFound() : Ok(permission); }
     [HttpPost("permissions")] public async Task<OperationResult> CreatePermission(PermissionRequest request) { await service.CreatePermissionAsync(request); return new(true, "مجوز جدید ایجاد شد"); }

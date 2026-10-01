@@ -15,6 +15,16 @@ public static class UiHost
         var name = builder.Configuration["Ui:Name"] ?? throw new InvalidOperationException("Configure Ui:Name.");
         var key = builder.Configuration["Api:ClientKey"];
         if (string.IsNullOrWhiteSpace(key) || key.Length < 32) throw new InvalidOperationException("Configure Api:ClientKey in user secrets or the deployment secret store.");
+        if (name == "Admin")
+        {
+            var adminKey = builder.Configuration["Api:AdminClientKey"];
+            if (string.IsNullOrWhiteSpace(adminKey) || adminKey.Length < 32 || adminKey == key)
+                throw new InvalidOperationException("Configure a distinct Api:AdminClientKey for Admin and API only.");
+            if (!Uri.TryCreate(builder.Configuration["Sites:Admin"], UriKind.Absolute, out var adminOrigin)
+                || adminOrigin.Scheme != "https" || adminOrigin.AbsolutePath != "/" || !string.IsNullOrEmpty(adminOrigin.Query)
+                || !string.IsNullOrEmpty(adminOrigin.UserInfo) || !string.IsNullOrEmpty(adminOrigin.Fragment))
+                throw new InvalidOperationException("Sites:Admin must be the Admin HTTPS origin, including its port.");
+        }
         var apiUrl = new Uri(builder.Configuration["Api:BaseUrl"] ?? throw new InvalidOperationException("Configure Api:BaseUrl."));
         if (apiUrl.Scheme != "https") throw new InvalidOperationException("Api:BaseUrl must use HTTPS.");
         builder.Services.AddRazorPages(options =>
@@ -78,6 +88,7 @@ public static class UiHost
         var app = builder.Build();
         if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Error"); app.UseHsts(); }
         app.UseHttpsRedirection();
+        if (name == "Admin") app.UseMiddleware<AdminUiBoundaryMiddleware>();
         app.UseStaticFiles();
         app.Use(async (context, next) =>
         {

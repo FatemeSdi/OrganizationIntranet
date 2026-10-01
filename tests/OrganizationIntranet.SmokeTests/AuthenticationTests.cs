@@ -36,6 +36,7 @@ public sealed class AuthenticationTests : IDisposable
         }));
         client = api.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
         client.DefaultRequestHeaders.Add("X-Intranet-Client", ApiFactory.ClientKey);
+        client.DefaultRequestHeaders.Add("X-Intranet-Admin", ApiFactory.AdminClientKey);
         using var scope = api.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
@@ -245,6 +246,8 @@ public sealed class AuthenticationTests : IDisposable
 
     private WebApplicationFactory<T> Ui<T>(string name) where T : class => new WebApplicationFactory<T>().WithWebHostBuilder(b => {
         b.UseSetting("Api:ClientKey", ApiFactory.ClientKey); b.UseSetting("Ui:Name", name);
+        b.UseSetting("Sites:Admin", "https://localhost");
+        if (name == "Admin") b.UseSetting("Api:AdminClientKey", ApiFactory.AdminClientKey);
         b.ConfigureServices(s => {
             s.AddHttpClient("ApiClient").ConfigurePrimaryHttpMessageHandler(() => api.Server.CreateHandler());
             s.AddSingleton<IDNTCaptchaValidatorService, AcceptedCaptcha>();

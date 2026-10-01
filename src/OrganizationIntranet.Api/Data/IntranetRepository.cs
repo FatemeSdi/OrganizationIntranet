@@ -18,7 +18,6 @@ public sealed class IntranetRepository(AppDbContext db) : IIntranetRepository
     public Task<Permission?> FindPermissionAsync(int id) => Permissions.FirstOrDefaultAsync(p => p.PermissionId == id);
     public void AddUser(User user) => db.Users.Add(user);
     public void AddRole(Role role) => db.Roles.Add(role);
-    public void AddApplication(AppEntity application) => db.Applications.Add(application);
     public void AddPermission(Permission permission) => db.Permissions.Add(permission);
     public void SetUserRoles(User user, IReadOnlyCollection<int> ids)
     {

@@ -1,0 +1,8 @@
+@model OrganizationIntranet.Contracts.AccessRequestAlertsDto
+@foreach (var alert in Model.Items)
+{
+<form method="post" asp-page-handler="ReadSupervisionAlert">
+<input type="hidden" name="alertId" value="@alert.Id" />
+<button type="submit" class="notif-item notif-open @(alert.IsRead ? "" : "unread")"><span class="src-icon" aria-hidden="true">＋</span><span class="notif-body"><span class="source">درخواست دسترسی · @alert.ApplicationName</span><span class="notification-title">درخواست جدید از @alert.Requester</span></span></button>
+</form>
+}

@@ -1,0 +1,13 @@
+@model List<OrganizationIntranet.Contracts.PortalNotificationDto>
+@using OrganizationIntranet.Helper
+@if (Model.Count == 0) { <p class="notif-empty">اعلانی از سامانه‌های شما دریافت نشده است.</p> }
+@foreach (var notification in Model)
+{
+    <form method="post" asp-page="/Portal/Index" asp-page-handler="OpenNotification">
+        <input type="hidden" name="notificationId" value="@notification.Id" />
+        <button type="submit" class="notif-item notif-open @(notification.Unread ? "unread" : "")" disabled="@(notification.TargetUrl is null)" title="@(notification.TargetUrl is null ? "آدرس مقصد ثبت نشده است" : "مشاهده در سامانه اصلی")">
+            <span class="src-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg></span>
+            <span class="notif-body"><span class="top-line"><span class="source">@notification.System</span><span class="time">@notification.CreatedAt.ToPersianDate()</span></span><span class="notification-title">@notification.Title</span></span>
+        </button>
+    </form>
+}

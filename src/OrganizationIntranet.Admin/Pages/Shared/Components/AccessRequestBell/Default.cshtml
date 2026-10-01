@@ -1,0 +1,16 @@
+@model OrganizationIntranet.Contracts.AccessRequestAlertsDto
+<li class="header-element dropdown">
+<button type="button" class="header-link border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false" aria-label="اعلان درخواست‌های دسترسی"><i class="ti ti-bell fs-20"></i>
+@if (Model.UnreadCount > 0) { <span class="badge bg-danger">@Model.UnreadCount</span> }</button>
+<div class="dropdown-menu dropdown-menu-end p-3" style="min-width:300px;max-height:420px;overflow:auto">
+<strong>اعلان درخواست‌های دسترسی</strong>
+@if (Model.Items.Count == 0) { <p class="text-muted mt-3">اعلان جدیدی وجود ندارد.</p> }
+@foreach (var alert in Model.Items.Take(10))
+{
+<form method="post" asp-page="/Admin/AccessRequests/Notifications" asp-page-handler="Read">
+<input type="hidden" name="alertId" value="@alert.Id" />
+<button class="btn text-start w-100 @(alert.IsRead ? "" : "fw-bold")" type="submit">درخواست @alert.Requester برای @alert.ApplicationName</button>
+</form>
+}
+<a href="/Admin/AccessRequests">کارتابل درخواست‌ها</a>
+</div></li>

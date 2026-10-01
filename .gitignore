@@ -387,3 +387,5 @@ FodyWeavers.xsd
 
 !/tools/Initialize-Development.ps1
 /database/migrations
+
+!/tools/sql/003-access-workflow-*.sql

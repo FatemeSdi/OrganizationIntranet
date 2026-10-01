@@ -1,0 +1,15 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Applications.ImportModel
+@{ ViewData["Title"] = "ثبت فهرست سامانه‌های سازمان"; Layout = "_LayoutAdmin"; }
+<a asp-page="Index">بازگشت به سامانه‌ها</a>
+<div class="card custom-card mt-3"><div class="card-body"><h1 class="h4">ثبت ۱۲ سامانه سازمان و دسترسی‌های اولیه</h1>
+@if (Model.ErrorMessage is not null) { <p class="alert alert-danger" role="alert">@Model.ErrorMessage</p> }
+@if (Model.Preview is not null)
+{
+<p>سامانه‌های موجود تکرار نمی‌شوند و تنظیمات قبلی آن‌ها حفظ می‌شود. آدرس‌های واقعی ورود و سرویس‌ها را پس از ثبت، در تنظیمات هر سامانه وارد کنید.</p>
+<div class="table-responsive"><table class="table"><thead><tr><th>سامانه</th><th>کارکرد</th><th>دسترسی اولیه</th><th>وضعیت ثبت</th></tr></thead><tbody>
+@foreach (var item in Model.Preview.Items) { <tr><td>@item.Name</td><td>@item.Description</td><td>@item.Access</td><td>@(item.Exists ? "موجود" : "جدید")</td></tr> }
+</tbody></table></div>
+<form method="post"><button type="submit" class="btn btn-primary">ثبت فهرست و اعمال دسترسی‌های نمایش‌داده‌شده</button></form>
+}
+</div></div>
