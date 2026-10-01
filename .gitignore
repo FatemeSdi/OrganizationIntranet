@@ -382,3 +382,8 @@ FodyWeavers.xsd
 !/database/architecture-verify.readonly.sql
 !/database/architecture-migration-test.sql
 !/database/backup.sql
+
+!/database/migrations/003_ApplicationCatalog.*.sql
+
+!/tools/Initialize-Development.ps1
+/database/migrations
