@@ -1,8 +1,9 @@
 @model OrganizationIntranet.Pages.Portal.IndexModel
 @using OrganizationIntranet.Contracts
 @using OrganizationIntranet.Helper
-<section id="access-requests" aria-labelledby="access-request-title">
+<dialog id="access-requests" class="access-requests-dialog" aria-labelledby="access-request-title">
     <div class="container">
+        <button type="button" class="access-requests-close" aria-label="بستن پنجره درخواست دسترسی" autofocus>بستن ×</button>
         <div class="section-head"><h2 id="access-request-title" class="section-title">درخواست دسترسی به سامانه‌ها</h2></div>
         @if (TempData["AccessRequestMessage"] is string message) { <p class="request-feedback" role="status">@message</p> }
         @if (Model.RequestError is not null) { <p class="request-error" role="alert">@Model.RequestError</p> }
@@ -43,4 +44,4 @@
             @if ((long)Model.RequestPage * Model.AccessRequests.PageSize < Model.AccessRequests.Total) { <a asp-route-requestPage="@(Model.RequestPage + 1)" asp-fragment="access-requests">صفحه بعد</a> }
         </nav>
     </div>
-</section>
+</dialog>

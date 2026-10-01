@@ -31,7 +31,11 @@ public static class UiHost
         {
             if (name == "Admin") options.Conventions.AuthorizeFolder("/Admin", "Admin");
             options.Conventions.AuthorizeFolder("/Portal");
-        }).AddMvcOptions(options => options.Filters.Add<ApiPageExceptionFilter>());
+        }).AddMvcOptions(options =>
+        {
+            options.Filters.Add<ApiPageExceptionFilter>();
+            options.Filters.Add<LoginAntiforgeryResultFilter>();
+        });
         builder.Services.AddControllers(); // DNTCaptcha image endpoint.
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHttpClient<ApiClient>(client =>

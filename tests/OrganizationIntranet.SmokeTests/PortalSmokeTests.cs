@@ -348,6 +348,32 @@ public sealed partial class PortalSmokeTests : IDisposable
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Contains("AccessDenied", response.Headers.Location!.ToString());
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Login_rejects_stale_form_and_accepts_fresh_form(bool adminSite)
+    {
+        using WebApplicationFactory<PortalEntry::Program>? portal = adminSite ? null : Ui<PortalEntry::Program>("Portal");
+        using WebApplicationFactory<AdminEntry::Program>? admin = adminSite ? Ui<AdminEntry::Program>("Admin") : null;
+        var options = new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false };
+        using var ui = adminSite ? admin!.CreateClient(options) : portal!.CreateClient(options);
+        var csrf = await Antiforgery(ui, "/Account/Login");
+        var rejected = await ui.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = "stale-token"
+        }));
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+        using var json = JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
+        Assert.Equal("login_form_expired", json.RootElement.GetProperty("code").GetString());
+        Assert.False(json.RootElement.GetProperty("success").GetBoolean());
+        var refreshed = await ui.PostAsync("/Account/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = csrf
+        }));
+        Assert.Equal(HttpStatusCode.OK, refreshed.StatusCode);
+        Assert.Contains("success", await refreshed.Content.ReadAsStringAsync());
+    }
+
     private sealed class AcceptedCaptcha : IDNTCaptchaValidatorService
     {
         public bool HasRequestValidCaptchaEntry() => true;

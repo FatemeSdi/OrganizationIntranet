@@ -9,3 +9,9 @@
 .notif-open .notif-body{min-width:0}.notif-open h5{overflow-wrap:anywhere}.notif-empty{padding:20px;color:#526579}
 
 .notification-title{display:block;font-weight:700;margin-top:5px;overflow-wrap:anywhere}.notif-open:disabled{cursor:default;opacity:.7}
+.access-requests-dialog{width:min(840px,calc(100% - 32px));max-height:85vh;max-height:85dvh;box-sizing:border-box;border:1px solid var(--line,#dce3e8);border-radius:20px;padding:24px;margin:auto;background:var(--white,#fff);color:var(--ink-900,#182c40);font:inherit;text-align:start;overflow:auto}
+.access-requests-dialog:not([open]){display:none}
+.access-requests-dialog::backdrop{background:rgba(15,30,45,.55)}
+.access-requests-dialog>.container{width:100%;max-width:none;padding:0}
+.access-requests-close{display:block;margin-inline-start:auto;margin-bottom:16px;border:1px solid #cbd5df;border-radius:8px;padding:8px 14px;background:#fff;color:inherit;font:inherit;cursor:pointer}
+html.access-requests-open{overflow:hidden}
