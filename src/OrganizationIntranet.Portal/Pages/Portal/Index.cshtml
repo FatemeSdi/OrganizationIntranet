@@ -75,6 +75,11 @@
   nav.main a.active{background:var(--gold-500); color:var(--navy-950); font-weight:700}
 
   .header-actions{display:flex; align-items:center; gap:12px; margin-inline-start:auto; position:relative}
+  .login-btn{display:inline-flex; align-items:center; gap:8px; padding:9px 20px; border-radius:999px; background:var(--gold-500); color:var(--navy-950); font-weight:800; font-size:14px; transition:background .15s}
+  .login-btn:hover{background:var(--gold-600); color:#fff}
+  .login-btn:focus-visible{outline:2px solid #fff; outline-offset:2px}
+  .hero-login{display:inline-flex; align-items:center; gap:8px; margin:0 0 22px; padding:10px 24px; border-radius:999px; background:var(--gold-500); color:var(--navy-950); font-weight:800; font-size:15px}
+  .hero-login:hover{background:var(--gold-600); color:#fff}
 
   /* notification bell + dropdown */
   .bell-wrap{position:relative}
@@ -345,12 +350,17 @@
     </div>
     <nav class="main">
       <a href="#main" class="active" aria-current="location">خانه</a>
-      <a href="#systems">سامانه‌های من</a>
+      <a href="#systems">@(Model.IsAuthenticated ? "سامانه‌های من" : "سامانه‌ها")</a>
       <a href="#news">اطلاعیه‌ها</a>
       <a href="#quicklinks">مقررات و فرم‌ها</a>
     </nav>
     <div class="header-actions">
-
+@if (!Model.IsAuthenticated)
+{
+      <a class="login-btn" href="/Account/Login?returnUrl=%2FPortal">ورود به حساب کاربری</a>
+}
+else
+{
       <div class="bell-wrap">
         <button class="icon-btn" id="bellBtn" aria-haspopup="true" aria-expanded="false" aria-label="اعلانات">
           <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
@@ -396,7 +406,7 @@
           </ul>
         </div>
       </div>
-
+}
     </div>
   </div>
 </header>
@@ -411,15 +421,26 @@
     </svg>
     <div class="container hero-grid">
       <div>
+@if (Model.IsAuthenticated)
+{
         <h1 class="hero-title"><em>@Model.DisplayName</em></h1>
         <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. سامانه‌های عمومی و دسترسی‌های اختصاص‌یافته به شما در این صفحه نمایش داده می‌شوند.</p>
+}
+else
+{
+        <h1 class="hero-title">به <em>پورتال داخلی</em> خوش آمدید</h1>
+        <p class="hero-role">سامانه‌های عمومی، اطلاعیه‌ها و فرم‌های سازمان را بدون ورود ببینید. برای دسترسی به سامانه‌های اختصاصی خود وارد حساب کاربری شوید.</p>
+        <a class="hero-login" href="/Account/Login?returnUrl=%2FPortal">ورود به حساب کاربری</a>
+}
         <form class="hero-search" role="search" onsubmit="return false;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CB1C1" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input id="systemSearch" type="text" aria-label="جست‌وجو در سامانه‌ها" placeholder="در سامانه‌های خودتان جست‌وجو کنید…" autocomplete="off">
+          <input id="systemSearch" type="text" aria-label="جست‌وجو در سامانه‌ها" placeholder="@(Model.IsAuthenticated ? "در سامانه‌های خودتان جست‌وجو کنید…" : "در سامانه‌های عمومی جست‌وجو کنید…")" autocomplete="off">
           <button type="button" onclick="document.getElementById('systems').scrollIntoView({behavior:'smooth'})">جست‌وجو</button>
         </form>
       </div>
       <div class="hero-card">
+@if (Model.IsAuthenticated)
+{
         <h3>خلاصه وضعیت شما</h3>
         <div class="big">۱ ورود، دسترسی به همه سامانه‌های مجاز</div>
         <div class="stat-row">
@@ -427,6 +448,16 @@
           <div class="stat"><b id="unreadCount">@Model.UnreadTotal</b><span>اعلان خوانده‌نشده</span></div>
           <div class="stat"><b>@Model.Publications.Total</b><span>مطلب سازمانی</span></div>
         </div>
+}
+else
+{
+        <h3>در یک نگاه</h3>
+        <div class="big">برای سامانه‌های اختصاصی وارد شوید</div>
+        <div class="stat-row">
+          <div class="stat"><b id="myCount">@Model.Applications.Count</b><span>سامانه عمومی</span></div>
+          <div class="stat"><b>@Model.Publications.Total</b><span>مطلب عمومی</span></div>
+        </div>
+}
       </div>
     </div>
   </section>
@@ -436,10 +467,10 @@
     <div class="container">
       <div class="section-head">
         <div>
-          <div class="eyebrow">دسترسی من</div>
-          <h2 class="section-title">سامانه‌های در اختیار شما</h2>
+          <div class="eyebrow">@(Model.IsAuthenticated ? "دسترسی من" : "سامانه‌های عمومی")</div>
+          <h2 class="section-title">@(Model.IsAuthenticated ? "سامانه‌های در اختیار شما" : "سامانه‌های سازمان")</h2>
         </div>
-        <p class="section-desc">سامانه‌های عمومی و سامانه‌های تخصیص‌یافته به شما یا نقش‌های فعال شما نمایش داده می‌شوند. شیوه ورود و شبکه دسترسی هر سامانه روی کارت مشخص است.</p>
+        <p class="section-desc">@(Model.IsAuthenticated ? "سامانه‌های عمومی و سامانه‌های تخصیص‌یافته به شما یا نقش‌های فعال شما نمایش داده می‌شوند. شیوه ورود و شبکه دسترسی هر سامانه روی کارت مشخص است." : "سامانه‌هایی که برای همه‌ی کارکنان باز هستند. سامانه‌های اختصاصی شما بعد از ورود به حساب کاربری نمایش داده می‌شوند.")</p>
       </div>
       <div class="systems-grid" id="systemsGrid">
         @foreach (var app in Model.Applications)
@@ -454,14 +485,29 @@
             <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : app.RequiresLogin ? "ورود با لاگین" : "ورود بدون نیاز به لاگین")</span>
           </a>
         }
+@if (Model.IsAuthenticated)
+{
         <partial name="_AccessRequestCard" />
+}
+else
+{
+        <a class="sys-card request-access-card" href="/Account/Login?returnUrl=%2FPortal">
+          <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg></div>
+          <h3>سامانه‌های اختصاصی من</h3>
+          <p>برای دیدن سامانه‌هایی که به شما یا نقش شما تخصیص داده شده، وارد حساب کاربری شوید.</p>
+          <span class="go">ورود به حساب <span aria-hidden="true">←</span></span>
+        </a>
+}
       </div>
-            <p class="no-results" id="noResults" role="status">در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. برای دریافت دسترسی، لطفاً با مدیر سامانه تماس بگیرید.</p>
+            <p class="no-results" id="noResults" role="status" data-empty="@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است. برای دیدن سامانه‌های خود وارد شوید.")">@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. برای دریافت دسترسی، لطفاً با مدیر سامانه تماس بگیرید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است. برای دیدن سامانه‌های خود وارد شوید.")</p>
     </div>
   </section>
 
+@if (Model.IsAuthenticated)
+{
   <partial name="_AccessRequests" model="Model" />
   <partial name="_SupervisionInbox" model="Model" />
+}
   <section id="news" style="background:var(--sand-100)">
     <div class="container">
       <div class="section-head">
@@ -565,7 +611,7 @@
         <div><b>اداره کل بنادر و دریانوردی استان هرمزگان</b></div>
       </div>
       <nav class="footer-links">
-        <a href="#systems">سامانه‌های من</a>
+        <a href="#systems">@(Model.IsAuthenticated ? "سامانه‌های من" : "سامانه‌ها")</a>
         <a href="#news">اطلاعیه‌ها</a>
         <a href="#quicklinks">مقررات و فرم‌ها</a>
         <a href="#">تماس با فناوری اطلاعات</a>
@@ -597,7 +643,7 @@ searchInput.addEventListener('input', ()=>{
     c.hidden = !match;
     if(match) visible++;
   });
-  noResults.textContent = term ? "سامانه‌ای مطابق با جست‌وجوی شما یافت نشد." : "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید.";
+  noResults.textContent = term ? "سامانه‌ای مطابق با جست‌وجوی شما یافت نشد." : noResults.dataset.empty;
   noResults.classList.toggle('show', visible === 0);
 });
 
@@ -605,6 +651,7 @@ searchInput.addEventListener('input', ()=>{
 function setupDropdown(btnId, panelId){
   const btn = document.getElementById(btnId);
   const panel = document.getElementById(panelId);
+  if(!btn || !panel) return; // بازدیدکننده‌ی ناشناس زنگ اعلان و منوی کاربر ندارد
   btn.addEventListener('click', (e)=>{
     e.stopPropagation();
     const isOpen = panel.classList.contains('open');
@@ -629,14 +676,15 @@ document.addEventListener('keydown', (e)=>{
   if(!openPanel) return;
   const trigger = document.getElementById(openPanel.id === 'bellDropdown' ? 'bellBtn' : 'userBtn');
   openPanel.classList.remove('open');
+  if(!trigger) return;
   trigger.setAttribute('aria-expanded', 'false');
   trigger.focus();
 });
 
 document.addEventListener('click', ()=>{
   document.querySelectorAll('.dropdown.open, .profile-menu.open').forEach(p=>p.classList.remove('open'));
-  document.getElementById('bellBtn').setAttribute('aria-expanded','false');
-  document.getElementById('userBtn').setAttribute('aria-expanded','false');
+  document.getElementById('bellBtn')?.setAttribute('aria-expanded','false');
+  document.getElementById('userBtn')?.setAttribute('aria-expanded','false');
 });
 document.querySelectorAll('.dropdown, .profile-menu').forEach(p=>p.addEventListener('click', e=>e.stopPropagation()));
 

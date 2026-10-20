@@ -8,6 +8,8 @@ public interface IApplicationCatalogRepository
     Task<List<AppEntity>> ListAsync();
     Task<AppEntity?> FindAsync(int id);
     Task<List<AppEntity>> AvailableAsync(long userId);
+    /// <summary>سامانه‌های فعال و عمومی برای بازدیدکننده‌ی ناشناس؛ هیچ داده‌ی کاربر یا انتساب دسترسی را نمی‌خواند.</summary>
+    Task<List<AppEntity>> PublicAsync();
     Task<List<UserNotification>> NotificationsAsync(long userId, bool unreadOnly, int? limit = null);
     Task<Dictionary<int, int>> UnreadCountsAsync(long userId);
     Task<UserNotification?> FindNotificationAsync(long userId, long id);

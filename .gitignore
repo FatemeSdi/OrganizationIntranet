@@ -384,8 +384,9 @@ FodyWeavers.xsd
 !/database/backup.sql
 
 !/database/migrations/003_ApplicationCatalog.*.sql
+!/database/migrations/005_PublicPublications.*.sql
 
 !/tools/Initialize-Development.ps1
-/database/migrations
+# (خط «/database/migrations» حذف شد: کل پوشه را نادیده می‌گرفت و استثناهای بالا را بی‌اثر می‌کرد؛ فایل‌های 003 به همین دلیل هیچ‌وقت commit نشدند.)
 
 !/tools/sql/003-access-workflow-*.sql

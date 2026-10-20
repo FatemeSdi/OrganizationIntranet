@@ -8,6 +8,8 @@ public sealed class Publication
     public string Body { get; set; } = "";
     public string Kind { get; set; } = "News";
     public bool IsPublished { get; set; }
+    /// <summary>نمایش برای بازدیدکننده‌ی ناشناس (بدون ورود). فقط برای محتوای منتشرشده مجاز است (قید CK_Publication_PublicRequiresPublished).</summary>
+    public bool IsPublic { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? PublishedAt { get; set; }

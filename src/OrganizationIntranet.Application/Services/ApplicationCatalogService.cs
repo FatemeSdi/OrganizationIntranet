@@ -81,6 +81,9 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         var a = await repository.FindAsync(id) ?? throw new KeyNotFoundException();
         a.IsActive = !a.IsActive; await repository.SaveAsync();
     }
+    public async Task<List<PublicApplicationDto>> PublicAsync() => (await repository.PublicAsync())
+        .Select(a => new PublicApplicationDto(a.ApplicationId, a.ApplicationName, a.Description, SafeUrl(a.BaseUrl) ? a.BaseUrl : null,
+            ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps", a.RequiresLogin, a.IsInternetAccessible)).ToList();
     public async Task<List<PortalApplicationDto>> AvailableAsync(long userId)
     {
         var apps = await repository.AvailableAsync(userId);

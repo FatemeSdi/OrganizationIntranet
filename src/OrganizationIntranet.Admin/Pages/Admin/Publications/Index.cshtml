@@ -22,6 +22,7 @@
 <article class="border rounded p-3 mb-3">
 <span class="badge bg-primary">@PublicationKinds.Label(item.Kind)</span>
 <span class="badge bg-secondary">@(item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
+@if (item.IsPublic) { <span class="badge bg-success">عمومی</span> }
 <h2 class="h5 mt-2"><a asp-page="Edit" asp-route-id="@item.PublicationId">@item.Title</a></h2>
 <p style="white-space:pre-wrap;overflow-wrap:anywhere">@item.Summary</p>
 <small class="text-muted">@(item.PublishedAt.HasValue ? "تاریخ انتشار: " + item.PublishedAt.ToPersianDate() : "تاریخ ایجاد: " + item.CreatedAt.ToPersianDate())</small>

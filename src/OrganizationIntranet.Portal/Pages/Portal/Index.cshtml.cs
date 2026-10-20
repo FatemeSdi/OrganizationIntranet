@@ -6,9 +6,11 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 namespace OrganizationIntranet.Pages.Portal;
-[Authorize]
+// صفحه‌ی اصلی برای ناشناس باز است (UiHost) و فقط داده‌ی عمومی نشان می‌دهد؛ همه‌ی عملیات POST نیاز به ورود دارند و API هم دوباره بررسی می‌کند.
+[AllowAnonymous]
 public class IndexModel(ApiClient api) : PageModel
 {
+    public bool IsAuthenticated => User.Identity?.IsAuthenticated == true;
     public string DisplayName { get; set; } = "";
     public string RoleNames { get; set; } = "";
     public string Initials { get; set; } = "";
@@ -25,19 +27,23 @@ public class IndexModel(ApiClient api) : PageModel
     public AccessRequestAlertsDto SupervisionAlerts { get; set; } = new([], 0);
     public AccessRequestListDto SupervisionInbox { get; set; } = new([], 0, 1, 20);
     public int UnreadTotal => Applications.Sum(a => a.UnreadCount) + SupervisionAlerts.UnreadCount;
+    private IActionResult? RequireSignIn() => IsAuthenticated ? null : Challenge();
     public async Task<IActionResult> OnPostReadSupervisionAlertAsync(long alertId)
     {
+        if (RequireSignIn() is { } denied) return denied;
         await api.PostAsync<OperationResult>($"api/portal/supervision/alerts/{alertId}/read");
         return RedirectToPage(pageName: null, pageHandler: null, routeValues: null, fragment: "supervision");
     }
     public async Task<IActionResult> OnPostOpenNotificationAsync(long notificationId)
     {
+        if (RequireSignIn() is { } denied) return denied;
         if (!ModelState.IsValid) return BadRequest();
         var destination = await api.PostAsync<NotificationDestinationDto>($"api/portal/notifications/{notificationId}/open");
         return Redirect(destination.Url);
     }
     public async Task<IActionResult> OnPostRequestAccessAsync()
     {
+        if (RequireSignIn() is { } denied) return denied;
         if (!ModelState.IsValid) { RequestError = "سامانه و دلیل درخواست را بررسی کنید."; await OnGetAsync(); return Page(); }
         try
         {
@@ -50,6 +56,7 @@ public class IndexModel(ApiClient api) : PageModel
     }
     public async Task<IActionResult> OnPostCancelRequestAsync(long requestId, Guid revision)
     {
+        if (RequireSignIn() is { } denied) return denied;
         if (!ModelState.IsValid) return BadRequest();
         try
         {
@@ -62,12 +69,22 @@ public class IndexModel(ApiClient api) : PageModel
     }
     public async Task<IActionResult> OnPostReadNotificationsAsync()
     {
+        if (RequireSignIn() is { } denied) return denied;
         await api.PostAsync<OperationResult>("api/portal/notifications/read");
         await api.PostAsync<OperationResult>("api/portal/supervision/alerts/read");
         return RedirectToPage();
     }
     public async Task OnGetAsync()
     {
+        if (!IsAuthenticated)
+        {
+            // بازدیدکننده‌ی ناشناس: فقط سامانه‌ها و مطالب عمومی. شمارنده و دسترسی اختصاصی ندارد.
+            var publicApps = await api.GetAsync<List<PublicApplicationDto>>("api/public/applications");
+            Applications = publicApps.Select(a => new PortalApplicationDto(a.ApplicationId, a.Name, a.Description, a.Url, a.Icon,
+                a.RequiresLogin, a.IsInternetAccessible, true, 0, new List<string>())).ToList();
+            Publications = await api.GetAsync<PublicationListDto>("api/public/publications");
+            return;
+        }
         var p = await api.GetAsync<ProfileDto>("api/account/me");
         DisplayName = p.DisplayName; RoleNames = p.RoleNames; Initials = p.Initials;
         Applications = await api.GetAsync<List<PortalApplicationDto>>("api/portal/applications");

@@ -15,7 +15,7 @@ public class EditModel(ApiClient api) : PageModel
         if (Id.HasValue)
         {
             var p = await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}");
-            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, Revision = p.Revision };
+            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, Revision = p.Revision };
         }
     }
     public async Task<IActionResult> OnPostAsync()
@@ -24,7 +24,8 @@ public class EditModel(ApiClient api) : PageModel
         try
         {
             await api.PostAsync<PublicationDto>(Id.HasValue ? $"api/admin/publications/{Id}" : "api/admin/publications", Input);
-            TempData["SuccessMessage"] = Input.IsPublished ? "محتوا منتشر شد." : "پیش‌نویس ذخیره شد و در پورتال نمایش داده نمی‌شود.";
+            TempData["SuccessMessage"] = !Input.IsPublished ? "پیش‌نویس ذخیره شد و در پورتال نمایش داده نمی‌شود."
+                : Input.IsPublic ? "محتوا منتشر شد و بدون نیاز به ورود هم نمایش داده می‌شود." : "محتوا برای کاربران واردشده منتشر شد.";
             return RedirectToPage("Index");
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 409)

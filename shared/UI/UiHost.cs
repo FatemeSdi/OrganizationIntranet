@@ -31,6 +31,8 @@ public static class UiHost
         {
             if (name == "Admin") options.Conventions.AuthorizeFolder("/Admin", "Admin");
             options.Conventions.AuthorizeFolder("/Portal");
+            // صفحه‌ی اصلی پرتال برای بازدیدکننده‌ی ناشناس باز است و فقط داده‌ی عمومی نشان می‌دهد؛ دسترسی داده در API کنترل می‌شود، نه در UI.
+            if (name == "Portal") options.Conventions.AllowAnonymousToPage("/Portal/Index");
         }).AddMvcOptions(options =>
         {
             options.Filters.Add<ApiPageExceptionFilter>();
@@ -102,7 +104,8 @@ public static class UiHost
             await next();
         });
         app.UseRouting(); app.UseAuthentication(); app.UseAuthorization();
-        app.MapGet("/", () => Results.Redirect("/Account/Login"));
+        // پرتال کارکنان صفحه‌ی اصلی عمومی دارد؛ پنل مدیریت همیشه با ورود شروع می‌شود.
+        app.MapGet("/", () => Results.Redirect(name == "Portal" ? "/Portal" : "/Account/Login"));
         app.MapGet("/Account/AccessDenied", () => Results.Content("دسترسی مجاز نیست", "text/plain; charset=utf-8", statusCode: 403));
         app.MapControllers(); app.MapRazorPages();
         return app;

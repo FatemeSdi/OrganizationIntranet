@@ -12,6 +12,7 @@
 <div class="mb-3"><label asp-for="Input.Summary" class="form-label">خلاصه</label><textarea asp-for="Input.Summary" required maxlength="1000" rows="3" class="form-control"></textarea></div>
 <div class="mb-3"><label asp-for="Input.Body" class="form-label">متن کامل</label><textarea asp-for="Input.Body" required maxlength="50000" rows="14" class="form-control"></textarea><small class="text-muted">متن به صورت ساده نمایش داده می‌شود.</small></div>
 <div class="form-check mb-3"><input asp-for="Input.IsPublished" class="form-check-input" /><label asp-for="Input.IsPublished" class="form-check-label">انتشار برای تمام کاربران سازمان</label></div>
+<div class="form-check mb-3"><input asp-for="Input.IsPublic" class="form-check-input" /><label asp-for="Input.IsPublic" class="form-check-label">نمایش عمومی: بازدیدکننده‌ی بدون ورود هم ببیند</label><div class="form-text">فقط همراه با «انتشار» ممکن است. محتوای حساس یا داخلی را عمومی نکنید.</div></div>
 <p class="text-muted">با برداشتن گزینه انتشار و ذخیره، مطلب به پیش‌نویس تبدیل می‌شود.</p>
 <button type="submit" class="btn btn-primary">ذخیره</button>
 <a asp-page="Index" class="btn btn-light">بازگشت</a>

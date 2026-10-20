@@ -316,7 +316,8 @@ public sealed partial class PortalSmokeTests : IDisposable
         var options = new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false };
         using var portalClient = portal.CreateClient(options);
         using var adminClient = admin.CreateClient(options);
-        Assert.Equal(HttpStatusCode.Redirect, (await portalClient.GetAsync("/Portal")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await portalClient.GetAsync("/Portal")).StatusCode); // صفحه‌ی عمومی پرتال
+        Assert.Equal(HttpStatusCode.Redirect, (await portalClient.GetAsync("/Account/Profile")).StatusCode);
         Assert.Equal(HttpStatusCode.Redirect, (await adminClient.GetAsync("/Admin")).StatusCode);
         foreach (var ui in new[] { portalClient, adminClient }) {
             (await ui.GetAsync("/Account/Login")).EnsureSuccessStatusCode();
@@ -437,7 +438,8 @@ public sealed partial class PortalSmokeTests : IDisposable
         using var portal = Ui<PortalEntry::Program>("Portal");
         using var ui = portal.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
         ui.DefaultRequestHeaders.Add("Cookie", Cookie(portal.Services, token, true, valid ? refreshToken : "invalid"));
-        var response = await ui.GetAsync("/Portal");
+        // /Portal برای ناشناس باز است؛ نشست منقضی را روی صفحه‌ی همچنان محافظت‌شده‌ی پروفایل می‌سنجیم.
+        var response = await ui.GetAsync("/Account/Profile");
         Assert.Equal(valid ? HttpStatusCode.OK : HttpStatusCode.Redirect, response.StatusCode);
         Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("OrganizationIntranet.UI"));
     }
@@ -463,7 +465,8 @@ public sealed partial class PortalSmokeTests : IDisposable
         Assert.True(passwordResult.RootElement.GetProperty("success").GetBoolean());
         await Login(username, "ui-password");
         Assert.Equal(HttpStatusCode.Redirect, (await ui.GetAsync("/Account/Logout")).StatusCode);
-        Assert.Equal(HttpStatusCode.Redirect, (await ui.GetAsync("/Portal")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await ui.GetAsync("/Account/Profile")).StatusCode); // بعد از خروج صفحه‌ی محافظت‌شده دوباره ورود می‌خواهد
+        Assert.Contains("ورود به حساب کاربری", await ui.GetStringAsync("/Portal")); // و /Portal فقط نسخه‌ی عمومی را نشان می‌دهد
     }
     public void Dispose() { client.Dispose(); api.Dispose(); }
 }
