@@ -11,6 +11,7 @@ public interface IIntranetRepository
     Task<List<User>> GetUsersAsync();
     Task<List<Role>> GetRolesAsync();
     Task<List<AppEntity>> GetApplicationsAsync();
+    Task<List<AppEntity>> GetUserApplicationsAsync(long userId);
     Task<List<Permission>> GetPermissionsAsync();
     Task<Permission?> FindPermissionAsync(int id);
     void AddUser(User user);

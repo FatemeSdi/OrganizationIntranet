@@ -11,6 +11,7 @@ public record RolesRequest(List<int> SelectedRoleIds);
 public record OperationResult(bool Success, string? Message = null);
 public record RoleDto(int RoleId, string RoleName, string RoleCode, bool IsActive, DateTime CreatedAt);
 public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive);
+public record MyApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description);
 public record PermissionDto(int PermissionId, string PermissionName, string PermissionCode, string? Description, string ApplicationName, bool IsActive, int RoleCount, List<int> SelectedRoleIds);
 public record UserDto(long UserId, string Name, string LastName, string Username, string? NationalId, string? MobileNumber, string? Email, bool IsActive, DateTime CreatedAt, DateTime? LastLogin, string Roles, List<int> SelectedRoleIds);
 public record ProfileDto(long UserId, string Username, string Name, string LastName, string? NationalId, string? MobileNumber, string? Email, DateTime CreatedAt, DateTime? LastLogin, string RoleNames, List<string> RoleCodes, List<string> PermissionCodes)

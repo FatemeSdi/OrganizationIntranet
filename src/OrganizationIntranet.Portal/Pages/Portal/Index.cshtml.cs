@@ -13,10 +13,12 @@ public class IndexModel(ApiClient api) : PageModel
     public string RoleNames { get; set; } = "";
     public string Initials { get; set; } = "";
     public PublicationListDto Publications { get; set; } = new([], 0, 1, 20);
+    public List<MyApplicationDto> Applications { get; set; } = new();
     public async Task OnGetAsync()
     {
         var p = await api.GetAsync<ProfileDto>("api/account/me");
         DisplayName = p.DisplayName; RoleNames = p.RoleNames; Initials = p.Initials;
         Publications = await api.GetAsync<PublicationListDto>("api/publications");
+        Applications = await api.GetAsync<List<MyApplicationDto>>("api/account/applications");
     }
 }
