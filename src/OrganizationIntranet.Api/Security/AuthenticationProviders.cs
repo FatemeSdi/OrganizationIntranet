@@ -9,8 +9,9 @@ using OtpNet;
 
 namespace OrganizationIntranet.Api.Security;
 
-public sealed class AuthenticationProviders(IDataProtectionProvider protection, IHttpClientFactory clients, ILogger<AuthenticationProviders> logger) : IAuthenticationProviders
+public sealed class AuthenticationProviders(IDataProtectionProvider protection, IHttpClientFactory clients, ISmsGateway smsGateway, ILogger<AuthenticationProviders> logger) : IAuthenticationProviders
 {
+    public bool InternalSmsAvailable => smsGateway.IsConfigured;
     private readonly IDataProtector protector = protection.CreateProtector("OrganizationIntranet.Authentication.Secrets.v1");
     public string Protect(string value) => protector.Protect(value);
     public string Unprotect(string value) => protector.Unprotect(value);
@@ -37,9 +38,11 @@ public sealed class AuthenticationProviders(IDataProtectionProvider protection, 
     }
     public async Task SendSmsAsync(AuthenticationSettingsDto settings, string protectedApiKey, string mobile, string code)
     {
+        var message = $"کد تأیید اینترانت: {code}\nاعتبار: ۵ دقیقه";
+        if (smsGateway.IsConfigured) { await smsGateway.SendAsync(mobile, message, CancellationToken.None); return; }
         using var request = new HttpRequestMessage(HttpMethod.Post, settings.SmsEndpoint);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Unprotect(protectedApiKey));
-        request.Content = JsonContent.Create(new { to = mobile, sender = settings.SmsSender, message = $"کد تأیید اینترانت: {code}\nاعتبار: ۵ دقیقه" });
+        request.Content = JsonContent.Create(new { to = mobile, sender = settings.SmsSender, message });
         using var response = await clients.CreateClient("authentication-sms").SendAsync(request);
         response.EnsureSuccessStatusCode();
     }

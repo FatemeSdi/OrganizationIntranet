@@ -45,5 +45,5 @@
 - تغییرات هم‌زمان Publication متعلق به کار اطلاع‌رسانی است و اسکریپت جداگانه `tools/sql/001-publications-up.sql` دارد؛ ایجاد یا مهاجرت این جدول در نسخه 001 این سند اجرا نشده است.
 
 ```powershell
-dotnet test tests/OrganizationIntranet.SmokeTests/OrganizationIntranet.SmokeTests.csproj --artifacts-path artifacts/database-review/build --verbosity minimal -p:NuGetAudit=false
+dotnet test tests/OrganizationIntranet.Tests/OrganizationIntranet.Tests.csproj --artifacts-path artifacts/database-review/build --verbosity minimal -p:NuGetAudit=false
 ```

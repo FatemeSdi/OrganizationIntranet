@@ -11,7 +11,7 @@ using OrganizationIntranet.Domain.Entities;
 using Xunit;
 using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
 public sealed partial class PortalSmokeTests
 {

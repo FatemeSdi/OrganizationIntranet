@@ -70,7 +70,7 @@ API و UI بدون `Api:ClientKey` معتبر شروع نمی‌شوند. این
 ## بررسی
 
 ```powershell
-dotnet test tests/OrganizationIntranet.SmokeTests/OrganizationIntranet.SmokeTests.csproj
+dotnet test tests/OrganizationIntranet.Tests/OrganizationIntranet.Tests.csproj
 ```
 
 پروژه آزمون عمداً خارج از Solution محصول است تا Solution شامل همان پنج پروژه درخواستی بماند. آزمون‌ها API واقعی، Application و Repository را با SQLite موقت در حافظه و هر دو میزبان Razor با TestServer اجرا می‌کنند. این تست‌ها داده SQL Server فعلی را تغییر نمی‌دهند و جایگزین آزمون پذیرش با داده عملیاتی و بررسی بصری مرورگر نیستند.

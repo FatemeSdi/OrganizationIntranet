@@ -15,10 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrganizationIntranet.Portal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrganizationIntranet.Admin", "src\OrganizationIntranet.Admin\OrganizationIntranet.Admin.csproj", "{80F546B3-91CE-42CF-AFF8-7E9F910EE018}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrganizationIntranet.Tests", "tests\OrganizationIntranet.Tests\OrganizationIntranet.Tests.csproj", "{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}"
+EndProject
 Global
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -88,6 +89,21 @@ Global
 		{80F546B3-91CE-42CF-AFF8-7E9F910EE018}.Release|x64.Build.0 = Release|Any CPU
 		{80F546B3-91CE-42CF-AFF8-7E9F910EE018}.Release|x86.ActiveCfg = Release|Any CPU
 		{80F546B3-91CE-42CF-AFF8-7E9F910EE018}.Release|x86.Build.0 = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|x64.Build.0 = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Debug|x86.Build.0 = Debug|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|x64.ActiveCfg = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|x64.Build.0 = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|x86.ActiveCfg = Release|Any CPU
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7663BCB3-D59C-48CA-8F7C-1762BA9F2792} = {05C4A7AB-3160-4DF4-8CFF-74AE91A6D283}
@@ -95,5 +111,6 @@ Global
 		{6644654F-4234-4F4D-847B-E05BED6F21D8} = {05C4A7AB-3160-4DF4-8CFF-74AE91A6D283}
 		{D5DBC072-A21E-4487-BD1E-F143BE8844CF} = {05C4A7AB-3160-4DF4-8CFF-74AE91A6D283}
 		{80F546B3-91CE-42CF-AFF8-7E9F910EE018} = {05C4A7AB-3160-4DF4-8CFF-74AE91A6D283}
+		{2F5B903D-EDF5-4797-8FE2-F6D0362F3E47} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

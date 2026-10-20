@@ -15,7 +15,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.Domain.Entities;
 using Xunit;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
 public sealed class RecordingRequestSmsSender : IAccessRequestSmsSender
 {

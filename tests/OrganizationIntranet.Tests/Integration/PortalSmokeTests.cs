@@ -23,7 +23,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.Domain.Entities;
 using Xunit;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
@@ -47,6 +47,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ApplicationIntegrations:TEST:PullKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullUrl", "https://source.example/api/notifications");
         builder.UseSetting("ConnectionStrings:DefaultConnection", "unused-in-tests");
+        // آزمون‌ها هرگز نباید به درگاه پیامک واقعی برسند (حتی روی شبکه‌ی داخلی)؛ درگاه فقط در آزمون‌های اختصاصی loopback فعال می‌شود.
+        builder.UseSetting("Sms:BaseUrl", "");
+        builder.UseSetting("Sms:AppName", "");
         builder.ConfigureServices(services => {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
@@ -76,6 +79,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) connection.Dispose(); }
 }
 
+[Trait("Category", "Integration")]
 public sealed partial class PortalSmokeTests : IDisposable
 {
     private readonly ApiFactory api = new();

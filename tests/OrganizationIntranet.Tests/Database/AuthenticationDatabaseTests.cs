@@ -4,8 +4,9 @@ using OrganizationIntranet.Api.Data;
 using OrganizationIntranet.Domain.Entities;
 using Xunit;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
+[Trait("Category", "Database")]
 public sealed class AuthenticationDatabaseTests
 {
     [Fact]

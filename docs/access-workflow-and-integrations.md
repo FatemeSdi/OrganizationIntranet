@@ -26,6 +26,16 @@ Entityها در Domain، قراردادها در shared/Contracts، قواعد �
 
 قرارداد درگاه پیامک مانند اتصال موجود است: POST با Bearer و JSON شامل `to`، `sender` و `message`. هدر `Idempotency-Key` ثابت برای هر اعلان ارسال می‌شود. برای تضمین جلوگیری از پیامک تکراری پس از قطع ارتباط/کرش، درگاه باید این هدر را پشتیبانی کند؛ بدون آن تحویل از نوع at-least-once است. متن پیامک فقط نام سامانه و شماره درخواست دارد و دلیل خصوصی درخواست را ارسال نمی‌کند. پاسخ موفق HTTP به معنای پذیرش توسط درگاه است؛ رسید تحویل گوشی جداگانه پیاده نشده است.
 
+## درگاه پیامک داخلی سازمان
+
+`InternalSmsGateway` (`src/OrganizationIntranet.Api/Integrations`) کلاینت پنل پیامک داخلی سازمان است؛ همان درگاهی که IdentityManagementSystem استفاده می‌کند. قرارداد درگاه: `GET {Sms:BaseUrl}?appName=…&to=…&msg=…` بدون کلید؛ موفقیت یعنی HTTP 2xx و وجود واژه `success` در پاسخ.
+
+- تنظیمات فقط از پیکربندی امن API می‌آید: `Sms:BaseUrl` و `Sms:AppName`. `AppName` به‌صورت پیش‌فرض خالی است و تا وقتی مقدار نگیرد درگاه غیرفعال می‌ماند؛ نام برنامه‌ی اینترانت باید در پنل پیامک ثبت شود و نام برنامه‌ی دیگری (مثل `IDMS`) نباید استفاده شود.
+- وقتی درگاه پیکربندی شده باشد، هر دو مسیر ارسال از آن استفاده می‌کنند: کد ورود/بازیابی رمز (`AuthenticationProviders`) و پیامک درخواست دسترسی (`AccessRequestSmsSender`/Worker). در این حالت ذخیره‌ی نشانی HTTPS و کلید Bearer در «تنظیمات ورود» الزامی نیست. در نبود پیکربندی، رفتار قبلی (HTTPS + Bearer + `Idempotency-Key`) بدون تغییر می‌ماند.
+- مقدارهای `to` و `msg` کامل percent-encode می‌شوند و بعد decode نمی‌شوند، پس متن پیام نمی‌تواند پارامترهای درخواست را تغییر دهد. شماره باید `^\+?[0-9]{10,15}$` باشد. شماره، متن پیام و پاسخ درگاه لاگ نمی‌شوند.
+- درگاه `Idempotency-Key` ندارد؛ بنابراین تحویل در قطع ارتباط یا کرش بین پذیرش و ثبت وضعیت at-least-once است و ممکن است پیامک تکراری برسد. تغییر مسیر HTTP دنبال نمی‌شود و timeout ۱۵ ثانیه است.
+- درگاه فقط داخل شبکه‌ی سازمان در دسترس است. آزمون‌ها هیچ‌وقت به آن نمی‌رسند: `tests/OrganizationIntranet.Tests/Unit/InternalSmsGatewayTests.cs` با handler جعلی، و `Integration/InternalSmsGatewayLoopbackTests.cs` با HTTP واقعی روی loopback و درگاه شبیه‌سازی‌شده‌ی `Support/FakeSmsProvider.cs` (پیام فارسی، نویسه‌های رزروشده، نام برنامه‌ی ثبت‌نشده، redirect و پاسخ ناموفق، و مسیرهای کد ورود و پیامک درخواست دسترسی). `ApiFactory` درگاه را عمداً غیرفعال می‌کند. ارسال واقعی به پنل فقط روی شبکه‌ی داخلی و با نام برنامه‌ی ثبت‌شده قابل آزمون است و هنوز انجام نشده.
+
 ## اعلان‌های ایجادشده در نرم‌افزار اصلی
 
 برای هر نرم‌افزار، سرویس فعال با کد NOTIFICATIONS باید در App.ApplicationService ثبت شده باشد. خود نرم‌افزار و گیرنده نیز باید فعال باشند و گیرنده دسترسی عمومی/مستقیم/نقشی به آن داشته باشد. اعلان از کانال نظارت مستقل است.
@@ -76,7 +86,7 @@ worker به‌طور پیش‌فرض هر ۶۰ ثانیه یک صفحه از ه�
 pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath tools/sql/003-access-workflow-up.sql
 pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath tools/sql/003-access-workflow-verify.sql
 dotnet build OrganizationIntranet.sln
-dotnet test tests/OrganizationIntranet.SmokeTests/OrganizationIntranet.SmokeTests.csproj
+dotnet test tests/OrganizationIntranet.Tests/OrganizationIntranet.Tests.csproj
 ```
 
 این اسکریپت با شناسه `004_AccessWorkflow` پس از کاتالوگ 003 ثبت می‌شود؛ دارای تراکنش، قفل مهاجرت و بررسی نصب ناقص است. اسکریپت down در حضور داده/تنظیمات جدید از حذف آن جلوگیری می‌کند. پس از مهاجرت، هر سه میزبان باید با نسخه جدید اجرا شوند. تست‌های اتصال از transport جعلی استفاده می‌کنند و پیامک واقعی نمی‌فرستند؛ اتصال واقعی هر نرم‌افزار به URL، credential و پشتیبانی قرارداد فوق وابسته است.

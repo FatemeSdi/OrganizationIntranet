@@ -36,7 +36,7 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
         if (s.LdapEnabled && (Uri.CheckHostName(s.LdapHost) == UriHostNameType.Unknown || s.LdapPort is < 1 or > 65535 ||
             !Regex.IsMatch(s.LdapDomain, @"^[a-zA-Z0-9][a-zA-Z0-9.-]{0,252}$")))
             throw new ArgumentException("میزبان، پورت و دامنه LDAP معتبر وارد کنید؛ اتصال فقط LDAPS است");
-        if (s.SmsEnabled && (!Uri.TryCreate(s.SmsEndpoint, UriKind.Absolute, out var endpoint) || endpoint.Scheme != "https" || !string.IsNullOrEmpty(endpoint.UserInfo) ||
+        if (s.SmsEnabled && !providers.InternalSmsAvailable && (!Uri.TryCreate(s.SmsEndpoint, UriKind.Absolute, out var endpoint) || endpoint.Scheme != "https" || !string.IsNullOrEmpty(endpoint.UserInfo) ||
             (string.IsNullOrWhiteSpace(s.SmsApiKey) && row.ProtectedSmsApiKey is null)))
             throw new ArgumentException("نشانی HTTPS و کلید سرویس پیامک الزامی است");
         if (s.ForgotPasswordEnabled && (!s.PasswordEnabled || !s.SmsEnabled))

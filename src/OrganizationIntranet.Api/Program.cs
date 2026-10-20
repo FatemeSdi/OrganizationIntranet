@@ -35,6 +35,7 @@ builder.Services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
 builder.Services.AddScoped<AccessRequestService>();
 builder.Services.AddScoped<ISupervisionRepository, SupervisionRepository>();
 builder.Services.AddScoped<SupervisionService>();
+OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });

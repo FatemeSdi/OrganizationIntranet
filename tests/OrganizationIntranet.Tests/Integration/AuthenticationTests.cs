@@ -19,8 +19,9 @@ using OrganizationIntranet.Domain.Entities;
 using OtpNet;
 using Xunit;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
+[Trait("Category", "Integration")]
 public sealed class AuthenticationTests : IDisposable
 {
     private readonly ApiFactory original = new();
@@ -101,6 +102,19 @@ public sealed class AuthenticationTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync("/api/admin/authentication", new AuthenticationSettingsDto())).StatusCode);
         Mutate(db => db.Users.Single(u => u.Username == "member").PasswordHash = null);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/account/login", new LoginRequest("member", "attacker-password"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Internal_sms_gateway_makes_the_https_endpoint_and_key_optional()
+    {
+        await Login();
+        var s = await Settings();
+        s.SmsEnabled = true; s.SmsEndpoint = ""; s.SmsApiKey = null;
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/authentication", s)).StatusCode); // بدون درگاه داخلی همچنان HTTPS و کلید لازم است
+        providers.InternalSmsAvailable = true;
+        await Save(s);
+        await Login();
+        Assert.True((await Settings()).SmsEnabled);
     }
 
     [Fact]
@@ -380,6 +394,7 @@ public sealed class AuthenticationTests : IDisposable
         public string? LastCode { get; private set; }
         public int SmsCalls { get; private set; }
         public int LdapCalls { get; private set; }
+        public bool InternalSmsAvailable { get; set; }
         public string Protect(string value) => "protected:" + value;
         public string Unprotect(string value) => value["protected:".Length..];
         public string NewAuthenticatorSecret() => Secret;

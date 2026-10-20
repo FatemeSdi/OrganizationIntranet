@@ -42,7 +42,7 @@ Build پنج پروژه در Release بدون خطا و هشدار موفق شد
 
 `dotnet build OrganizationIntranet.sln -c Release --no-restore`
 
-`dotnet test tests/OrganizationIntranet.SmokeTests/OrganizationIntranet.SmokeTests.csproj -c Release --no-restore`
+`dotnet test tests/OrganizationIntranet.Tests/OrganizationIntranet.Tests.csproj -c Release --no-restore`
 
 Build و اجرای نهایی ۱۸ آزمون موفق بودند. آزمون‌های جدید چرخه پیش‌نویس/انتشار/لغو انتشار، انواع محتوا، دسترسی، اعتبارسنجی، جست‌وجو، عدم اجرای HTML و فرم دارای Antiforgery را با API و Razor واقعی و SQLite موقت بررسی می‌کنند. اعمال ساختار SQL Server فعلی با اجرای up و verify تأیید شده است؛ آزمون رفتاری انتشار روی SQL Server عملیاتی و بررسی بصری صفحات در مرورگر انجام نشده‌اند. خروجی Debug در زمان بررسی توسط API/Visual Studio قفل بود؛ Release مستقل بررسی شد. پنج هشدار آسیب‌پذیری NuGet در وابستگی‌های موجود Azure.Identity، Microsoft.Identity.Client و System.Formats.Asn1 گزارش شد.
 
@@ -52,6 +52,6 @@ Build و اجرای نهایی ۱۸ آزمون موفق بودند. آزمون�
 - اجرای اسکریپت up با ابزار موجود tools/Invoke-DatabaseScript.ps1 و اتصال تنظیم‌شده API با پیام Database script completed پایان یافت.
 - خروجی verify: TableExists=1، ColumnCount=11، ForeignKeyCount=2، SecondaryIndexCount=4 و PublicationCount=0 در زمان بررسی.
 - گزارش محلی artifacts-publications-tests.log نتیجه ۱۸ آزمون موفق، صفر شکست و صفر آزمون ردشده را ثبت کرد.
-- آزمون Publications_enforce_visibility_validation_and_admin_access در tests/OrganizationIntranet.SmokeTests/PortalSmokeTests.cs مشاهده جزئیات پورتال با نشست احرازشده، مخفی‌ماندن پیش‌نویس، لغو انتشار و HTML encoding را بررسی کرد.
+- آزمون Publications_enforce_visibility_validation_and_admin_access در tests/OrganizationIntranet.Tests/Integration/PortalSmokeTests.cs مشاهده جزئیات پورتال با نشست احرازشده، مخفی‌ماندن پیش‌نویس، لغو انتشار و HTML encoding را بررسی کرد.
 - آزمون Publication_editor_requires_antiforgery_and_saves_content ارسال HTTP فرم واقعی Razor مدیریت با Antiforgery، ثبت بخشنامه و بازکردن صفحات ویرایش و فهرست را بررسی کرد.
 - این آزمون‌ها با TestServer، API و Razor واقعی و SQLite جدا اجرا شدند؛ آزمون تعاملی مرورگر گرافیکی محسوب نمی‌شوند. در اصلاح این مستند SQL و آزمون‌ها دوباره اجرا نشدند.

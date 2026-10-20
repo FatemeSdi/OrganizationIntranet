@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using OrganizationIntranet.Api.Data;
 using Xunit;
 
-namespace OrganizationIntranet.SmokeTests;
+namespace OrganizationIntranet.Tests;
 
 public sealed class LiveSchemaFactAttribute : FactAttribute
 {
@@ -15,6 +15,7 @@ public sealed class LiveSchemaFactAttribute : FactAttribute
     }
 }
 
+[Trait("Category", "Database")]
 public sealed class LiveDatabaseSchemaTests
 {
     [LiveSchemaFact]

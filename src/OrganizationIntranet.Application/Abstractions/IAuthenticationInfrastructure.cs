@@ -19,5 +19,7 @@ public interface IAuthenticationProviders
     bool VerifyAuthenticator(string secret, string code, out long step);
     Task<bool> VerifyLdapAsync(AuthenticationSettingsDto settings, string username, string password);
     Task SendSmsAsync(AuthenticationSettingsDto settings, string protectedApiKey, string mobile, string code);
+    /// <summary>true وقتی درگاه پیامک داخلی پیکربندی شده است؛ در این حالت نشانی HTTPS و کلید Bearer تنظیمات ورود لازم نیست.</summary>
+    bool InternalSmsAvailable => false;
     void Audit(string action, long? userId, bool success);
 }

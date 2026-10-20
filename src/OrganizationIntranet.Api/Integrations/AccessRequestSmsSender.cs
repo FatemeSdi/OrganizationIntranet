@@ -5,10 +5,12 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Integrations;
 
-public sealed class AccessRequestSmsSender(IAuthenticationRepository settingsRepository, IAuthenticationProviders protection, IHttpClientFactory clients) : IAccessRequestSmsSender
+public sealed class AccessRequestSmsSender(IAuthenticationRepository settingsRepository, IAuthenticationProviders protection, IHttpClientFactory clients, ISmsGateway smsGateway) : IAccessRequestSmsSender
 {
     public async Task SendAsync(string mobile, string message, string idempotencyKey, CancellationToken cancellationToken)
     {
+        // درگاه داخلی Idempotency-Key ندارد؛ کلید فقط در مسیر HTTPS/Bearer قدیمی ارسال می‌شود.
+        if (smsGateway.IsConfigured) { await smsGateway.SendAsync(mobile, message, cancellationToken); return; }
         var row = await settingsRepository.SettingsAsync();
         var settings = JsonSerializer.Deserialize<AuthenticationSettingsDto>(row.Json) ?? new();
         if (string.IsNullOrWhiteSpace(row.ProtectedSmsApiKey) || !Uri.TryCreate(settings.SmsEndpoint, UriKind.Absolute, out var endpoint)
