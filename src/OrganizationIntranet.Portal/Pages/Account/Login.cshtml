@@ -405,9 +405,15 @@
                         $('.captcha-refresh').click(); $('.captchaInput').val('');
                     }
                 },
-                error: function () {
+                error: function (xhr) {
                     spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
-                    showToast("خطای سرور", "danger");
+                    if (xhr.status === 400 && xhr.responseJSON?.code === 'login_form_expired') {
+                        showToast(xhr.responseJSON.message, "warning");
+                        btn.prop("disabled", true);
+                        window.setTimeout(function () { window.location.reload(); }, 1800);
+                        return;
+                    }
+                    showToast("ورود انجام نشد؛ لطفاً دوباره تلاش کنید.", "danger");
                     $('.captcha-refresh').click(); $('.captchaInput').val('');
                 }
             });

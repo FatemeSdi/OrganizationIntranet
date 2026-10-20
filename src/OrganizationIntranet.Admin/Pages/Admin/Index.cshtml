@@ -20,6 +20,11 @@
     </div>
 </div>
 
+<div class="card custom-card mb-4"><div class="card-header d-flex justify-content-between"><h2 class="card-title">درخواست‌های دسترسی در انتظار بررسی (@Model.PendingRequests.Total)</h2><a href="/Admin/AccessRequests">بررسی همه درخواست‌ها</a></div><div class="card-body">
+@if (Model.PendingRequests.Total == 0) { <p class="text-muted mb-0">درخواست جدیدی برای بررسی وجود ندارد.</p> }
+@foreach (var request in Model.PendingRequests.Items.Take(5))
+{ <p><strong>@request.DisplayName</strong> — @request.ApplicationName — @request.CreatedAt.ToPersianDate() <a href="/Admin/AccessRequests">بررسی درخواست</a></p> }
+</div></div>
 <div class="row">
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card custom-card stat-card overflow-hidden position-relative">

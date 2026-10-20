@@ -6,6 +6,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Controllers;
 
+[OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin/authentication"), Authorize(Roles = "ADMIN")]
 public sealed class AuthenticationSettingsController(AuthenticationService authentication) : ControllerBase
 {

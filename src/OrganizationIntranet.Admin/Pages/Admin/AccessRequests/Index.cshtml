@@ -1,0 +1,45 @@
+@page
+@model OrganizationIntranet.Pages.Admin.AccessRequests.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{ ViewData["Title"] = "درخواست‌های دسترسی"; Layout = "_LayoutAdmin"; }
+<ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li><li class="breadcrumb-item active">درخواست‌های دسترسی</li></ol>
+<div class="card custom-card"><div class="card-header"><h1 class="card-title">بررسی درخواست‌های دسترسی به سامانه‌ها</h1></div><div class="card-body">
+@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
+@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
+<form method="get" class="d-flex gap-3 align-items-end mb-4">
+    <div><label asp-for="Status" class="form-label">وضعیت درخواست</label><select asp-for="Status" class="form-select"><option value="">همه</option>
+    @foreach (var status in new[] { AccessRequestStatuses.Pending, AccessRequestStatuses.Approved, AccessRequestStatuses.Rejected, AccessRequestStatuses.Cancelled })
+    { <option value="@status">@AccessRequestStatuses.Label(status)</option> }
+    </select></div><button type="submit" class="btn btn-primary">نمایش</button>
+</form>
+<p>@Model.Result.Total درخواست · <a asp-page="Notifications">وضعیت پیامک‌های اطلاع‌رسانی</a></p>
+@if (Model.Result.Items.Count == 0) { <p class="text-muted">درخواستی با این وضعیت وجود ندارد.</p> }
+@foreach (var request in Model.Result.Items)
+{
+    <article class="border rounded p-3 mb-3">
+        <div class="d-flex justify-content-between gap-2 flex-wrap"><h2 class="h5">@request.ApplicationName</h2><span class="badge bg-secondary">@AccessRequestStatuses.Label(request.Status)</span></div>
+        <p>@request.DisplayName <span dir="ltr">(@request.Username)</span> · شماره درخواست: @request.Id · @request.CreatedAt.ToPersianDate()</p>
+        <p style="white-space:pre-wrap;overflow-wrap:anywhere">@request.Reason</p>
+        @if (request.Status == AccessRequestStatuses.Pending)
+        {
+            <form method="post" asp-page-handler="Review" asp-route-status="@Model.Status" asp-route-pageNumber="@Model.PageNumber">
+                <input type="hidden" name="requestId" value="@request.Id" /><input type="hidden" name="revision" value="@request.Revision" />
+                <label for="note-@request.Id" class="form-label">توضیح تصمیم (برای رد درخواست الزامی)</label>
+                <textarea id="note-@request.Id" name="note" class="form-control mb-3" maxlength="1000" rows="2">@(Model.SubmittedId == request.Id ? Model.SubmittedNote : "")</textarea>
+                <button type="submit" name="decision" value="approve" class="btn btn-success">تأیید و اعطای دسترسی</button>
+                <button type="submit" name="decision" value="reject" class="btn btn-outline-danger">رد درخواست</button>
+            </form>
+        }
+        else
+        {
+            <p style="white-space:pre-wrap;overflow-wrap:anywhere">@request.ReviewNote</p>
+            <small>@request.Reviewer · @request.ResolvedAt.ToPersianDate()</small>
+        }
+    </article>
+}
+<nav aria-label="صفحه‌بندی درخواست‌ها">
+@if (Model.PageNumber > 1) { <a asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-status="@Model.Status" class="btn btn-light">قبلی</a> }
+@if ((long)Model.PageNumber * Model.Result.PageSize < Model.Result.Total) { <a asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-status="@Model.Status" class="btn btn-light">بعدی</a> }
+</nav>
+</div></div>

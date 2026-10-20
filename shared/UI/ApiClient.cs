@@ -13,13 +13,20 @@ public sealed class ApiException(HttpStatusCode status, string message) : Except
     public HttpStatusCode Status { get; } = status;
 }
 
-public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor)
+public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, IConfiguration configuration)
 {
     public async Task<T> GetAsync<T>(string path, string? token = null) => await SendAsync<T>(HttpMethod.Get, path, null, token);
     public async Task<T> PostAsync<T>(string path, object? value = null) => await SendAsync<T>(HttpMethod.Post, path, value);
     private async Task<T> SendAsync<T>(HttpMethod method, string path, object? value, string? token = null)
     {
         using var request = new HttpRequestMessage(method, path);
+        if (path.StartsWith("api/admin/", StringComparison.OrdinalIgnoreCase) || path.Equals("api/admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var context = accessor.HttpContext;
+            if (configuration["Ui:Name"] != "Admin" || context is null || !context.Request.Path.StartsWithSegments("/Admin") || !context.User.IsInRole("ADMIN"))
+                throw new ApiException(HttpStatusCode.Forbidden, "مدیریت فقط از پنل مدیریت مجاز است");
+            request.Headers.Add("X-Intranet-Admin", configuration["Api:AdminClientKey"]);
+        }
         token ??= accessor.HttpContext?.User.FindFirst("api_token")?.Value;
         if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (value is not null) request.Content = JsonContent.Create(value);

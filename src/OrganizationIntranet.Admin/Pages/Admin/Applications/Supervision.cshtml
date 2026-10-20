@@ -1,0 +1,23 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Applications.SupervisionModel
+@{ ViewData["Title"] = "گروه‌های نظارت"; Layout = "_LayoutAdmin"; }
+<p><a asp-page="Edit" asp-route-id="@Model.Id">بازگشت به تنظیمات سامانه</a></p>
+<h1 class="h4">گروه‌های نظارت — @Model.ApplicationName</h1>
+@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
+@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
+<div class="card custom-card"><div class="card-body">
+<p>کاربران و اعضای نقش‌های فعال هر گروه، درخواست‌های این سامانه را در کارتابل نظارت می‌بینند. اعلان بر اساس روش انتخاب‌شده در تنظیمات سامانه ارسال می‌شود. مدیران نیز اعلان دریافت می‌کنند؛ عضویت تکراری باعث پیامک تکراری نمی‌شود. عضویت در نظارت، دسترسی به خود نرم‌افزار یا مجوز تأیید درخواست ایجاد نمی‌کند.</p>
+@foreach (var group in Model.Groups)
+{ <p><a asp-route-id="@Model.Id" asp-route-groupId="@group.Id">@group.Name</a> — @(group.IsActive ? "فعال" : "غیرفعال") · @group.UserIds.Count کاربر و @group.RoleIds.Count نقش</p> }
+<a asp-route-id="@Model.Id" class="btn btn-light mb-3">گروه جدید</a>
+<form method="post">
+<input asp-for="Id" type="hidden" /><input asp-for="GroupId" type="hidden" /><input asp-for="Revision" type="hidden" />
+<div class="mb-3"><label asp-for="GroupName" class="form-label">نام گروه نظارت</label><input asp-for="GroupName" maxlength="150" required class="form-control" /></div>
+<div class="row mb-3"><div class="col-md-6"><label asp-for="UserIds" class="form-label">کاربران گروه (انتخاب چندگانه)</label><select asp-for="UserIds" class="form-select" size="8">
+@foreach (var user in Model.Users) { <option value="@user.UserId">@user.Name @user.LastName (@user.Username) @(user.IsActive ? "" : "غیرفعال")</option> }
+</select></div><div class="col-md-6"><label asp-for="RoleIds" class="form-label">نقش‌های گروه (انتخاب چندگانه)</label><select asp-for="RoleIds" class="form-select" size="8">
+@foreach (var role in Model.Roles) { <option value="@role.RoleId">@role.RoleName @(role.IsActive ? "" : "غیرفعال")</option> }
+</select></div></div>
+<label class="d-block mb-3"><input asp-for="IsActive" /> گروه فعال باشد</label>
+<button type="submit" class="btn btn-primary">ذخیره گروه نظارت</button>
+</form></div></div>

@@ -1,0 +1,21 @@
+@page
+@model OrganizationIntranet.Pages.Admin.AccessRequests.NotificationsModel
+@{ ViewData["Title"] = "پیامک درخواست‌های دسترسی"; Layout = "_LayoutAdmin"; }
+<a asp-page="Index">بازگشت به درخواست‌ها</a>
+<div class="card custom-card mt-3"><div class="card-body"><h1 class="h4">وضعیت پیامک درخواست‌های دسترسی</h1>
+<p>پیامک‌ها از سرویس تنظیم‌شده در بخش احراز هویت ارسال می‌شوند. انتخاب روش اطلاع‌رسانی و گروه‌های نظارت در تنظیمات هر سامانه انجام می‌شود.</p>
+@if (TempData["SuccessMessage"] is string message) { <p class="alert alert-success" role="status">@message</p> }
+@if (Model.ErrorMessage is not null) { <p class="alert alert-danger" role="alert">@Model.ErrorMessage</p> }
+@if (Model.Result.Items.Count == 0) { <p>پیامکی در صف یا سابقه ارسال وجود ندارد.</p> }
+@foreach (var sms in Model.Result.Items)
+{
+    var status = sms.Status switch { "Pending" => "در صف ارسال", "Processing" => "در حال ارسال", "Sent" => "ارسال‌شده", "Failed" => "ناموفق", "Cancelled" => "لغوشده", _ => sms.Status };
+    <article class="border rounded p-3 mb-3"><strong>@sms.ApplicationName — @sms.Recipient</strong><p>درخواست @sms.RequestId · @status · تعداد تلاش: @sms.Attempts</p>
+    @if (sms.Error is not null) { <p class="text-danger">@sms.Error</p> }
+    @if (sms.Status == "Failed") { <form method="post" asp-page-handler="Retry"><input type="hidden" name="alertId" value="@sms.Id" /><button class="btn btn-outline-primary" type="submit">تلاش مجدد پس از اصلاح تنظیمات</button></form> }
+    </article>
+}
+<nav aria-label="صفحه‌بندی پیامک‌ها">
+@if (Model.PageNumber > 1) { <a asp-route-pageNumber="@(Model.PageNumber - 1)">قبلی</a> }
+@if ((long)Model.PageNumber * Model.Result.PageSize < Model.Result.Total) { <a asp-route-pageNumber="@(Model.PageNumber + 1)">بعدی</a> }
+</nav></div></div>

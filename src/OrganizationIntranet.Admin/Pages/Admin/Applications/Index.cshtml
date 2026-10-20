@@ -19,6 +19,7 @@
     <div id="errorMessageData" class="d-none">@Model.ErrorMessage</div>
 }
 
+<p><a asp-page="Import" class="btn btn-outline-primary">ثبت فهرست سامانه‌های سازمان و دسترسی‌های اولیه</a></p>
 <div class="row">
     <div class="col-xl-4">
         <div class="card custom-card">
@@ -51,7 +52,14 @@
                         <label class="form-label">ترتیب نمایش</label>
                         <input asp-for="DisplayOrder" type="number" class="form-control" />
                     </div>
-                    <button type="submit" class="btn btn-primary btn-wave w-100"><i class="ti ti-plus me-1"></i>ثبت سامانه</button>
+                    <div class="mb-3"><label asp-for="Icon" class="form-label">آیکن</label><select asp-for="Icon" class="form-select">
+                    @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@icon</option> }
+                    </select></div>
+                    <div class="mb-2"><label><input asp-for="RequiresLogin" /> نیازمند لاگین در سامانه</label></div>
+                    <div class="mb-2"><label><input asp-for="IsInternetAccessible" /> قابل دسترسی از اینترنت</label></div>
+                    <div class="mb-3"><label><input asp-for="IsPublic" /> عمومی (بدون نیاز به تخصیص دسترسی)</label></div>
+                    <div class="mb-3"><label asp-for="AccessRequestNotificationChannels" class="form-label">اطلاع‌رسانی درخواست‌های دسترسی به مدیر و گروه‌های نظارت</label><select asp-for="AccessRequestNotificationChannels" class="form-select"><option value="InApp">درون‌برنامه‌ای</option><option value="Sms">پیامک موبایل</option><option value="Both">درون‌برنامه‌ای و پیامک</option></select></div>
+<button type="submit" class="btn btn-primary btn-wave w-100"><i class="ti ti-plus me-1"></i>ثبت سامانه</button>
                 </form>
             </div>
         </div>
@@ -83,7 +91,7 @@
                                     <th>نام سامانه</th>
                                     <th>کد</th>
                                     <th>ترتیب</th>
-                                    <th>وضعیت</th>
+                                    <th>وضعیت</th><th>مدیریت</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -106,6 +114,7 @@
                                                 </label>
                                             </form>
                                         </td>
+                                        <td><a asp-page="Edit" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-outline-primary">تنظیمات، دسترسی و سرویس‌ها</a></td>
                                     </tr>
                                 }
                             </tbody>

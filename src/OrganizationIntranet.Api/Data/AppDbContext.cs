@@ -23,6 +23,9 @@ public partial class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureAuthenticationIntegrity(modelBuilder);
+        ConfigureApplicationCatalog(modelBuilder);
+        ConfigureAccessRequests(modelBuilder);
+        ConfigureSupervision(modelBuilder);
         modelBuilder.Entity<AuthenticationSettings>(e =>
         {
             e.ToTable("AuthenticationSettings", "Sec");
@@ -197,13 +200,17 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Notification>(e =>
         {
-            e.ToTable("Notification", "Notify");
+            e.ToTable("Notification", "Notify", t => t.HasCheckConstraint("CK_Notification_ExternalIdentity", "([ExternalId] IS NULL AND [ExternalRecipientId] IS NULL AND [SourceUpdatedAt] IS NULL) OR ([ExternalId] IS NOT NULL AND [ExternalRecipientId] IS NOT NULL AND [SourceUpdatedAt] IS NOT NULL)"));
             e.HasKey(x => x.NotificationId);
             e.Property(x => x.Title).HasMaxLength(200).IsRequired();
             e.Property(x => x.Message).IsRequired();
             e.Property(x => x.NotificationType).HasMaxLength(50).IsUnicode(false);
             e.Property(x => x.TargetUrl).HasMaxLength(500);
             e.Property(x => x.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("GETUTCDATE()");
+            e.Property(x => x.ExternalId).HasMaxLength(100);
+            e.Property(x => x.SourceUpdatedAt).IsConcurrencyToken();
+            e.HasIndex(x => new { x.ApplicationId, x.ExternalRecipientId, x.ExternalId }).IsUnique().HasFilter("[ExternalId] IS NOT NULL");
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.ExternalRecipientId).OnDelete(DeleteBehavior.NoAction);
 
             e.HasOne(x => x.CreatedByUser)
                 .WithMany(u => u.CreatedNotifications)

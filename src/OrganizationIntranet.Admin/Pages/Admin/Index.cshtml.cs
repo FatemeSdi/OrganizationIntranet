@@ -16,6 +16,7 @@ public class IndexModel(ApiClient api) : PageModel
     public int TotalUsers { get; set; }
     public int ActiveUsers { get; set; }
     public int TotalRoles { get; set; }
+    public AccessRequestListDto PendingRequests { get; set; } = new([], 0, 1, 20);
     public int TotalApplications { get; set; }
     public List<UserDto> RecentUsers { get; set; } = new();
     public string AdminDisplayName { get; set; } = string.Empty;
@@ -27,6 +28,7 @@ public class IndexModel(ApiClient api) : PageModel
     {
         AdminDisplayName = $"{User.FindFirstValue(ClaimTypes.GivenName)} {User.FindFirstValue(ClaimTypes.Surname)}".Trim();
         TodayPersian = DateTime.Now.ToPersianDate();
+        PendingRequests = await api.GetAsync<AccessRequestListDto>("api/admin/access-requests?status=Pending");
         var data = await api.GetAsync<DashboardDto>("api/admin/dashboard");
         TotalUsers = data.TotalUsers; ActiveUsers = data.ActiveUsers; TotalRoles = data.TotalRoles; TotalApplications = data.TotalApplications; RecentUsers = data.RecentUsers;
     }

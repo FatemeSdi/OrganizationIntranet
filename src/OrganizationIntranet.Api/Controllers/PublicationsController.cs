@@ -13,6 +13,7 @@ public sealed class PublicationsController(PublicationService service) : Control
     [HttpGet("{id:long}")] public Task<PublicationDto> Get(long id) => service.GetAsync(id, true);
 }
 
+[OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin/publications"), Authorize(Roles = "ADMIN")]
 public sealed class PublicationAdminController(PublicationService service, ILogger<PublicationAdminController> logger) : ControllerBase
 {
