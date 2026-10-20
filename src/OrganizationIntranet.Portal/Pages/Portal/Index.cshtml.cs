@@ -77,6 +77,5 @@ public class IndexModel(ApiClient api) : PageModel
         RequestableApplications = await api.GetAsync<List<RequestableApplicationDto>>("api/portal/access-requests/applications");
         AccessRequests = await api.GetAsync<AccessRequestListDto>($"api/portal/access-requests?page={RequestPage}");
         Publications = await api.GetAsync<PublicationListDto>("api/publications");
-        Applications = await api.GetAsync<List<MyApplicationDto>>("api/account/applications");
     }
 }

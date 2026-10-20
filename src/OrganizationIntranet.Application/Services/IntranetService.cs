@@ -27,8 +27,6 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         var user = await repository.FindUserAsync(id);
         return user is null ? null : Profile(user);
     }
-    public async Task<List<MyApplicationDto>> MyApplicationsAsync(long userId) => (await repository.GetUserApplicationsAsync(userId))
-        .Select(a => new MyApplicationDto(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl, a.Description)).ToList();
     public async Task<List<UserDto>> UsersAsync() => (await repository.GetUsersAsync()).OrderBy(u => u.Name).Select(Map).ToList();
     public async Task<UserDto?> UserAsync(long id)
     {

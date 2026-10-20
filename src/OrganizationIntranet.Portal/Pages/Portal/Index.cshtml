@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "پورتال داخلی | اداره کل بنادر و دریانوردی هرمزگان";
@@ -418,8 +418,22 @@
         </div>
         <p class="section-desc">سامانه‌های عمومی و سامانه‌های تخصیص‌یافته به شما یا نقش‌های فعال شما نمایش داده می‌شوند. شیوه ورود و شبکه دسترسی هر سامانه روی کارت مشخص است.</p>
       </div>
-      <div class="systems-grid" id="systemsGrid"></div>
-      <p class="no-results" id="noResults" role="status">سامانه‌ای با این عنوان در دسترس شما یافت نشد.</p>
+      <div class="systems-grid" id="systemsGrid">
+        @foreach (var app in Model.Applications)
+        {
+          <a class="sys-card" href="@app.Url" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+            <div class="sys-top">
+              <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
+              @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }
+            </div>
+            <h3>@app.Name</h3><p>@app.Description</p>
+            <small>@(app.IsInternetAccessible ? "قابل دسترسی از اینترنت" : "فقط اینترانت") · @(app.IsPublic ? "عمومی" : "اختصاص‌یافته")</small>
+            <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : app.RequiresLogin ? "ورود با لاگین" : "ورود بدون نیاز به لاگین")</span>
+          </a>
+        }
+        <partial name="_AccessRequestCard" />
+      </div>
+            <p class="no-results" id="noResults" role="status">در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. برای دریافت دسترسی، لطفاً با مدیر سامانه تماس بگیرید.</p>
     </div>
   </section>
 
@@ -518,121 +532,7 @@
     <script src="~/js/portal-access-requests.js" asp-append-version="true"></script>
     <script>
 
-/* ==========================================================================
-   داده‌های نمونه — در پیاده‌سازی واقعی این بخش از API مرکزی SSO/HR
-   (بر اساس هویت کاربر لاگین‌شده) دریافت می‌شود، نه اینکه در همین فایل باشد.
-   ساختار زیر همان قراردادی است که سایر سامانه‌های سازمان هنگام اتصال به
-   قالب یکپارچه پورتال داخلی باید از آن پیروی کنند.
-   ========================================================================== */
-
-const currentUser = {
-  name: @Html.Raw(Json.Serialize(Model.DisplayName)),
-  role: @Html.Raw(Json.Serialize(Model.RoleNames)),
-  initials: @Html.Raw(Json.Serialize(Model.Initials))
-};
-
-// همه سامانه‌های ثبت‌شده در سازمان (کاتالوگ کامل)
-const allSystems = [
-  { id:"payslip",   name:"مشاهده فیش حقوق",        desc:"مشاهده و دریافت فیش حقوقی پرسنل",                          hasAccess:true,  unread:0,
-    icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>' },
-  { id:"attendance",name:"حضور و غیاب",             desc:"ثبت و پیگیری حضور و غیاب پرسنل",                            hasAccess:true,  unread:2,
-    icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>' },
-  { id:"automation",name:"اتوماسیون اداری فرزین",   desc:"گردش مکاتبات و نامه‌های اداری سازمان",                      hasAccess:true,  unread:3,
-    icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 13h8"/>' },
-  { id:"gateway",   name:"درگاه واحد سازمان",       desc:"خدمات الکترونیک واحدهای بندری و دریانوردی",                 hasAccess:true,  unread:0,
-    icon:'<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/>' },
-  { id:"mobin",     name:"سامانه مبین",             desc:"ثبت و پیگیری درخواست کارها",                                hasAccess:true,  unread:0,
-    icon:'<path d="M4 4h16v12H8l-4 4Z"/><path d="M8 9h8M8 12h5"/>' },
-  { id:"customers", name:"اطلاعات مشتریان",         desc:"سامانه اطلاعات مشتریان بندر شهید رجایی",                    hasAccess:true,  unread:1,
-    icon:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>' },
-  { id:"docinquiry",name:"استعلام سند",             desc:"استعلام و پیگیری وضعیت اسناد ثبت‌شده",                      hasAccess:false, unread:0,
-    icon:'<circle cx="10" cy="10" r="6"/><path d="m20 20-4.3-4.3"/><path d="M8 10h4"/>' },
-  { id:"fileupload",name:"سامانه ورود فایل",        desc:"بارگذاری و ثبت فایل‌های ورودی سازمان",                      hasAccess:false, unread:0,
-    icon:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/>' },
-  { id:"filesharing",name:"اشتراک فایل",            desc:"اشتراک‌گذاری فایل میان واحدهای مختلف",                      hasAccess:false, unread:0,
-    icon:'<path d="M4 7a2 2 0 0 1 2-2h4l2 3h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>' },
-  { id:"archive",   name:"آرشیو الکترونیکی",        desc:"بایگانی و جست‌وجوی اسناد الکترونیکی",                       hasAccess:false, unread:0,
-    icon:'<rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M8 7h.01M8 17h.01"/>' },
-  { id:"tasks",     name:"مدیریت وظایف",            desc:"ثبت و گزارش‌گیری از وظایف محوله",                           hasAccess:false, unread:0,
-    icon:'<path d="m9 12 2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>' },
-  { id:"demand",    name:"دیماند",                  desc:"مدیریت درخواست‌های عملیاتی بندر",                           hasAccess:false, unread:0,
-    icon:'<path d="M3 17h4v-6H3ZM10 17h4V7h-4ZM17 17h4v-9h-4Z"/>' },
-];
-
-const notifications = [
-  { system:"اتوماسیون اداری فرزین", title:"۳ نامه جدید در کارتابل شما ثبت شد", time:"۱۰ دقیقه پیش", unread:true },
-  { system:"حضور و غیاب", title:"درخواست مرخصی شما تأیید شد", time:"۱ ساعت پیش", unread:true },
-  { system:"حضور و غیاب", title:"یادآوری: ثبت تردد پایان ماه", time:"دیروز", unread:true },
-  { system:"اطلاعات مشتریان", title:"یک پرونده جدید به شما ارجاع شد", time:"دیروز", unread:true },
-  { system:"اتوماسیون اداری فرزین", title:"نامه‌ی «فوری» از مدیریت امور بندری", time:"۲ روز پیش", unread:true },
-];
-
-/* ---------------- render: systems ---------------- */
 const grid = document.getElementById('systemsGrid');
-const mySystems = allSystems.filter(s => s.hasAccess);
-
-function iconSvg(pathData, extra=''){
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${pathData}</svg>`;
-}
-
-mySystems.forEach(sys=>{
-  const card = document.createElement('a');
-  card.className = 'sys-card';
-  card.href = '#';
-  card.dataset.name = sys.name + ' ' + sys.desc;
-  card.innerHTML = `
-    <div class="sys-top">
-      <div class="sys-icon">${iconSvg(sys.icon)}</div>
-      ${sys.unread ? `<span class="sys-unread">${sys.unread} جدید</span>` : ''}
-    </div>
-    <h3>${sys.name}</h3>
-    <p>${sys.desc}</p>
-    <span class="go">ورود بدون نیاز به لاگین ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
-  `;
-  grid.appendChild(card);
-});
-
-// کارت درخواست دسترسی، همیشه آخرین آیتم
-const reqCard = document.createElement('a');
-reqCard.className = 'sys-card request-access-card';
-reqCard.href = '#';
-reqCard.innerHTML = `
-  <div class="sys-icon">${iconSvg('<path d="M12 5v14M5 12h14"/>')}</div>
-  <h3>درخواست دسترسی جدید</h3>
-  <p>سامانه مورد نیاز خود را از فهرست کامل سازمان درخواست دهید.</p>
-  <span class="go">ثبت درخواست ${iconSvg('<path d="M5 12h14M13 6l6 6-6 6"/>', 'stroke-width="2"')}</span>
-`;
-grid.appendChild(reqCard);
-
-document.getElementById('myCount').textContent = mySystems.length;
-
-/* ---------------- render: notifications ---------------- */
-const notifList = document.getElementById('notifList');
-const bellCount = document.getElementById('bellCount');
-let unreadTotal = notifications.filter(n=>n.unread).length;
-
-function renderNotifs(){
-  notifList.innerHTML = notifications.map(n=>`
-    <div class="notif-item ${n.unread ? 'unread' : ''}">
-      <div class="src-icon">${iconSvg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/>')}</div>
-      <div class="notif-body">
-        <div class="top-line"><span class="source">${n.system}</span><span class="time">${n.time}</span></div>
-        <h5>${n.title}</h5>
-      </div>
-    </div>
-  `).join('');
-  bellCount.textContent = unreadTotal;
-  bellCount.style.display = unreadTotal > 0 ? 'grid' : 'none';
-  document.getElementById('unreadCount').textContent = unreadTotal;
-}
-renderNotifs();
-
-document.getElementById('markAllRead').addEventListener('click', (e)=>{
-  e.preventDefault();
-  notifications.forEach(n=>n.unread=false);
-  unreadTotal = 0;
-  renderNotifs();
-});
 
 /* ---------------- search filter (scoped to my systems) ---------------- */
 const noResults = document.getElementById('noResults');
@@ -691,5 +591,4 @@ document.querySelectorAll('.dropdown, .profile-menu').forEach(p=>p.addEventListe
 
     </script>
 }
-
 

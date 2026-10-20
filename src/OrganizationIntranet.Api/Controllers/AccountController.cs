@@ -73,8 +73,6 @@ public sealed class AccountController(AuthenticationService authentication, Intr
         var profile = await service.ProfileAsync(CurrentUserId);
         return profile is null ? NotFound() : Ok(profile);
     }
-    [HttpGet("applications"), Authorize, DisableRateLimiting]
-    public Task<List<MyApplicationDto>> MyApplications() => service.MyApplicationsAsync(CurrentUserId);
     [HttpPost("change-password"), Authorize]
     public async Task<OperationResult> Change(ChangePasswordRequest request)
     {

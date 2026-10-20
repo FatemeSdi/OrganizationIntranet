@@ -14,11 +14,6 @@ public sealed class IntranetRepository(AppDbContext db) : IIntranetRepository
     public Task<List<User>> GetUsersAsync() => db.Users.Include(u => u.UserRoles).ThenInclude(r => r.Role).AsSplitQuery().ToListAsync();
     public Task<List<Role>> GetRolesAsync() => db.Roles.ToListAsync();
     public Task<List<AppEntity>> GetApplicationsAsync() => db.Applications.ToListAsync();
-    // User -> active Role -> RolePermission -> active Permission -> active Application, matching the permission claims issued at login.
-    public Task<List<AppEntity>> GetUserApplicationsAsync(long userId) => db.Applications.AsNoTracking()
-        .Where(a => a.IsActive && a.Permissions.Any(p => p.IsActive && p.RolePermissions.Any(rp => rp.Role.IsActive && rp.Role.UserRoles.Any(ur => ur.UserId == userId))))
-        .OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationName)
-        .ToListAsync();
     public Task<List<Permission>> GetPermissionsAsync() => Permissions.ToListAsync();
     public Task<Permission?> FindPermissionAsync(int id) => Permissions.FirstOrDefaultAsync(p => p.PermissionId == id);
     public void AddUser(User user) => db.Users.Add(user);
