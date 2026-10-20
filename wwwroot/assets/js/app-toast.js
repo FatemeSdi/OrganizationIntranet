@@ -10,6 +10,13 @@
         info: 'ti-info-circle'
     };
 
+    var TITLES = {
+        success: 'موفق',
+        danger: 'خطا',
+        warning: 'هشدار',
+        info: 'اطلاعیه'
+    };
+
     function ensureContainer() {
         var container = document.getElementById('appToastContainer');
         if (!container) {
@@ -33,36 +40,40 @@
 
         var container = ensureContainer();
 
+        // الگوی «Colored toast» تمپلیت yzen: .colored-toast پس‌زمینه را blur می‌کند و هدر رنگی عنوان و دکمه بستن را نگه می‌دارد.
         var toastEl = document.createElement('div');
-        toastEl.className = 'toast align-items-center border-0 bg-' + type + '-transparent mb-2';
+        toastEl.className = 'toast colored-toast bg-' + type + '-transparent mb-2';
         toastEl.setAttribute('role', 'alert');
         toastEl.setAttribute('aria-live', 'assertive');
         toastEl.setAttribute('aria-atomic', 'true');
 
-        var flex = document.createElement('div');
-        flex.className = 'd-flex';
-
-        var body = document.createElement('div');
-        body.className = 'toast-body d-flex align-items-center gap-2';
+        var header = document.createElement('div');
+        header.className = 'toast-header bg-' + type + ' text-fixed-white';
 
         var icon = document.createElement('i');
-        icon.className = 'ti ' + ICONS[type] + ' fs-18 text-' + type;
+        icon.className = 'ti ' + ICONS[type] + ' fs-16 me-2';
+        icon.setAttribute('aria-hidden', 'true');
 
-        var text = document.createElement('span');
-        text.textContent = message;
-
-        body.appendChild(icon);
-        body.appendChild(text);
+        var title = document.createElement('strong');
+        title.className = 'me-auto';
+        title.textContent = TITLES[type];
 
         var closeBtn = document.createElement('button');
         closeBtn.type = 'button';
-        closeBtn.className = 'btn-close me-2 m-auto';
+        closeBtn.className = 'btn-close';
         closeBtn.setAttribute('data-bs-dismiss', 'toast');
         closeBtn.setAttribute('aria-label', 'بستن پیام');
 
-        flex.appendChild(body);
-        flex.appendChild(closeBtn);
-        toastEl.appendChild(flex);
+        header.appendChild(icon);
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+
+        var body = document.createElement('div');
+        body.className = 'toast-body';
+        body.textContent = message;
+
+        toastEl.appendChild(header);
+        toastEl.appendChild(body);
         container.appendChild(toastEl);
 
         var toast = new bootstrap.Toast(toastEl, { delay: 4000 });

@@ -16,6 +16,7 @@
 }
 
 body {
+    font-family: Vazirmatn, Vazir, Tahoma, sans-serif;
     direction: rtl;
     text-align: right;
     overflow-x: hidden;

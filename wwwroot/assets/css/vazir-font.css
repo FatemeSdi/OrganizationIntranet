@@ -1,8 +1,93 @@
+/*
+  فونت یکپارچه‌ی سامانه: Vazirmatn از wwwroot/fonts/Vazir (بدون وابستگی به اینترنت).
+  نام «Vazir» به‌عنوان نام مستعار همان فونت حفظ شده تا ارجاع‌های قدیمی (تمپلیت، صفحه‌ها) بدون تغییر کار کنند.
+  این فایل را همه‌ی Layoutها و صفحه‌های مستقل لینک می‌کنند؛ فونت پیش‌فرض تمپلیت در app-theme.css تنظیم می‌شود.
+*/
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Thin.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-ExtraLight.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Light.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Regular.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Medium.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-SemiBold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Bold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-ExtraBold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../../fonts/Vazir/Vazirmatn-Black.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 @font-face {
     font-family: 'Vazir';
-    src: url('vazir-font-v16.1.0/Vazir-Thin.woff2') format('woff2'),
-         url('vazir-font-v16.1.0/Vazir-Thin.woff') format('woff'),
-         url('vazir-font-v16.1.0/Vazir-Thin.ttf') format('truetype');
+    src: url('../../fonts/Vazir/Vazirmatn-Thin.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Thin.ttf') format('truetype');
     font-weight: 100;
     font-style: normal;
     font-display: swap;
@@ -10,9 +95,17 @@
 
 @font-face {
     font-family: 'Vazir';
-    src: url('vazir-font-v16.1.0/Vazir-Light.woff2') format('woff2'),
-         url('vazir-font-v16.1.0/Vazir-Light.woff') format('woff'),
-         url('vazir-font-v16.1.0/Vazir-Light.ttf') format('truetype');
+    src: url('../../fonts/Vazir/Vazirmatn-ExtraLight.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazir';
+    src: url('../../fonts/Vazir/Vazirmatn-Light.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Light.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -20,9 +113,8 @@
 
 @font-face {
     font-family: 'Vazir';
-    src: url('vazir-font-v16.1.0/Vazir.woff2') format('woff2'),
-         url('vazir-font-v16.1.0/Vazir.woff') format('woff'),
-         url('vazir-font-v16.1.0/Vazir.ttf') format('truetype');
+    src: url('../../fonts/Vazir/Vazirmatn-Regular.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -30,9 +122,8 @@
 
 @font-face {
     font-family: 'Vazir';
-    src: url('vazir-font-v16.1.0/Vazir-Medium.woff2') format('woff2'),
-         url('vazir-font-v16.1.0/Vazir-Medium.woff') format('woff'),
-         url('vazir-font-v16.1.0/Vazir-Medium.ttf') format('truetype');
+    src: url('../../fonts/Vazir/Vazirmatn-Medium.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Medium.ttf') format('truetype');
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -40,10 +131,37 @@
 
 @font-face {
     font-family: 'Vazir';
-    src: url('vazir-font-v16.1.0/Vazir-Bold.woff2') format('woff2'),
-         url('vazir-font-v16.1.0/Vazir-Bold.woff') format('woff'),
-         url('vazir-font-v16.1.0/Vazir-Bold.ttf') format('truetype');
-    font-weight: 600 700;
+    src: url('../../fonts/Vazir/Vazirmatn-SemiBold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-SemiBold.ttf') format('truetype');
+    font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
+
+@font-face {
+    font-family: 'Vazir';
+    src: url('../../fonts/Vazir/Vazirmatn-Bold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazir';
+    src: url('../../fonts/Vazir/Vazirmatn-ExtraBold.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazir';
+    src: url('../../fonts/Vazir/Vazirmatn-Black.woff2') format('woff2'),
+         url('../../fonts/Vazir/Vazirmatn-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+

@@ -5,9 +5,7 @@
     Layout = "_LayoutApp";
 }
 @section Styles {
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="~/assets/css/vazir-font.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/portal-access-requests.css" asp-append-version="true" />
 <style>
   :root{
@@ -35,7 +33,7 @@
   html{scroll-behavior:smooth}
   body{
     margin:0;
-    font-family:'Vazirmatn', sans-serif;
+    font-family:'Vazirmatn', 'Vazir', Tahoma, sans-serif;
     background:var(--sand-50);
     color:var(--ink-900);
     line-height:1.7;
@@ -278,6 +276,31 @@
   .ql-col ul li a{display:flex; justify-content:space-between; font-size:13.5px; color:var(--ink-700); padding:4px 0; border-bottom:1px dashed transparent}
   .ql-col ul li a:hover{color:var(--blue-600); border-color:var(--line)}
   .ql-col ul li a .count{color:var(--ink-500); font-size:12px; font-weight:600}
+  .ql-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 16px}
+  .ql-col .ql-head h3{margin:0}
+  .ql-all{display:inline-flex; align-items:center; gap:6px; flex-shrink:0; padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--blue-600); font-size:12.5px; font-weight:700; cursor:pointer; transition:background .15s, border-color .15s}
+  .ql-all svg{width:14px; height:14px; transform:scaleX(-1)}
+  .ql-all:hover{background:#fff; border-color:var(--blue-500)}
+  .ql-all:focus-visible, .ql-close:focus-visible{outline:2px solid var(--blue-500); outline-offset:2px}
+  .ql-dialog{border:none; border-radius:var(--radius); padding:0; width:min(640px, calc(100vw - 32px)); max-height:min(80vh, 640px); background:var(--card); color:var(--ink-900); box-shadow:var(--shadow-lg)}
+  .ql-dialog[open]{display:flex; flex-direction:column}
+  .ql-dialog::backdrop{background:rgba(10,32,54,.55)}
+  .ql-dialog-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 22px 12px}
+  .ql-dialog-head h3{margin:0; font-size:16px; font-weight:800; color:var(--navy-900)}
+  .ql-dialog-head h3 small{font-size:12px; font-weight:600; color:var(--ink-500)}
+  .ql-close{display:grid; place-items:center; width:32px; height:32px; border:none; border-radius:8px; background:var(--sand-100); color:var(--ink-700); cursor:pointer}
+  .ql-close svg{width:16px; height:16px}
+  .ql-close:hover{background:var(--line)}
+  .ql-search{padding:0 22px 12px}
+  .ql-search-input{width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:13.5px; background:var(--sand-50)}
+  .ql-search-input:focus{outline:2px solid var(--blue-500); outline-offset:0; background:#fff}
+  .ql-dialog-list{margin:0; padding:0 22px 18px; overflow-y:auto; flex:1}
+  .ql-dialog-list li{border-bottom:1px solid var(--line)}
+  .ql-dialog-list li[hidden]{display:none}
+  .ql-dialog-list li a{display:flex; justify-content:space-between; gap:12px; padding:10px 0; font-size:13.5px; color:var(--ink-700)}
+  .ql-dialog-list li a:hover{color:var(--blue-600)}
+  .ql-dialog-list li a .count{color:var(--ink-500); font-size:12px; font-weight:600}
+  .ql-empty{margin:0; padding:6px 22px 22px; color:var(--ink-500); font-size:13px}
 
   /* ---------- footer ---------- */
   footer.site{background:var(--navy-950); color:#AFC4D6; padding:40px 0 22px}
@@ -462,47 +485,75 @@
       </div>
     </div>
   </section>
+  @{
+    // فهرست‌ها فعلاً ثابت‌اند؛ با اتصال به API فرم‌ها/اسناد (فاز ۳) فقط منبع این آرایه عوض می‌شود.
+    const int QuickLimit = 10;
+    string Fa(int n) => string.Concat(n.ToString().Select(ch => (char)('۰' + (ch - '0'))));
+    var quickGroups = new[]
+    {
+      (Id: "rules", Title: "قوانین و مقررات",
+       Icon: "<path d='M4 4h16v16H4Z'/><path d='M8 8h8M8 12h8M8 16h5'/>",
+       Items: new[] {
+         ("کنوانسیون‌ها", "۳۱"), ("مصوبات هیأت عامل", "۳"), ("دستورالعمل‌ها", "۷۸"), ("استانداردها", "۲۰"),
+         ("اداری و استخدامی", "۱۵"), ("آموزش", "۹"), ("آیین‌نامه‌ها", "۶") }),
+      (Id: "publications", Title: "انتشارات و پشتیبانی",
+       Icon: "<path d='M12 3v12'/><path d='m7 10 5 5 5-5'/><path d='M5 19h14'/>",
+       Items: new[] {
+         ("راهنمای سیستم مدیریت دانش", "۱۱"), ("کتاب‌ها", "۱۸"), ("آموزش ارسال فکس در اتوماسیون", "۱"),
+         ("آموزش ارسال پست الکترونیک", "۱"), ("راهنمای کاربری درگاه واحد سازمان", "۱"),
+         ("راهنمای کاربری پایانه‌داران", "۱"), ("راهنمای کاربری امور بندری", "۱") }),
+      (Id: "forms", Title: "فرم‌های سازمانی",
+       Icon: "<rect x='4' y='3' width='16' height='18' rx='2'/><path d='M8 8h8M8 12h8M8 16h4'/>",
+       Items: new[] {
+         ("اداری و مالی", "۲۱"), ("فناوری اطلاعات (فاوا)", "۱۸"), ("اداره برق و تأسیسات", "—"),
+         ("بیانیه خط‌مشی ISMS", "۱"), ("گواهینامه استاندارد ISMS", "۳"),
+         ("فهرست گروه‌های تخصصی امنیت اطلاعات", "۲"), ("آگاهی‌رسانی امنیت اطلاعات", "۲۸") })
+    };
+  }
   <section id="quicklinks" class="quick-links">
     <div class="container">
       <div class="ql-grid">
-        <div class="ql-col">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg> قوانین و مقررات</h3>
-          <ul>
-            <li><a href="#">کنوانسیون‌ها <span class="count">۳۱</span></a></li>
-            <li><a href="#">مصوبات هیأت عامل <span class="count">۳</span></a></li>
-            <li><a href="#">دستورالعمل‌ها <span class="count">۷۸</span></a></li>
-            <li><a href="#">استانداردها <span class="count">۲۰</span></a></li>
-            <li><a href="#">اداری و استخدامی <span class="count">۱۵</span></a></li>
-            <li><a href="#">آموزش <span class="count">۹</span></a></li>
-            <li><a href="#">آیین‌نامه‌ها <span class="count">۶</span></a></li>
-          </ul>
-        </div>
-        <div class="ql-col">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/></svg> انتشارات و پشتیبانی</h3>
-          <ul>
-            <li><a href="#">راهنمای سیستم مدیریت دانش <span class="count">۱۱</span></a></li>
-            <li><a href="#">کتاب‌ها <span class="count">۱۸</span></a></li>
-            <li><a href="#">آموزش ارسال فکس در اتوماسیون <span class="count">۱</span></a></li>
-            <li><a href="#">آموزش ارسال پست الکترونیک <span class="count">۱</span></a></li>
-            <li><a href="#">راهنمای کاربری درگاه واحد سازمان <span class="count">۱</span></a></li>
-            <li><a href="#">راهنمای کاربری پایانه‌داران <span class="count">۱</span></a></li>
-            <li><a href="#">راهنمای کاربری امور بندری <span class="count">۱</span></a></li>
-          </ul>
-        </div>
-        <div class="ql-col">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></svg> فرم‌های سازمانی</h3>
-          <ul>
-            <li><a href="#">اداری و مالی <span class="count">۲۱</span></a></li>
-            <li><a href="#">فناوری اطلاعات (فاوا) <span class="count">۱۸</span></a></li>
-            <li><a href="#">اداره برق و تأسیسات <span class="count">—</span></a></li>
-            <li><a href="#">بیانیه خط‌مشی ISMS <span class="count">۱</span></a></li>
-            <li><a href="#">گواهینامه استاندارد ISMS <span class="count">۳</span></a></li>
-            <li><a href="#">فهرست گروه‌های تخصصی امنیت اطلاعات <span class="count">۲</span></a></li>
-            <li><a href="#">آگاهی‌رسانی امنیت اطلاعات <span class="count">۲۸</span></a></li>
-          </ul>
-        </div>
+        @foreach (var g in quickGroups)
+        {
+          <div class="ql-col">
+            <div class="ql-head">
+              <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(g.Icon)</svg> @g.Title</h3>
+              <button type="button" class="ql-all" data-ql-open="@($"ql-{g.Id}")" aria-haspopup="dialog" aria-label="مشاهده همه موارد «@g.Title»">
+                <span>همه</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+            <ul>
+              @foreach (var item in g.Items.Take(QuickLimit))
+              {
+                <li><a href="#">@item.Item1 <span class="count">@item.Item2</span></a></li>
+              }
+            </ul>
+          </div>
+        }
       </div>
     </div>
+    @foreach (var g in quickGroups)
+    {
+      <dialog class="ql-dialog" id="@($"ql-{g.Id}")" aria-labelledby="@($"ql-{g.Id}-title")">
+        <div class="ql-dialog-head">
+          <h3 id="@($"ql-{g.Id}-title")">@g.Title <small>(@Fa(g.Items.Length) مورد)</small></h3>
+          <button type="button" class="ql-close" data-ql-close aria-label="بستن">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <div class="ql-search">
+          <input type="search" class="ql-search-input" placeholder="جست‌وجو در «@g.Title»…" aria-label="جست‌وجو در @g.Title" autocomplete="off">
+        </div>
+        <ul class="ql-dialog-list">
+          @foreach (var item in g.Items)
+          {
+            <li data-text="@item.Item1"><a href="#">@item.Item1 <span class="count">@item.Item2</span></a></li>
+          }
+        </ul>
+        <p class="ql-empty" role="status" hidden>موردی مطابق جست‌وجوی شما یافت نشد.</p>
+      </dialog>
+    }
   </section>
 </main>
 
@@ -588,6 +639,40 @@ document.addEventListener('click', ()=>{
   document.getElementById('userBtn').setAttribute('aria-expanded','false');
 });
 document.querySelectorAll('.dropdown, .profile-menu').forEach(p=>p.addEventListener('click', e=>e.stopPropagation()));
+
+
+/* ---------------- quick links: «همه» modal with search ---------------- */
+(function(){
+  const norm = s => (s || '').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/‌/g,' ').toLowerCase().trim();
+  document.querySelectorAll('[data-ql-open]').forEach(btn=>{
+    const dlg = document.getElementById(btn.dataset.qlOpen);
+    if(!dlg || typeof dlg.showModal !== 'function') return;
+    const input = dlg.querySelector('.ql-search-input');
+    const items = Array.from(dlg.querySelectorAll('.ql-dialog-list li'));
+    const empty = dlg.querySelector('.ql-empty');
+    const filter = ()=>{
+      const term = norm(input.value);
+      let visible = 0;
+      items.forEach(li=>{
+        const match = !term || norm(li.dataset.text).includes(term);
+        li.hidden = !match;
+        if(match) visible++;
+      });
+      empty.hidden = visible !== 0;
+    };
+    btn.addEventListener('click', ()=>{
+      input.value = '';
+      filter();
+      dlg.showModal();
+      document.body.style.overflow = 'hidden';
+      input.focus();
+    });
+    input.addEventListener('input', filter);
+    dlg.querySelector('[data-ql-close]').addEventListener('click', ()=>dlg.close());
+    dlg.addEventListener('click', e=>{ if(e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', ()=>{ document.body.style.overflow = ''; });
+  });
+})();
 
     </script>
 }

@@ -5,6 +5,8 @@
 */
 :root {
     --secondary-rgb: 8, 66, 91;
+    /* فونت پیش‌فرض تمپلیت: Vazirmatn محلی (vazir-font.css)؛ Vazir نام مستعار همان فونت است */
+    --default-font-family: Vazirmatn, Vazir, Tahoma, sans-serif;
 }
 
 /* کارت‌های آماری داشبورد */
