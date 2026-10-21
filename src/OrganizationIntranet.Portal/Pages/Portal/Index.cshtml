@@ -7,6 +7,7 @@
 @section Styles {
     <link href="~/assets/css/vazir-font.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/portal-access-requests.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/portal-toast.css" asp-append-version="true" />
 <style>
   :root{
     --navy-950:#0A2036;
@@ -571,6 +572,7 @@ else
     </div>
   </section>
 
+<partial name="_PortalToasts" model='(TempData["AccessRequestMessage"] as string, Model.RequestError)' />
 @if (Model.IsAuthenticated)
 {
   <partial name="_AccessRequests" model="Model" />
@@ -673,6 +675,7 @@ else
     <script src="~/js/portal-navigation.js" asp-append-version="true"></script>
     <script src="~/js/portal-access-requests.js" asp-append-version="true"></script>
     <script src="~/js/news-carousel.js" asp-append-version="true"></script>
+    <script src="~/js/portal-toast.js" asp-append-version="true"></script>
     <script>
 
 const grid = document.getElementById('systemsGrid');

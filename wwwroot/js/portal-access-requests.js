@@ -37,6 +37,6 @@
     };
     window.addEventListener('hashchange', openFromLocation);
     // Keep feedback and pagination visible after a full-page form submission.
-    if (dialog.querySelector('.request-error, .request-feedback')) open();
+    if (dialog.dataset.reopen === 'true') open();
     else openFromLocation();
 })();

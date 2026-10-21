@@ -1,0 +1,13 @@
+@model OrganizationIntranet.Contracts.PublicationDto
+@* تصویر کارت مطلب؛ بدون تصویر، زمینه‌ی رنگی نوع مطلب. همان شکل کارت‌های اسلایدر صفحه‌ی اصلی. *@
+<div class="pp-pub-media" data-kind="@Model.Kind">
+    @if (Model.HasImage)
+    {
+        <img src="/Publications/Image/@Model.PublicationId?v=@Model.ImageVersion" alt="" loading="lazy" />
+    }
+    else
+    {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2Z"/><path d="M19 9h1a1 1 0 0 1 1 1v8"/><path d="M8 9h7M8 13h7M8 17h4"/></svg>
+    }
+    <span class="pp-pub-tag">@OrganizationIntranet.Contracts.PublicationKinds.Label(Model.Kind)</span>
+</div>

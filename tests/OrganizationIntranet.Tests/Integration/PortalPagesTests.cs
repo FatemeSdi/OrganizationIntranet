@@ -194,6 +194,91 @@ public sealed partial class PortalSmokeTests
     }
 
     [Fact]
+    public async Task Publication_pages_use_the_portal_theme_for_visitors_and_signed_in_users()
+    {
+        var publicId = SeedPublication("خبر عمومی سازمان", true, true);
+        SeedPublication("خبر دوم", true, true);
+        var internalId = SeedPublication("خبر داخلی کارکنان", true, false);
+        using var portal = Ui<PortalEntry::Program>("Portal");
+        using var visitor = portal.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
+
+        var list = WebUtility.HtmlDecode(await visitor.GetStringAsync("/Publications"));
+        Assert.Contains("portal-shell.css", list);
+        Assert.Contains("<h1>اخبار و اطلاعیه‌ها</h1>", list);
+        Assert.Contains("class=\"pp-pub-grid\"", list);
+        Assert.Contains("class=\"pp-tabs\"", list);                          // تب نوع مطلب
+        Assert.Contains("href=\"/Account/Login?returnUrl=%2FPublications\"", list); // ناشناس: دکمه‌ی ورود به‌جای منوی حساب
+        Assert.DoesNotContain("id=\"ppUserBtn\"", list);
+        Assert.DoesNotContain("bootstrap.rtl.min.css", list);              // طرح قدیمی حذف شد
+        Assert.Contains("خبر عمومی سازمان", list);
+        Assert.DoesNotContain("خبر داخلی کارکنان", list);
+        Assert.Contains("class=\"active\" aria-current=\"page\">اخبار و اطلاعیه‌ها", list); // منوی فعال
+        Assert.Contains("خبر عمومی سازمان", WebUtility.HtmlDecode(await visitor.GetStringAsync("/Publications?kind=News&search=" + Uri.EscapeDataString("عمومی"))));
+
+        var details = WebUtility.HtmlDecode(await visitor.GetStringAsync($"/Publications/Details/{publicId}"));
+        Assert.Contains("class=\"pp-pub-hero-title\">خبر عمومی سازمان</h1>", details);
+        Assert.Contains("pp-pub-article", details);
+        Assert.Contains("مطالب دیگر", details);
+        Assert.Contains("خبر دوم", details);
+        Assert.DoesNotContain("خبر داخلی کارکنان", details);              // «مطالب دیگر» هم دامنه‌ی دید را رعایت می‌کند
+        Assert.Equal(HttpStatusCode.NotFound, (await visitor.GetAsync($"/Publications/Details/{internalId}")).StatusCode);
+
+        var token = await Login("member");
+        using var member = portal.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
+        member.DefaultRequestHeaders.Add("Cookie", Cookie(portal.Services, token, false));
+        var signedIn = WebUtility.HtmlDecode(await member.GetStringAsync("/Publications"));
+        Assert.Contains("id=\"ppUserBtn\"", signedIn);
+        Assert.Contains("خبر داخلی کارکنان", signedIn);
+        Assert.Contains("portal-shell.css", WebUtility.HtmlDecode(await member.GetStringAsync($"/Publications/Details/{internalId}")));
+    }
+
+    [Fact]
+    public async Task Portal_messages_are_theme_toasts_and_admin_errors_are_template_toasts()
+    {
+        var token = await Login("member");
+        using var portal = Ui<PortalEntry::Program>("Portal");
+        var options = new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false };
+        using var browser = portal.CreateClient(options);
+        var auth = Cookie(portal.Services, token, false);
+        browser.DefaultRequestHeaders.Add("Cookie", auth);
+
+        // خطا: صفحه با توست خطا برمی‌گردد و مدال برای اصلاح دوباره باز می‌شود (پیام داخل مدال نیست)
+        var fields = new Dictionary<string, string> { ["RequestedApplicationId"] = "999999", ["RequestReason"] = "دلیل", ["__RequestVerificationToken"] = await Antiforgery(browser, "/Portal") };
+        var failed = WebUtility.HtmlDecode(await (await browser.PostAsync("/Portal?handler=RequestAccess", new FormUrlEncodedContent(fields))).Content.ReadAsStringAsync());
+        Assert.Matches("<div hidden data-toast=\"danger\">[^<]+</div>", failed);
+        Assert.Contains("data-reopen=\"true\"", failed);
+        Assert.DoesNotContain("class=\"request-error\"", failed);
+
+        // موفقیت: بازگشت به /Portal با پیام TempData که توست موفقیت می‌شود
+        fields["RequestedApplicationId"] = "1";
+        fields["__RequestVerificationToken"] = await Antiforgery(browser, "/Portal");
+        var ok = await browser.PostAsync("/Portal?handler=RequestAccess", new FormUrlEncodedContent(fields));
+        Assert.Equal(HttpStatusCode.Redirect, ok.StatusCode);
+        var tempData = ok.Headers.GetValues("Set-Cookie").Select(c => c.Split(';')[0]).Single(c => c.StartsWith(".AspNetCore.Mvc.CookieTempDataProvider", StringComparison.Ordinal));
+        using var next = portal.CreateClient(options);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/Portal");
+        request.Headers.Add("Cookie", auth + "; " + tempData);
+        var home = await (await next.SendAsync(request)).Content.ReadAsStringAsync();
+        Assert.Contains("data-toast=\"success\"", home);
+        Assert.DoesNotContain("data-reopen=\"true\"", home);
+        Assert.Contains("portal-toast.js", home);
+        Assert.Contains("portal-toast.js", await browser.GetStringAsync("/AccessRequests"));
+
+        var script = await browser.GetStringAsync("/js/portal-toast.js");
+        Assert.Contains("[data-toast]", script);
+        Assert.Contains("validation-summary-errors", script);
+        Assert.DoesNotContain("innerHTML", script);
+        Assert.Contains(".pt-stack { position: fixed; top: 18px; left: 50%", await browser.GetStringAsync("/css/portal-toast.css")); // وسط بالای صفحه مثل پنل مدیریت
+
+        // پنل مدیریت: هر خطای اعتبارسنجی سرور هم توست تمپلیت می‌شود
+        using var admin = Ui<AdminEntry::Program>("Admin");
+        using var adminBrowser = admin.CreateClient(options);
+        var appToast = await adminBrowser.GetStringAsync("/assets/js/app-toast.js");
+        Assert.Contains("validation-summary-errors", appToast);
+        Assert.DoesNotContain("innerHTML", appToast);
+    }
+
+    [Fact]
     public async Task Admin_header_bell_menu_toggle_and_tables_follow_the_yzen_template()
     {
         var (admin, browser, _, _, _) = await AdminBrowserAsync();

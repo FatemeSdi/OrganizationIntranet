@@ -7,7 +7,7 @@
 <h1>تأیید دومرحله‌ای</h1>
 <p>کد شش‌رقمی را وارد کنید. این مرحله تا ۵ دقیقه معتبر است.</p>
 <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-@if (Model.Message is not null) { <p class="alert alert-success" role="status">@Model.Message</p> }
+@if (Model.Message is not null) { <div class="d-none" data-toast="success">@Model.Message</div> }
 <form method="post">
 <label asp-for="Method">روش تأیید</label>
 <select asp-for="Method" class="form-select mb-3">

@@ -294,7 +294,7 @@
 
     <div class="login-card">
         <div class="login-right">
-            @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
+            @if (Model.Error is not null) { <div class="d-none" data-toast="danger">@Model.Error</div> }
 
             <form id="loginForm" method="post" autocomplete="off" asp-page="/Account/Login">
                 @if (TempData["AuthenticationMessage"] is string message) { <p role="status" class="alert alert-success">@message</p> }

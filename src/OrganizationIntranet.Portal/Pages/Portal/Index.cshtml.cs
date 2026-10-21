@@ -47,7 +47,7 @@ public class IndexModel(ApiClient api) : PageModel
         {
             var result = await api.PostAsync<OperationResult>("api/portal/access-requests", new CreateAccessRequest(RequestedApplicationId, RequestReason ?? ""));
             TempData["AccessRequestMessage"] = result.Message;
-            return RedirectToPage(pageName: null, pageHandler: null, routeValues: null, fragment: "access-requests");
+            return RedirectToPage();
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 409)
         { RequestError = ex.Message; await OnGetAsync(); return Page(); }

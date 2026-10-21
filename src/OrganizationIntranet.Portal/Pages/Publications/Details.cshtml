@@ -2,14 +2,47 @@
 @model OrganizationIntranet.Pages.Publications.DetailsModel
 @using OrganizationIntranet.Contracts
 @using OrganizationIntranet.Helper
-@section Styles { <partial name="_PublicationStyles" /> }
-@{ ViewData["Title"] = Model.Item.Title; Layout = "_LayoutApp"; }
-<article class="card custom-card"><div class="card-body">
-<span class="badge bg-primary">@PublicationKinds.Label(Model.Item.Kind)</span>
-<h1 class="h3 mt-3" style="overflow-wrap:anywhere">@Model.Item.Title</h1>
-<p class="text-muted">تاریخ انتشار: @Model.Item.PublishedAt.ToPersianDate()</p>
-<p class="fw-semibold" style="white-space:pre-wrap;overflow-wrap:anywhere">@Model.Item.Summary</p>
-<hr />
-<div style="white-space:pre-wrap;overflow-wrap:anywhere">@Model.Item.Body</div>
-</div></article>
-<a asp-page="Index" class="btn btn-light">همه مطالب</a>
+@{
+    ViewData["Title"] = Model.Item.Title;
+    ViewData["PortalNav"] = "news";
+    ViewData["ParentTitle"] = "اخبار و اطلاعیه‌ها";
+    ViewData["ParentUrl"] = "/Publications";
+    Layout = "_LayoutPortal";
+}
+@section Hero {
+    <span class="pp-pub-hero-tag">@PublicationKinds.Label(Model.Item.Kind)</span>
+    <h1 class="pp-pub-hero-title">@Model.Item.Title</h1>
+    <p><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-inline-end:6px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>@((Model.Item.PublishedAt ?? Model.Item.CreatedAt).ToPersianDate())</p>
+}
+
+<div class="pp-pub-layout">
+    <article class="pp-card pp-pub-article">
+        @if (Model.Item.HasImage)
+        {
+            <figure class="pp-pub-figure"><img src="/Publications/Image/@Model.Item.PublicationId?v=@Model.Item.ImageVersion" alt="" /></figure>
+        }
+        <p class="pp-pub-lead">@Model.Item.Summary</p>
+        <div class="pp-pub-text">@Model.Item.Body</div>
+        <div class="pp-actions-row">
+            <a asp-page="Index" class="pp-btn pp-btn-soft"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>همه‌ی مطالب</a>
+        </div>
+    </article>
+
+    @if (Model.Related.Count > 0)
+    {
+        <aside class="pp-card pp-pub-related" aria-labelledby="related-title">
+            <h2 class="pp-section-title" id="related-title">مطالب دیگر</h2>
+            <ul>
+                @foreach (var item in Model.Related)
+                {
+                    <li>
+                        <a asp-page="Details" asp-route-id="@item.PublicationId">
+                            <partial name="_PublicationMedia" model="item" />
+                            <span class="pp-pub-related-text"><b>@item.Title</b><small>@PublicationKinds.Label(item.Kind) · @((item.PublishedAt ?? item.CreatedAt).ToPersianDate())</small></span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </aside>
+    }
+</div>

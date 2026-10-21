@@ -290,7 +290,7 @@ public sealed partial class PortalSmokeTests
         Assert.Equal(HttpStatusCode.BadRequest, (await ui.PostAsync("/Portal?handler=RequestAccess", new FormUrlEncodedContent(fields))).StatusCode);
         fields["__RequestVerificationToken"] = await Antiforgery(ui, "/Portal");
         var submitted = await ui.PostAsync("/Portal?handler=RequestAccess", new FormUrlEncodedContent(fields));
-        Assert.Equal(HttpStatusCode.Redirect, submitted.StatusCode); Assert.EndsWith("#access-requests", submitted.Headers.Location!.ToString());
+        Assert.Equal(HttpStatusCode.Redirect, submitted.StatusCode); Assert.Equal("/Portal", submitted.Headers.Location!.ToString()); // موفقیت: مدال بسته و پیام به‌صورت توست
         html = await ui.GetStringAsync("/AccessRequests"); Assert.Contains("&lt;script&gt;request&lt;/script&gt;", html); // پیگیری درخواست‌ها در صفحه‌ی جدا
         Assert.DoesNotContain("&lt;script&gt;request&lt;/script&gt;", await ui.GetStringAsync("/Portal")); // مدال کارت سامانه‌ها فهرست درخواست‌ها را ندارد
         var adminToken = await Login(); using var admin = Ui<AdminEntry::Program>("Admin"); using var adminUi = admin.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });

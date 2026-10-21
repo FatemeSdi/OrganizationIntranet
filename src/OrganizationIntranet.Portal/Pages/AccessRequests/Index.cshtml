@@ -23,8 +23,7 @@
     </style>
 }
 
-@if (TempData["AccessRequestMessage"] is string message) { <p class="pp-alert pp-alert-success" role="status">@message</p> }
-@if (Model.Error is not null) { <p class="pp-alert pp-alert-error" role="alert">@Model.Error</p> }
+<partial name="_PortalToasts" model='(TempData["AccessRequestMessage"] as string, Model.Error)' />
 
 <div class="pp-requests">
     <section class="pp-card" aria-labelledby="new-request-title">

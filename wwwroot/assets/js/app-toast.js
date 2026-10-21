@@ -93,6 +93,15 @@
             window.showToast(el.textContent.trim(), el.getAttribute('data-toast'));
             el.removeAttribute('data-toast');
         });
+        // هر خطای اعتبارسنجی سرور (asp-validation-summary) هم به‌صورت توست تمپلیت نمایش داده می‌شود و کادر قرمز ثابت پنهان می‌شود.
+        document.querySelectorAll('.validation-summary-errors').forEach(function (summary) {
+            summary.querySelectorAll('li').forEach(function (li) {
+                var text = li.textContent.trim();
+                if (text) window.showToast(text, 'danger');
+            });
+            summary.hidden = true;
+            summary.classList.add('d-none');
+        });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showServerToasts);
     else showServerToasts();

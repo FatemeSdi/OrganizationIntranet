@@ -1,0 +1,4 @@
+@model (string? Success, string? Error)
+@* پیام‌های نتیجه‌ی عملیات به‌صورت توست پورتال (wwwroot/js/portal-toast.js)؛ متن فقط به‌صورت متن ساده درج می‌شود. *@
+@if (!string.IsNullOrWhiteSpace(Model.Success)) { <div hidden data-toast="success">@Model.Success</div> }
+@if (!string.IsNullOrWhiteSpace(Model.Error)) { <div hidden data-toast="danger">@Model.Error</div> }

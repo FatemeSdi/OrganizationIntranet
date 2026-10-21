@@ -20,7 +20,7 @@
 }
 
 <section class="pp-card" aria-label="فهرست اعلان‌ها">
-    @if (TempData["NotificationsMessage"] is string message) { <p class="pp-alert pp-alert-success" role="status">@message</p> }
+    <partial name="_PortalToasts" model='(TempData["NotificationsMessage"] as string, (string?)null)' />
 
     <div class="pp-notif-toolbar">
         <nav class="pp-source" aria-label="منبع اعلان">

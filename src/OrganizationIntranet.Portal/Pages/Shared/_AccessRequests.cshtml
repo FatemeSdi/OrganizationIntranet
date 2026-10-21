@@ -1,17 +1,15 @@
 @model OrganizationIntranet.Pages.Portal.IndexModel
 @* مدال درخواست دسترسی از کارت «سامانه‌های من»: فقط فرم درخواست؛ پیگیری درخواست‌ها در صفحه‌ی /AccessRequests است. *@
-<dialog id="access-requests" class="access-requests-dialog" aria-labelledby="access-request-title">
+<dialog id="access-requests" class="access-requests-dialog" aria-labelledby="access-request-title" data-reopen="@(Model.RequestError is not null ? "true" : null)">
     <div class="access-requests-head">
         <h2 id="access-request-title">درخواست دسترسی به سامانه</h2>
         <button type="button" class="access-requests-close" aria-label="بستن" autofocus>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
     </div>
-    @if (TempData["AccessRequestMessage"] is string message) { <p class="request-feedback" role="status">@message</p> }
-    @if (Model.RequestError is not null) { <p class="request-error" role="alert">@Model.RequestError</p> }
     @if (Model.RequestableApplications.Count > 0)
     {
-        <form method="post" asp-page-handler="RequestAccess" asp-fragment="access-requests" class="access-request-form">
+        <form method="post" asp-page-handler="RequestAccess" class="access-request-form">
             <label asp-for="RequestedApplicationId">سامانه مورد نیاز</label>
             <select asp-for="RequestedApplicationId" required>
                 <option value="">سامانه را انتخاب کنید</option>

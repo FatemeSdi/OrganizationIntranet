@@ -150,6 +150,50 @@ header.pp-site { position: sticky; top: 0; z-index: 60; background: rgba(10, 32,
 .pp-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; font-size: 13px; color: var(--ink-500); flex-wrap: wrap; }
 .pp-pager nav { display: flex; gap: 6px; }
 
+/* ---------- اخبار و اطلاعیه‌ها (Publications) ---------- */
+.pp-link { color: var(--blue-600); font-weight: 700; }
+.pp-pub-toolbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.pp-pub-toolbar .pp-tabs { border-bottom: 0; margin-bottom: 0; }
+.pp-pub-search { position: relative; display: flex; align-items: center; gap: 8px; flex: 0 1 380px; margin-bottom: 10px; }
+.pp-pub-search svg { position: absolute; right: 14px; width: 17px; height: 17px; color: var(--ink-500); pointer-events: none; }
+.pp-pub-search .pp-input { height: 40px; padding-right: 40px; }
+.pp-pub-count { margin: 0 0 16px; }
+.pp-pub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.pp-pub-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; transition: transform .18s, box-shadow .18s, border-color .18s; }
+.pp-pub-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: transparent; }
+.pp-pub-card a { display: flex; flex-direction: column; height: 100%; }
+.pp-pub-card a:focus-visible { outline: 2px solid var(--blue-500); outline-offset: -2px; border-radius: 18px; }
+.pp-pub-media { position: relative; aspect-ratio: 16 / 9; display: grid; place-items: center; background: linear-gradient(135deg, var(--navy-900), var(--blue-600)); }
+.pp-pub-media[data-kind="Announcement"] { background: linear-gradient(135deg, #8A6320, var(--gold-500)); }
+.pp-pub-media[data-kind="Circular"] { background: linear-gradient(135deg, var(--navy-800), var(--teal-500)); }
+.pp-pub-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-pub-media svg { width: 42px; height: 42px; color: rgba(255, 255, 255, .75); }
+.pp-pub-tag { position: absolute; top: 10px; right: 10px; background: var(--gold-500); color: var(--navy-950); font-size: 11.5px; font-weight: 800; padding: 3px 11px; border-radius: 99px; }
+.pp-pub-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; flex: 1; }
+.pp-pub-body h2 { margin: 0; font-size: 15.5px; font-weight: 800; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.pp-pub-body p { margin: 0; font-size: 13px; color: var(--ink-500); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.pp-pub-date { margin-top: auto; padding-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-500); }
+.pp-pub-date svg { width: 14px; height: 14px; }
+
+.pp-pub-hero-tag { display: inline-block; background: var(--gold-500); color: var(--navy-950); font-size: 12px; font-weight: 800; padding: 3px 12px; border-radius: 99px; margin: 4px 0 8px; }
+.pp-hero h1.pp-pub-hero-title { font-size: clamp(20px, 2.6vw, 28px); line-height: 1.6; max-width: 860px; overflow-wrap: anywhere; }
+.pp-pub-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 22px; align-items: start; }
+.pp-pub-figure { margin: -24px -24px 20px; border-radius: 20px 20px 0 0; overflow: hidden; aspect-ratio: 16 / 9; background: var(--sand-100); }
+.pp-pub-figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-pub-lead { font-size: 16px; font-weight: 700; line-height: 2; color: var(--navy-900); margin: 0 0 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.pp-pub-text { font-size: 15px; line-height: 2.1; color: var(--ink-700); white-space: pre-wrap; overflow-wrap: anywhere; }
+.pp-pub-related ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pp-pub-related a { display: flex; gap: 12px; align-items: center; padding: 6px; border-radius: 12px; }
+.pp-pub-related a:hover { background: var(--sand-50); }
+.pp-pub-related .pp-pub-media { width: 96px; flex-shrink: 0; border-radius: 10px; overflow: hidden; }
+.pp-pub-related .pp-pub-media svg { width: 24px; height: 24px; }
+.pp-pub-related .pp-pub-tag { display: none; }
+.pp-pub-related-text { min-width: 0; display: grid; gap: 2px; }
+.pp-pub-related-text b { font-size: 13.5px; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pp-pub-related-text small { font-size: 11.5px; color: var(--ink-500); }
+@media (max-width: 900px) { .pp-pub-layout { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .pp-pub-figure { margin: -18px -18px 16px; } .pp-pub-search { flex-basis: 100%; } }
+
 footer.pp-site { margin-top: 48px; background: var(--navy-950); color: #8AA0B2; font-size: 12px; padding: 20px 0; text-align: center; }
 
 @media (max-width: 860px) {
