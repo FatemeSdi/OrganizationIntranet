@@ -8,6 +8,8 @@ public interface IIntranetRepository
 {
     Task<User?> FindUserAsync(long id);
     Task<User?> FindUserAsync(string username);
+    /// <summary>حداکثر دو کاربر با این کد ملی؛ بیش از یکی یعنی داده‌ی مبهم و ورود با کد ملی رد می‌شود.</summary>
+    Task<List<User>> FindUsersByNationalIdAsync(string nationalId);
     Task<List<User>> GetUsersAsync();
     Task<List<Role>> GetRolesAsync();
     Task<List<AppEntity>> GetApplicationsAsync();

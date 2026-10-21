@@ -109,6 +109,26 @@
         border-radius: 10px 0 0 10px !important;
     }
 
+    /* رمز عبور: آیکن کلید در راست، دکمه‌ی نمایش رمز در چپ */
+    .password-input-group .form-control {
+        border-radius: 0 !important;
+    }
+
+    .password-input-group .password-key-icon {
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .password-input-group .password-toggle {
+        border-radius: 10px 0 0 10px !important;
+        cursor: pointer;
+    }
+
+    /* کد امنیتی راست‌به‌چپ مثل بقیه‌ی فرم */
+    .captchaInput {
+        direction: rtl !important;
+        text-align: right;
+    }
+
         .form-control:focus {
             border-color: #244b8b !important;
             box-shadow: 0 0 0 3px rgba(36, 75, 139, 0.12) !important;
@@ -176,6 +196,8 @@
             color: #64748b;
             font-size: 12px;
         }
+
+    .otp-input { font-size: 22px; letter-spacing: 10px; font-weight: 700; }
 
     .authentication-barrier p {
         font-size: 12px;
@@ -278,46 +300,67 @@
                 @if (TempData["AuthenticationMessage"] is string message) { <p role="status" class="alert alert-success">@message</p> }
                 <input type="hidden" asp-for="ReturnUrl" />
                 @Html.AntiForgeryToken()
-                <label asp-for="Method" class="form-label">روش ورود</label>
-                <select asp-for="Method" class="form-select mb-3">
+                <label for="loginMethod" class="form-label">روش ورود</label>
+                <select asp-for="Method" id="loginMethod" class="form-select mb-3">
                     @if (Model.Methods.PasswordEnabled) { <option value="password">نام کاربری و رمز عبور</option> }
-                    @if (Model.Methods.LdapEnabled) { <option value="ldap">حساب سازمانی LDAP</option> }
+                    @if (Model.Methods.LdapEnabled) { <option value="ldap">حساب سازمانی (LDAP)</option> }
+                    @if (Model.Methods.NationalIdSmsEnabled) { <option value="national-id-sms">کد ملی و پیامک</option> }
                 </select>
 
-                <div class="form-group mb-3">
-                    <div class="input-group mt-3">
-                        <span class="input-group-text"><i class="ti ti-user text-muted"></i></span>
-                        <input asp-for="Username" class="form-control" placeholder="نام کاربری" aria-label="نام کاربری" autocomplete="username" required />
+                <div data-method-panel="credentials">
+                    <div class="form-group mb-3">
+                        <div class="input-group mt-3">
+                            <span class="input-group-text"><i class="ti ti-user text-muted"></i></span>
+                            <input asp-for="Username" class="form-control" placeholder="نام کاربری" aria-label="نام کاربری" autocomplete="username" required />
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <div class="input-group password-input-group" id="Password-toggle">
+                            <span class="input-group-text password-key-icon" aria-hidden="true"><i class="ti ti-key text-muted"></i></span>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="رمز عبور" aria-label="رمز عبور" autocomplete="current-password" required />
+                            <button class="input-group-text password-toggle" type="button" aria-label="نمایش رمز عبور" title="نمایش رمز عبور" aria-pressed="false">
+                                <i class="ti ti-eye text-muted"></i>
+                            </button>
+                        </div>
+                        @if (Model.Methods.ForgotPasswordEnabled) {
+                        <a class="float-end link-danger fw-medium fs-12 mt-1" asp-page="/Account/ForgotPassword">رمز عبور را فراموش کرده‌اید؟</a>
+                        }
                     </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <div class="input-group" id="Password-toggle">
-                        <span class="input-group-text"><i class="ti ti-lock text-muted"></i></span>
-                        <input asp-for="Password" type="password" class="form-control" placeholder="رمز عبور" aria-label="رمز عبور" autocomplete="current-password" required />
+                <div data-method-panel="national-id" hidden>
+                    <div id="nationalIdStep" class="mb-3">
+                        <div class="input-group mt-3">
+                            <span class="input-group-text"><i class="ti ti-id text-muted"></i></span>
+                            <input asp-for="NationalId" class="form-control" inputmode="numeric" maxlength="10" dir="ltr" placeholder="کد ملی ۱۰ رقمی" aria-label="کد ملی" autocomplete="off" required />
+                        </div>
+                        <small class="text-muted fs-12 d-block mt-1"><i class="ti ti-message-2 me-1"></i>کد تأیید به شماره همراه ثبت‌شده در سامانه پیامک می‌شود.</small>
                     </div>
-                    @if (Model.Methods.ForgotPasswordEnabled) {
-                    <a class="float-end link-danger fw-medium fs-12 mt-1" asp-page="/Account/ForgotPassword">
-                        رمز عبور را فراموش کرده‌اید؟
-                    </a>
-                    }
+                    <div id="codeStep" class="mb-3" hidden>
+                        <label for="Code" class="form-label">کد تأیید پیامک‌شده</label>
+                        <input asp-for="Code" class="form-control text-center otp-input" inputmode="numeric" maxlength="6" dir="ltr" placeholder="------" autocomplete="one-time-code" aria-label="کد تأیید ۶ رقمی" required />
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <button type="button" id="changeNationalId" class="btn btn-link p-0 fs-12 text-muted"><i class="ti ti-arrow-right me-1"></i>تغییر کد ملی</button>
+                            <button type="button" id="resendCode" class="btn btn-link p-0 fs-12" disabled>ارسال دوباره <span id="resendTimer"></span></button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="securitySection" class="form-group text-start mt-2" style="direction:rtl;">
-                    <dnt-captcha asp-captcha-generator-max="9999"
-                                 asp-captcha-generator-min="1000"
+                    <dnt-captcha asp-captcha-generator-max="99999"
+                                 asp-captcha-generator-min="10000"
                                  asp-captcha-generator-language="English"
                                  asp-captcha-generator-display-mode="ShowDigits"
                                  asp-use-relative-urls="true"
-                                 asp-placeholder="کد امنیتی"
+                                 asp-placeholder="کد امنیتی را وارد کنید"
                                  asp-text-box-class="form-control captchaInput"
-                                 asp-validation-error-message="کد امنیتی اشتباه است"
-                                 asp-too-many-requests-error-message="درخواست‌های زیاد! یک دقیقه صبر کنید"
-                                 asp-font-name="Tahoma"
-                                 asp-font-size="28"
-                                 asp-fore-color="#333"
-                                 asp-back-color="#F8FAFC"
-                                 asp-text-box-template="<label class='form-group'>کد امنیتی{0}</label>"
+                                 asp-validation-error-message="کد امنیتی اشتباه است."
+                                 asp-too-many-requests-error-message="درخواست‌های زیاد! لطفاً یک دقیقه صبر کنید!"
+                                 asp-font-name="Arial"
+                                 asp-font-size="30"
+                                 asp-fore-color="#24324A"
+                                 asp-back-color="#F3F7FA"
+                                 asp-text-box-template="<div class='form-group'>{0}</div>"
                                  asp-validation-message-class="text-danger"
                                  asp-show-refresh-button="true"
                                  asp-refresh-button-class="ti ti-refresh btn captcha-refresh" />
@@ -329,7 +372,7 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <button type="submit" id="loginBtn" class="btn btn-primary w-100" disabled="@(!Model.Methods.PasswordEnabled && !Model.Methods.LdapEnabled)">
+                    <button type="submit" id="loginBtn" class="btn btn-primary w-100" disabled="@(!Model.AnyMethodEnabled)">
                         <span id="loginText">ورود</span>
                         <span id="loginSpinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
                     </button>
@@ -386,50 +429,6 @@
 </div>
 
 @section Scripts {
-    <script>
-        @if (Model.LoggedOut)
-        {
-            <text>showToast('با موفقیت از سیستم خارج شدید', 'success');</text>
-        }
-        $('#loginForm').submit(function (e) {
-            e.preventDefault();
-            const btn = $("#loginBtn"), spinner = $("#loginSpinner"), text = $("#loginText");
-            btn.prop("disabled", true); spinner.removeClass("d-none"); text.text("در حال ورود...");
-            $.ajax({
-                url: '@Url.Page("/Account/Login")', type: 'POST', data: $(this).serialize(),
-                success: function (res) {
-                    if (res.success) { text.text("ورود موفق"); window.location.href = res.redirectUrl; }
-                    else {
-                        spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
-                        showToast(res.message || "خطا در ورود", "danger");
-                        $('.captcha-refresh').click(); $('.captchaInput').val('');
-                    }
-                },
-                error: function (xhr) {
-                    spinner.addClass("d-none"); text.text("ورود"); btn.prop("disabled", false);
-                    if (xhr.status === 400 && xhr.responseJSON?.code === 'login_form_expired') {
-                        showToast(xhr.responseJSON.message, "warning");
-                        btn.prop("disabled", true);
-                        window.setTimeout(function () { window.location.reload(); }, 1800);
-                        return;
-                    }
-                    showToast("ورود انجام نشد؛ لطفاً دوباره تلاش کنید.", "danger");
-                    $('.captcha-refresh').click(); $('.captchaInput').val('');
-                }
-            });
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            const toggle = document.getElementById('Password-toggle');
-            if (toggle) {
-                const icon = toggle.querySelector('i'), input = toggle.querySelector('input');
-                toggle.addEventListener('click', e => {
-                    if (e.target.closest('span.input-group-text')) {
-                        input.type = input.type === 'password' ? 'text' : 'password';
-                        icon.classList.toggle('ti-lock');
-                        icon.classList.toggle('ti-eye');
-                    }
-                });
-            }
-        });
-    </script>
+    @if (Model.LoggedOut) { <script>document.addEventListener('DOMContentLoaded', function () { showToast('با موفقیت از سیستم خارج شدید', 'success'); });</script> }
+    <script src="~/js/login-form.js" asp-append-version="true"></script>
 }

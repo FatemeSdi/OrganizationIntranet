@@ -26,13 +26,78 @@ public sealed class AuthenticationService(IAuthenticationRepository store, IIntr
     public async Task<AuthenticationMethodsDto> MethodsAsync()
     {
         var s = await SettingsAsync();
-        return new(s.PasswordEnabled, s.LdapEnabled, s.ForgotPasswordEnabled, s.TwoFactorEnabled, s.AuthenticatorEnabled, s.SmsEnabled);
+        return new(s.PasswordEnabled, s.LdapEnabled, s.ForgotPasswordEnabled, s.TwoFactorEnabled, s.AuthenticatorEnabled, s.SmsEnabled, NationalIdLoginEnabled(s));
+    }
+    private static bool NationalIdLoginEnabled(AuthenticationSettingsDto s) => s.NationalIdSmsEnabled && s.SmsEnabled;
+    private const string NationalIdPurpose = "otp-login";
+    private const string NationalIdDisabled = "ورود با کد ملی و پیامک غیرفعال است";
+    /// <summary>ارقام فارسی/عربی را لاتین می‌کند و فاصله و خط تیره را حذف می‌کند.</summary>
+    public static string NormalizeNationalId(string? value)
+    {
+        var builder = new StringBuilder();
+        foreach (var ch in value ?? "")
+        {
+            if (ch is >= '۰' and <= '۹') builder.Append((char)('0' + (ch - '۰')));
+            else if (ch is >= '٠' and <= '٩') builder.Append((char)('0' + (ch - '٠')));
+            else if (!char.IsWhiteSpace(ch) && ch != '-') builder.Append(ch);
+        }
+        return builder.ToString();
+    }
+    /// <summary>کد ملی ده رقمی با رقم کنترل استاندارد؛ کدهای با ارقام یکسان (مثل 1111111111) نامعتبرند.</summary>
+    public static bool NationalIdValid(string? id)
+    {
+        if (id is null || !Regex.IsMatch(id, "^[0-9]{10}$") || id.Distinct().Count() == 1) return false;
+        var remainder = Enumerable.Range(0, 9).Sum(i => (id[i] - '0') * (10 - i)) % 11;
+        var check = id[9] - '0';
+        return remainder < 2 ? check == remainder : check == 11 - remainder;
+    }
+    public async Task<AuthenticationChallengeDto> StartNationalIdLoginAsync(NationalIdLoginRequest request)
+    {
+        var s = await SettingsAsync();
+        if (!NationalIdLoginEnabled(s)) throw new ArgumentException(NationalIdDisabled);
+        var id = NormalizeNationalId(request.NationalId);
+        if (!NationalIdValid(id)) throw new ArgumentException("کد ملی معتبر نیست");
+        // Same response for unknown, duplicated, disabled, locked, mobile-less and throttled accounts: the national ID is not secret, so nothing may reveal whether it is registered.
+        var token = RandomToken();
+        var matches = await users.FindUsersByNationalIdAsync(id);
+        if (matches is [{ IsActive: true } user] && MobileValid(user.MobileNumber) && !(user.LockedUntil > DateTime.UtcNow) && !(user.LastSecuritySmsAt > DateTime.UtcNow.AddSeconds(-60)))
+        {
+            var created = await CreateChallengeAsync(user, s, NationalIdPurpose, LoginMethods.NationalIdSms); token = created.Token;
+            try { await SendCodeAsync(token, created.Challenge, user, s); }
+            catch (Exception ex) when (ex is not OperationCanceledException) { providers.Audit("national-id-delivery", user.UserId, false); }
+        }
+        else providers.Audit("national-id-login-start", matches.Count == 1 ? matches[0].UserId : null, false);
+        return new(token, ["sms"]);
+    }
+    /// <summary>ارسال دوباره‌ی کد؛ برای چالش ناموجود، منقضی یا در دوره‌ی انتظار هم پاسخ یکسان می‌دهد.</summary>
+    public async Task ResendNationalIdCodeAsync(string token)
+    {
+        var s = await SettingsAsync();
+        if (!NationalIdLoginEnabled(s)) throw new ArgumentException(NationalIdDisabled);
+        try
+        {
+            var (c, u, _) = await ChallengeAsync(token, NationalIdPurpose);
+            if (MobileValid(u.MobileNumber)) await SendCodeAsync(token, c, u, s);
+        }
+        catch (ArgumentException) { providers.Audit("national-id-resend", null, false); }
+        catch (Exception ex) when (ex is not OperationCanceledException) { providers.Audit("national-id-delivery", null, false); }
+    }
+    public async Task<(User User, string LoginMethod)> VerifyNationalIdLoginAsync(VerifyNationalIdLoginRequest request)
+    {
+        if (!NationalIdLoginEnabled(await SettingsAsync())) throw new ArgumentException(NationalIdDisabled);
+        var (c, u, _) = await ChallengeAsync(request.ChallengeToken, NationalIdPurpose);
+        c.Attempts++;
+        if (!IsCode(request.Code) || !SmsMatches(c, request.ChallengeToken, request.Code)) { await FailureAsync(u, "national-id-login"); throw new ArgumentException(Invalid); }
+        c.Consumed = true; c.CodeHash = null;
+        await CompleteAsync(u);
+        return (u, c.LoginMethod);
     }
     public async Task SaveSettingsAsync(AuthenticationSettingsDto s, long actorId)
     {
         var row = await store.SettingsAsync();
         if (row.Revision != s.Revision) throw new ArgumentException("تنظیمات تغییر کرده است؛ صفحه را دوباره بارگذاری کنید");
-        if (!s.PasswordEnabled && !s.LdapEnabled) throw new ArgumentException("حداقل یک روش ورود باید فعال باشد");
+        if (!s.PasswordEnabled && !s.LdapEnabled && !s.NationalIdSmsEnabled) throw new ArgumentException("حداقل یک روش ورود باید فعال باشد");
+        if (s.NationalIdSmsEnabled && !s.SmsEnabled) throw new ArgumentException("ورود با کد ملی به سرویس پیامک فعال نیاز دارد");
         if (s.LdapEnabled && (Uri.CheckHostName(s.LdapHost) == UriHostNameType.Unknown || s.LdapPort is < 1 or > 65535 ||
             !Regex.IsMatch(s.LdapDomain, @"^[a-zA-Z0-9][a-zA-Z0-9.-]{0,252}$")))
             throw new ArgumentException("میزبان، پورت و دامنه LDAP معتبر وارد کنید؛ اتصال فقط LDAPS است");

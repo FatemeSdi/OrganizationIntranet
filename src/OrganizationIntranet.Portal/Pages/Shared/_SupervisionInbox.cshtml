@@ -4,7 +4,7 @@
 @if (Model.SupervisionInbox.Total > 0)
 {
 <section id="supervision" aria-labelledby="supervision-title"><div class="container"><h2 id="supervision-title" class="section-title">کارتابل نظارت سامانه‌ها</h2>
-<p>درخواست‌های مربوط به گروه‌های نظارت شما در این بخش نمایش داده می‌شوند. تصمیم نهایی دسترسی در پنل مدیریت ثبت می‌شود.</p>
+
 @foreach (var request in Model.SupervisionInbox.Items)
 { <article class="access-request-item" id="supervision-request-@request.Id"><strong>@request.ApplicationName</strong> · @AccessRequestStatuses.Label(request.Status)
 <p>@request.DisplayName (@request.Username) · @request.CreatedAt.ToPersianDate()</p><p>@request.Reason</p>

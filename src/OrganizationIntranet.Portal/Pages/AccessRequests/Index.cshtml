@@ -1,0 +1,101 @@
+@page
+@model OrganizationIntranet.Pages.AccessRequests.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "درخواست دسترسی به سامانه‌ها";
+    ViewData["PortalNav"] = "requests";
+    Layout = "_LayoutPortal";
+    static string Tone(string status) => status switch
+    {
+        AccessRequestStatuses.Pending => "pp-badge-warning", AccessRequestStatuses.Approved => "pp-badge-success",
+        AccessRequestStatuses.Rejected => "pp-badge-danger", _ => "pp-badge-muted"
+    };
+    var statuses = new string?[] { null, AccessRequestStatuses.Pending, AccessRequestStatuses.Approved, AccessRequestStatuses.Rejected, AccessRequestStatuses.Cancelled };
+    var totalPages = Math.Max(1, (int)Math.Ceiling(Model.AccessRequests.Total / (double)Math.Max(1, Model.AccessRequests.PageSize)));
+}
+@section Styles {
+    <style>
+        .pp-requests { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 22px; align-items: start; }
+        .pp-requests .pp-tabs a { padding: 8px 12px; font-size: 13px; }
+        .pp-review { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--sand-50); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        @@media (max-width: 900px) { .pp-requests { grid-template-columns: 1fr; } }
+    </style>
+}
+
+@if (TempData["AccessRequestMessage"] is string message) { <p class="pp-alert pp-alert-success" role="status">@message</p> }
+@if (Model.Error is not null) { <p class="pp-alert pp-alert-error" role="alert">@Model.Error</p> }
+
+<div class="pp-requests">
+    <section class="pp-card" aria-labelledby="new-request-title">
+        <h2 class="pp-section-title" id="new-request-title">درخواست جدید</h2>
+        @if (Model.RequestableApplications.Count > 0)
+        {
+            <form method="post" asp-page-handler="RequestAccess" data-busy>
+                <div class="pp-field">
+                    <label asp-for="RequestedApplicationId">سامانه مورد نیاز</label>
+                    <select asp-for="RequestedApplicationId" class="pp-select" required>
+                        <option value="">سامانه را انتخاب کنید</option>
+                        @foreach (var app in Model.RequestableApplications) { <option value="@app.ApplicationId">@app.Name</option> }
+                    </select>
+                </div>
+                <div class="pp-field" style="margin-top:14px">
+                    <label asp-for="RequestReason">دلیل نیاز به دسترسی</label>
+                    <textarea asp-for="RequestReason" class="pp-textarea" maxlength="1000" rows="4" required></textarea>
+                </div>
+                <div class="pp-actions-row"><button type="submit" class="pp-btn pp-btn-primary">ارسال درخواست</button></div>
+            </form>
+        }
+        else
+        {
+            <div class="pp-empty"><b>سامانه‌ای برای درخواست جدید موجود نیست</b>درخواست‌های در انتظار شما در فهرست روبه‌رو دیده می‌شوند.</div>
+        }
+    </section>
+
+    <section class="pp-card" aria-labelledby="my-requests-title">
+        <h2 class="pp-section-title" id="my-requests-title">درخواست‌های من</h2>
+        <nav class="pp-tabs" aria-label="وضعیت درخواست">
+            @foreach (var s in statuses)
+            {
+                <a asp-route-status="@s" class="@(Model.Status == s ? "active" : "")" aria-current="@(Model.Status == s ? "page" : null)">@(s is null ? "همه" : AccessRequestStatuses.Label(s))</a>
+            }
+        </nav>
+        @if (!Model.Visible.Any())
+        {
+            <div class="pp-empty"><b>@(Model.AccessRequests.Total == 0 ? "هنوز درخواستی ثبت نکرده‌اید" : "درخواستی با این وضعیت در این صفحه نیست")</b></div>
+        }
+        <div class="pp-list">
+            @foreach (var request in Model.Visible)
+            {
+                <article class="pp-list-item">
+                    <div class="pp-list-body">
+                        <div class="pp-list-top">
+                            <h3 class="pp-list-title" style="margin:0">@request.ApplicationName</h3>
+                            <span class="pp-badge @Tone(request.Status)">@AccessRequestStatuses.Label(request.Status)</span>
+                        </div>
+                        <p class="pp-list-text" style="margin-top:6px">@request.Reason</p>
+                        <div class="pp-list-time" style="margin-top:6px">ثبت: @request.CreatedAt.ToPersianDate()@(request.ResolvedAt.HasValue ? " · آخرین تغییر: " + request.ResolvedAt.ToPersianDate() : "")</div>
+                        @if (request.ReviewNote is not null) { <div class="pp-review"><b>پاسخ مدیر:</b> @request.ReviewNote</div> }
+                        @if (request.Status == AccessRequestStatuses.Pending)
+                        {
+                            <form method="post" asp-page-handler="CancelRequest" asp-route-requestPage="@Model.RequestPage" asp-route-status="@Model.Status" class="pp-list-actions" data-busy>
+                                <input type="hidden" name="requestId" value="@request.Id" /><input type="hidden" name="revision" value="@request.Revision" />
+                                <button type="submit" class="pp-btn pp-btn-danger-soft pp-btn-sm" onclick="return confirm('این درخواست لغو شود؟')">لغو درخواست</button>
+                            </form>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+        @if (totalPages > 1)
+        {
+            <div class="pp-pager">
+                <span>صفحه @Model.RequestPage از @totalPages</span>
+                <nav aria-label="صفحه‌بندی درخواست‌های من">
+                    @if (Model.RequestPage > 1) { <a asp-route-requestPage="@(Model.RequestPage - 1)" asp-route-status="@Model.Status" class="pp-btn pp-btn-soft pp-btn-sm">قبلی</a> }
+                    @if (Model.RequestPage < totalPages) { <a asp-route-requestPage="@(Model.RequestPage + 1)" asp-route-status="@Model.Status" class="pp-btn pp-btn-soft pp-btn-sm">بعدی</a> }
+                </nav>
+            </div>
+        }
+    </section>
+</div>

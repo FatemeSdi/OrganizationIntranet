@@ -16,4 +16,6 @@ public sealed class Publication
     public long CreatedBy { get; set; }
     public long UpdatedBy { get; set; }
     public long Revision { get; set; }
+    /// <summary>زمان آخرین تغییر تصویر شاخص (PublicationImage)؛ null یعنی مطلب تصویر ندارد. برای نسخه‌گذاری نشانی تصویر هم استفاده می‌شود.</summary>
+    public DateTime? ImageUpdatedAt { get; set; }
 }

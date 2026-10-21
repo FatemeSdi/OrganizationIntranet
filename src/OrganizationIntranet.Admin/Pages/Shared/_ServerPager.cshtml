@@ -1,0 +1,29 @@
+@model OrganizationIntranet.Pages.Shared.ServerPager
+@{
+    var first = Model.Total == 0 ? 0 : (Model.Page - 1) * Model.PageSize + 1;
+    var last = Math.Min(Model.Total, Model.Page * Model.PageSize);
+}
+@if (Model.Total > 0)
+{
+    <nav class="admin-pager" aria-label="صفحه‌بندی">
+        <span>نمایش @first تا @last از @Model.Total @Model.Noun</span>
+        @if (Model.TotalPages > 1)
+        {
+            <ul class="pagination pagination-sm">
+                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                    <a class="page-link" asp-all-route-data="Model.RouteFor(Math.Max(1, Model.Page - 1))" aria-label="صفحه‌ی قبل"><i class="ti ti-chevron-right"></i></a>
+                </li>
+                @foreach (var number in Model.Numbers())
+                {
+                    if (number == 0) { <li class="page-item disabled"><span class="page-link">…</span></li> continue; }
+                    <li class="page-item @(number == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-all-route-data="Model.RouteFor(number)" aria-current="@(number == Model.Page ? "page" : null)">@number</a>
+                    </li>
+                }
+                <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-all-route-data="Model.RouteFor(Math.Min(Model.TotalPages, Model.Page + 1))" aria-label="صفحه‌ی بعد"><i class="ti ti-chevron-left"></i></a>
+                </li>
+            </ul>
+        }
+    </nav>
+}

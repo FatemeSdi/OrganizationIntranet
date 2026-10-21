@@ -6,7 +6,7 @@ namespace OrganizationIntranet.Application.Services;
 
 public sealed class PublicationService(IPublicationRepository repository)
 {
-    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic);
+    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0);
     public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page) =>
         ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page);
     /// <summary>فهرست محتوای منتشرشده‌ی عمومی برای بازدیدکننده‌ی ناشناس.</summary>
@@ -40,4 +40,44 @@ public sealed class PublicationService(IPublicationRepository repository)
         await repository.SaveAsync();
         return Map(p);
     }
+
+    /// <summary>نوع تصویر از امضای فایل (magic bytes)؛ نوع اعلام‌شده‌ی مرورگر پذیرفته نمی‌شود. فقط JPEG، PNG و WebP.</summary>
+    public static string? DetectImageType(ReadOnlySpan<byte> data)
+    {
+        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return "image/jpeg";
+        if (data.Length >= 8 && data[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })) return "image/png";
+        if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data[8..12].SequenceEqual("WEBP"u8)) return "image/webp";
+        return null;
+    }
+    public async Task<PublicationDto> SetImageAsync(long id, string? base64, long actor)
+    {
+        if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
+        byte[] data;
+        try { data = Convert.FromBase64String(base64 ?? ""); }
+        catch (FormatException) { throw new ArgumentException("فایل تصویر معتبر نیست"); }
+        if (data.Length == 0 || data.Length > PublicationImageRules.MaxBytes) throw new ArgumentException("حجم تصویر باید حداکثر ۲ مگابایت باشد");
+        var type = DetectImageType(data) ?? throw new ArgumentException("فقط تصویر JPEG، PNG یا WebP پذیرفته می‌شود");
+        var p = await repository.FindAsync(id, PublicationScope.All) ?? throw new KeyNotFoundException();
+        var now = DateTime.UtcNow;
+        var image = await repository.FindImageAsync(id, PublicationScope.All);
+        if (image is null) repository.AddImage(image = new PublicationImage { PublicationId = id });
+        image.ContentType = type; image.Data = data; image.UpdatedAt = now;
+        // تغییر تصویر Revision را تغییر نمی‌دهد تا فرم ویرایش متن باز در صفحه‌ی دیگر دچار تعارض نشود.
+        p.ImageUpdatedAt = now; p.UpdatedAt = now; p.UpdatedBy = actor;
+        await repository.SaveAsync();
+        return Map(p);
+    }
+    public async Task RemoveImageAsync(long id, long actor)
+    {
+        if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
+        var p = await repository.FindAsync(id, PublicationScope.All) ?? throw new KeyNotFoundException();
+        var image = await repository.FindImageAsync(id, PublicationScope.All);
+        if (image is null && p.ImageUpdatedAt is null) return;
+        if (image is not null) repository.RemoveImage(image);
+        p.ImageUpdatedAt = null; p.UpdatedAt = DateTime.UtcNow; p.UpdatedBy = actor;
+        await repository.SaveAsync();
+    }
+    /// <summary>تصویر فقط اگر خود مطلب در دامنه‌ی دید درخواست‌کننده باشد؛ وگرنه «یافت نشد» (وجود پیش‌نویس لو نمی‌رود).</summary>
+    public async Task<PublicationImage> GetImageAsync(long id, PublicationScope scope) =>
+        await repository.FindImageAsync(id, scope) ?? throw new KeyNotFoundException();
 }

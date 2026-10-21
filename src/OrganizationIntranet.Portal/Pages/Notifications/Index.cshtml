@@ -1,0 +1,84 @@
+@page
+@model OrganizationIntranet.Pages.Notifications.IndexModel
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "اعلان‌ها";
+    ViewData["PortalNav"] = "notifications";
+    Layout = "_LayoutPortal";
+    var unread = Model.All.Count(n => n.Unread);
+    (string? Key, string Label)[] tabs = [(null, "همه"), ("unread", "خوانده‌نشده"), ("read", "خوانده‌شده")];
+    (string? Key, string Label)[] sources = [(null, "همه‌ی منابع"), (OrganizationIntranet.Pages.Notifications.IndexModel.SystemKind, "سامانه‌ها"), (OrganizationIntranet.Pages.Notifications.IndexModel.RequestKind, "درخواست‌های دسترسی")];
+}
+@section Styles {
+    <style>
+        .pp-notif-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+        .pp-source { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pp-source a { padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; border: 1px solid var(--line); color: var(--ink-500); }
+        .pp-source a.active { background: var(--sand-100); border-color: var(--gold-500); color: var(--navy-900); }
+        .pp-list-item form { margin: 0; }
+    </style>
+}
+
+<section class="pp-card" aria-label="فهرست اعلان‌ها">
+    @if (TempData["NotificationsMessage"] is string message) { <p class="pp-alert pp-alert-success" role="status">@message</p> }
+
+    <div class="pp-notif-toolbar">
+        <nav class="pp-source" aria-label="منبع اعلان">
+            @foreach (var s in sources)
+            {
+                <a asp-route-source="@s.Key" asp-route-tab="@Model.Tab" class="@(Model.Source == s.Key ? "active" : "")" aria-current="@(Model.Source == s.Key ? "true" : null)">@s.Label</a>
+            }
+        </nav>
+        @if (unread > 0)
+        {
+            <form method="post" asp-page-handler="ReadAll" asp-route-tab="@Model.Tab" asp-route-source="@Model.Source" data-busy>
+                <button type="submit" class="pp-btn pp-btn-soft pp-btn-sm"><i class="ti ti-checks" aria-hidden="true"></i>خواندن همه</button>
+            </form>
+        }
+    </div>
+
+    <nav class="pp-tabs" aria-label="وضعیت اعلان" style="margin-top:14px">
+        @foreach (var t in tabs)
+        {
+            <a asp-route-tab="@t.Key" asp-route-source="@Model.Source" class="@(Model.Tab == t.Key ? "active" : "")" aria-current="@(Model.Tab == t.Key ? "page" : null)">@t.Label <span class="pp-tab-count">@Model.Count(t.Key)</span></a>
+        }
+    </nav>
+
+    @if (!Model.Visible.Any())
+    {
+        <div class="pp-empty">
+            <div class="pp-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></div>
+            <b>@(Model.Tab == "unread" ? "اعلان خوانده‌نشده‌ای ندارید" : "اعلانی وجود ندارد")</b>
+        </div>
+    }
+    <div class="pp-list">
+        @foreach (var n in Model.Visible)
+        {
+            var isRequest = n.Kind == OrganizationIntranet.Pages.Notifications.IndexModel.RequestKind;
+            <article class="pp-list-item @(n.Unread ? "is-unread" : "")">
+                <span class="pp-list-icon @(isRequest ? "is-gold" : "")" aria-hidden="true">
+                    @if (isRequest) { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> }
+                    else { <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> }
+                </span>
+                <div class="pp-list-body">
+                    <div class="pp-list-top">
+                        <span class="pp-list-source">@(isRequest ? "درخواست دسترسی · " : "")@n.Source</span>
+                        <span class="pp-list-time">@n.CreatedAt.ToPersianDate()</span>
+                    </div>
+                    <h3 class="pp-list-title">@n.Title</h3>
+                    <div class="pp-list-actions">
+                        @if (isRequest)
+                        {
+                            <form method="post" asp-page-handler="ReadAlert" asp-route-id="@n.Id"><button type="submit" class="pp-btn pp-btn-outline pp-btn-sm">مشاهده در کارتابل نظارت</button></form>
+                        }
+                        else if (n.HasDestination)
+                        {
+                            <form method="post" asp-page-handler="Open" asp-route-id="@n.Id"><button type="submit" class="pp-btn pp-btn-outline pp-btn-sm">مشاهده در سامانه</button></form>
+                        }
+                    </div>
+                </div>
+                @if (n.Unread) { <span class="pp-unread-dot" title="خوانده‌نشده"><span class="pp-visually-hidden">خوانده‌نشده</span></span> }
+            </article>
+        }
+    </div>
+</section>

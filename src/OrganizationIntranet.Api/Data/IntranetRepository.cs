@@ -11,6 +11,7 @@ public sealed class IntranetRepository(AppDbContext db) : IIntranetRepository
     private IQueryable<Permission> Permissions => db.Permissions.Include(p => p.Application).Include(p => p.RolePermissions).AsSplitQuery();
     public Task<User?> FindUserAsync(long id) => Users.FirstOrDefaultAsync(u => u.UserId == id);
     public Task<User?> FindUserAsync(string username) => Users.FirstOrDefaultAsync(u => u.Username == username);
+    public Task<List<User>> FindUsersByNationalIdAsync(string nationalId) => Users.Where(u => u.NationalId == nationalId).Take(2).ToListAsync();
     public Task<List<User>> GetUsersAsync() => db.Users.Include(u => u.UserRoles).ThenInclude(r => r.Role).AsSplitQuery().ToListAsync();
     public Task<List<Role>> GetRolesAsync() => db.Roles.ToListAsync();
     public Task<List<AppEntity>> GetApplicationsAsync() => db.Applications.ToListAsync();

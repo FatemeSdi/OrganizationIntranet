@@ -17,6 +17,8 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
 {
     public async Task<T> GetAsync<T>(string path, string? token = null) => await SendAsync<T>(HttpMethod.Get, path, null, token);
     public async Task<T> PostAsync<T>(string path, object? value = null) => await SendAsync<T>(HttpMethod.Post, path, value);
+    /// <summary>پاسخ دودویی (مثل تصویر شاخص مطلب)؛ UI آن را بدون تغییر به مرورگر می‌دهد.</summary>
+    public async Task<ApiFile> GetFileAsync(string path) => await SendAsync<ApiFile>(HttpMethod.Get, path, null);
     private async Task<T> SendAsync<T>(HttpMethod method, string path, object? value, string? token = null)
     {
         using var request = new HttpRequestMessage(method, path);
@@ -39,11 +41,15 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
                 try { message = (await response.Content.ReadFromJsonAsync<OperationResult>())?.Message ?? message; } catch (JsonException) { }
                 throw new ApiException(response.StatusCode, message);
             }
+            if (typeof(T) == typeof(ApiFile))
+                return (T)(object)new ApiFile(await response.Content.ReadAsByteArrayAsync(), response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
             return (await response.Content.ReadFromJsonAsync<T>()) ?? throw new ApiException(HttpStatusCode.BadGateway, "پاسخ سرویس معتبر نیست");
         }
         catch (HttpRequestException) { throw new ApiException(HttpStatusCode.ServiceUnavailable, "ارتباط با سرویس برقرار نشد"); }
         catch (TaskCanceledException) when (!(accessor.HttpContext?.RequestAborted.IsCancellationRequested ?? false)) { throw new ApiException(HttpStatusCode.GatewayTimeout, "زمان پاسخ سرویس به پایان رسید"); }
     }
 }
+
+public sealed record ApiFile(byte[] Content, string ContentType);
 
 public record TokenResponse(string AccessToken = "", int ExpiresIn = 0, string RefreshToken = "", string? ChallengeToken = null, string[]? Methods = null);

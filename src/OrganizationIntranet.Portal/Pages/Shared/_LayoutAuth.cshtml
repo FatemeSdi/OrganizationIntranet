@@ -37,7 +37,7 @@
         @RenderBody()
     </main>
     <!-- Toast Container -->
-    <div id="appToastContainer" class="toast-container position-fixed top-0 start-0 p-3" style="z-index:1080"></div>
+    <div id="appToastContainer" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:1080"></div>
     <!-- Bootstrap JS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
@@ -45,7 +45,7 @@
     <script src="~/lib/jquery-ajax-unobtrusive/dist/jquery.unobtrusive-ajax.min.js"></script>
     <script src="~/assets/js/authentication-captcha.js" asp-append-version="true"></script>
     <!-- App Toast JS -->
-    <script src="~/assets/js/app-toast.js"></script>
+    <script src="~/assets/js/app-toast.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

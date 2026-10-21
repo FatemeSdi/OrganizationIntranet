@@ -11,6 +11,7 @@ public partial class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Publication> Publications => Set<Publication>();
+    public DbSet<PublicationImage> PublicationImages => Set<PublicationImage>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<Domain.Entities.Application> Applications => Set<Domain.Entities.Application>();
@@ -70,6 +71,20 @@ public partial class AppDbContext : DbContext
             e.HasIndex(p => p.Kind);
             e.HasOne<User>().WithMany().HasForeignKey(p => p.CreatedBy).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<User>().WithMany().HasForeignKey(p => p.UpdatedBy).OnDelete(DeleteBehavior.NoAction);
+        });
+        // تصویر شاخص مطالب؛ migration 007_PublicationImages.
+        modelBuilder.Entity<PublicationImage>(e =>
+        {
+            e.ToTable("PublicationImage", "Notify", t =>
+            {
+                t.HasCheckConstraint("CK_PublicationImage_ContentType", "[ContentType] IN ('image/jpeg', 'image/png', 'image/webp')");
+                if (Database.IsSqlServer()) t.HasCheckConstraint("CK_PublicationImage_Size", "DATALENGTH([Data]) BETWEEN 1 AND 2097152");
+            });
+            e.HasKey(i => i.PublicationId);
+            e.Property(i => i.PublicationId).ValueGeneratedNever();
+            e.Property(i => i.ContentType).HasMaxLength(20).IsUnicode(false).IsRequired();
+            e.Property(i => i.Data).IsRequired();
+            e.HasOne<Publication>().WithOne().HasForeignKey<PublicationImage>(i => i.PublicationId).OnDelete(DeleteBehavior.NoAction);
         });
         modelBuilder.Entity<User>(e =>
         {

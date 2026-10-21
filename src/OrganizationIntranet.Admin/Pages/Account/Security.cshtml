@@ -1,39 +1,111 @@
 @page
 @model OrganizationIntranet.Pages.Account.SecurityModel
-@{ ViewData["Title"] = "امنیت حساب"; Layout = "_LayoutAuth"; }
-<link rel="stylesheet" href="~/assets/css/authentication.css" asp-append-version="true" />
-<main class="auth-shell" dir="rtl"><section class="auth-panel">
-<h1>امنیت حساب و Google Authenticator</h1>
-<div asp-validation-summary="All" class="text-danger" role="alert"></div>
-<p>احراز هویت دومرحله‌ای: @(Model.Status.TwoFactorRequired ? "الزامی" : "غیرفعال")</p>
-<p>روش پیامک: @(Model.Status.SmsAvailable ? "در دسترس" : "در دسترس نیست")</p>
-@if (Model.Status.AuthenticatorConfigured) {
-<p class="alert alert-success">Google Authenticator قبلاً تنظیم شده است.</p>
-<p>در صورت از دست دادن دستگاه، از پیامکِ فعال یا پشتیبانی سازمان کمک بگیرید.</p>
-} else if (!Model.Status.AuthenticatorAvailable) {
-<p>مدیر سامانه این روش را غیرفعال کرده است.</p>
-} else if (Model.Setup is not null) {
-<p>در Google Authenticator گزینه «وارد کردن کلید راه‌اندازی» را انتخاب کنید، نوع کلید را «مبتنی بر زمان» قرار دهید و این کلید را وارد کنید:</p>
-<code class="auth-secret">@Model.Setup.Secret</code>
-<p class="mt-3">سپس کد فعلی برنامه را وارد کنید. تا تأیید کد، راه‌اندازی کامل نمی‌شود.</p>
-<form method="post" asp-page-handler="Confirm">
-<label asp-for="Code">کد Google Authenticator</label>
-<input asp-for="Code" class="form-control mb-3" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required />
-<button class="btn btn-primary w-100" type="submit">تأیید راه‌اندازی</button>
-</form>
-<p class="mt-3">اعتبار این مرحله ۵ دقیقه است. پس از تأیید باید دوباره وارد شوید.</p>
-} else {
-<p>پیش از اجباری شدن ورود دومرحله‌ای، برنامه را برای حساب خود تنظیم کنید.</p>
-<form method="post">
-<label asp-for="LoginMethod">روش تأیید رمز فعلی</label>
-<select asp-for="LoginMethod" class="form-select mb-3">
-@if (Model.Methods.PasswordEnabled) { <option value="password">رمز محلی</option> }
-@if (Model.Methods.LdapEnabled) { <option value="ldap">LDAP</option> }
-</select>
-<label asp-for="Password">رمز فعلی</label>
-<input asp-for="Password" type="password" class="form-control mb-3" autocomplete="current-password" required />
-<button class="btn btn-primary w-100" type="submit">راه‌اندازی Google Authenticator</button>
-</form>
+@{
+    ViewData["Title"] = "امنیت حساب و Google Authenticator";
+    ViewData["Icon"] = "ti ti-shield-lock";
+    ViewData["Subtitle"] = "ورود دومرحله‌ای حساب خود را با برنامه‌ی Google Authenticator آماده کنید";
+    ViewData["ParentTitle"] = "پروفایل";
+    ViewData["ParentUrl"] = "/Account/Profile";
+    Layout = "_LayoutAdmin";
+    var step = Model.Status.AuthenticatorConfigured ? 3 : Model.Setup is not null ? 2 : 1;
 }
-<a asp-page="/Account/Profile" class="d-block mt-3">بازگشت به پروفایل</a>
-</section></main>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-tile">
+            <span class="stat-tile__icon @(Model.Status.TwoFactorRequired ? "bg-warning-transparent" : "bg-light")"><i class="ti ti-lock-check"></i></span>
+            <div><div class="stat-tile__label">ورود دومرحله‌ای</div><div class="fw-semibold">@(Model.Status.TwoFactorRequired ? "برای همه الزامی است" : "اختیاری")</div></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-tile">
+            <span class="stat-tile__icon @(Model.Status.AuthenticatorConfigured ? "bg-success-transparent" : "bg-primary-transparent")"><i class="ti ti-device-mobile-check"></i></span>
+            <div><div class="stat-tile__label">Google Authenticator</div><div class="fw-semibold">@(Model.Status.AuthenticatorConfigured ? "تنظیم شده" : Model.Status.AuthenticatorAvailable ? "هنوز تنظیم نشده" : "غیرفعال توسط مدیر")</div></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-tile">
+            <span class="stat-tile__icon @(Model.Status.SmsAvailable ? "bg-success-transparent" : "bg-light")"><i class="ti ti-message-2"></i></span>
+            <div><div class="stat-tile__label">تأیید با پیامک</div><div class="fw-semibold">@(Model.Status.SmsAvailable ? "در دسترس" : "در دسترس نیست")</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="card custom-card">
+    <div asp-validation-summary="All" class="alert alert-danger m-3 mb-0" role="alert"></div>
+
+    @if (Model.Status.AuthenticatorConfigured)
+    {
+        <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-circle-check", "Google Authenticator برای حساب شما تنظیم شده است", "اگر دستگاه را از دست دادید، از پیامک فعال یا پشتیبانی سازمان کمک بگیرید.")' />
+    }
+    else if (!Model.Status.AuthenticatorAvailable)
+    {
+        <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-lock-off", "این روش توسط مدیر سامانه غیرفعال شده است")' />
+    }
+    else
+    {
+        <ol class="security-steps" aria-label="مراحل راه‌اندازی">
+            <li class="@(step == 1 ? "is-current" : "is-done")"><span>۱</span>تأیید رمز فعلی</li>
+            <li class="@(step == 2 ? "is-current" : "")"><span>۲</span>ثبت کلید در برنامه و تأیید کد</li>
+        </ol>
+        @if (Model.Setup is not null)
+        {
+            <form method="post" asp-page-handler="Confirm" data-busy>
+                <section class="form-section">
+                    <div>
+                        <h2 class="form-section__title"><i class="ti ti-key"></i>کلید راه‌اندازی</h2>
+                        <p class="form-section__help">در Google Authenticator «وارد کردن کلید راه‌اندازی» را بزنید، نوع کلید را «مبتنی بر زمان» بگذارید و این کلید را وارد کنید. اعتبار این مرحله ۵ دقیقه است.</p>
+                    </div>
+                    <div>
+                        <div class="security-secret">
+                            <code dir="ltr" id="authSecret">@Model.Setup.Secret</code>
+                            <button type="button" class="btn btn-sm btn-primary-light" data-copy-target="authSecret"><i class="ti ti-copy me-1"></i>رونوشت</button>
+                        </div>
+                        <label asp-for="Code" class="form-label mt-4">کد ۶ رقمی برنامه</label>
+                        <input asp-for="Code" class="form-control text-center fs-18 fw-semibold" style="max-width:220px;letter-spacing:.4em" dir="ltr" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required />
+                        <div class="form-text">پس از تأیید، برای اعمال تنظیمات دوباره وارد می‌شوید.</div>
+                    </div>
+                </section>
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-wave" type="submit"><i class="ti ti-check me-1"></i>تأیید راه‌اندازی</button>
+                    <a asp-page="/Account/Security" class="btn btn-primary-light">شروع دوباره</a>
+                </div>
+            </form>
+        }
+        else
+        {
+            <form method="post" data-busy>
+                <section class="form-section">
+                    <div>
+                        <h2 class="form-section__title"><i class="ti ti-lock"></i>تأیید هویت</h2>
+                        <p class="form-section__help">برای ساخت کلید جدید، رمز فعلی حساب خود را وارد کنید.</p>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label asp-for="LoginMethod" class="form-label">روش تأیید رمز</label><select asp-for="LoginMethod" class="form-select">
+                            @if (Model.Methods.PasswordEnabled) { <option value="password">رمز محلی</option> }
+                            @if (Model.Methods.LdapEnabled) { <option value="ldap">حساب سازمانی (LDAP)</option> }
+                        </select></div>
+                        <div class="col-md-6"><label asp-for="Password" class="form-label">رمز فعلی</label><input asp-for="Password" type="password" class="form-control" autocomplete="current-password" required /></div>
+                    </div>
+                </section>
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-wave" type="submit"><i class="ti ti-arrow-left me-1"></i>ادامه و ساخت کلید</button>
+                    <a href="/Account/Profile" class="btn btn-primary-light">بازگشت به پروفایل</a>
+                </div>
+            </form>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-copy-target]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var text = document.getElementById(button.dataset.copyTarget).textContent.trim();
+                (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+                    function () { showToast('کلید رونوشت شد', 'success'); },
+                    function () { showToast('رونوشت ممکن نشد؛ کلید را دستی وارد کنید', 'danger'); });
+            });
+        });
+    </script>
+}

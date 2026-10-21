@@ -34,6 +34,21 @@ public sealed class AccountController(AuthenticationService authentication, Intr
         await authentication.SendLoginSmsAsync(request.ChallengeToken);
         return new(true, "کد تأیید ارسال شد");
     }
+    // Passwordless login: national ID + one-time SMS code. Start always answers with a challenge so registration is not revealed.
+    [HttpPost("national-id/start"), AllowAnonymous]
+    public Task<AuthenticationChallengeDto> StartNationalIdLogin(NationalIdLoginRequest request) => authentication.StartNationalIdLoginAsync(request);
+    [HttpPost("national-id/resend"), AllowAnonymous]
+    public async Task<OperationResult> ResendNationalIdCode(SendLoginSmsRequest request)
+    {
+        await authentication.ResendNationalIdCodeAsync(request.ChallengeToken);
+        return new(true, "اگر اطلاعات درست باشد، کد جدید پیامک می‌شود");
+    }
+    [HttpPost("national-id/verify"), AllowAnonymous]
+    public async Task<IActionResult> VerifyNationalIdLogin(VerifyNationalIdLoginRequest request)
+    {
+        var result = await authentication.VerifyNationalIdLoginAsync(request);
+        return await IssueAsync(result.User, result.LoginMethod);
+    }
     private async Task<IActionResult> IssueAsync(User user, string method)
     {
         var profile = (await service.ProfileAsync(user.UserId))!;

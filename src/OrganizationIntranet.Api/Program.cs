@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -16,14 +17,31 @@ using OrganizationIntranet.Api.OpenApi;
 using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+// User Secrets are read only in Development; say which environment is active so a wrong launch profile is obvious.
+static string SecretsDiagnostics(IConfiguration configuration)
+{
+    // Where this process looked for User Secrets and what it effectively sees: names and lengths only, never values.
+    var id = typeof(Program).Assembly.GetCustomAttribute<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>()?.UserSecretsId;
+    var file = id is null ? null : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", id, "secrets.json");
+    var exists = file is not null && File.Exists(file);
+    var keys = "n/a";
+    if (exists)
+    {
+        try { using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file!)); keys = string.Join(", ", document.RootElement.EnumerateObject().Select(p => $"{p.Name}(len={p.Value.ToString().Length})")); }
+        catch (Exception) { keys = "unreadable"; }
+    }
+    var client = configuration["Api:ClientKey"]; var admin = configuration["Api:AdminClientKey"];
+    return $" Secrets: windowsUser={Environment.UserName}, id={id ?? "<none>"}, file={file ?? "<none>"}, exists={exists}, keysInFile=[{keys}]; effective ClientKey len={client?.Length ?? 0}, AdminClientKey len={admin?.Length ?? 0}, equal={(client is not null && client == admin)}.";
+}
+var environmentHint = $" (Environment: {builder.Environment.EnvironmentName}. User Secrets are read only when ASPNETCORE_ENVIRONMENT=Development; start with the 'https' launch profile or tools/Start-Dev.ps1.{(builder.Environment.IsDevelopment() ? SecretsDiagnostics(builder.Configuration) : "")})"; // paths/user details only on a developer machine
 var clientKey = builder.Configuration["Api:ClientKey"];
 if (string.IsNullOrWhiteSpace(clientKey) || clientKey.Length < 32)
-    throw new InvalidOperationException("Configure Api:ClientKey (at least 32 characters) in user secrets or the deployment secret store.");
+    throw new InvalidOperationException("Configure Api:ClientKey (at least 32 characters) in user secrets or the deployment secret store." + environmentHint);
 var adminClientKey = builder.Configuration["Api:AdminClientKey"];
 if (string.IsNullOrWhiteSpace(adminClientKey) || adminClientKey.Length < 32 || adminClientKey == clientKey)
-    throw new InvalidOperationException("Configure a distinct Api:AdminClientKey (at least 32 characters) shared with Admin only.");
+    throw new InvalidOperationException("Configure a distinct Api:AdminClientKey (at least 32 characters) shared with Admin only." + environmentHint);
 var connection = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API.");
+    ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API." + environmentHint);
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connection));
 builder.Services.AddScoped<IIntranetRepository, IntranetRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -97,6 +115,8 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("integration", context => RateLimitPartition.GetFixedWindowLimiter(context.User.FindFirst("application_code")?.Value ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     // همه‌ی بازدیدکنندگان از طریق سرور Portal می‌آیند، پس سقف سخاوتمندانه است و فقط جلوی سیل درخواست مستقیم را می‌گیرد.
     options.AddPolicy("public", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 600, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    // تصاویر عمومی مطالب (کارت‌های اخبار): نشانی نسخه‌دار و کش مرورگر دارند؛ سقف جدا تا سهمیه‌ی داده‌ی عمومی را مصرف نکنند.
+    options.AddPolicy("public-media", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 3000, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     options.AddPolicy("account", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 var app = builder.Build();

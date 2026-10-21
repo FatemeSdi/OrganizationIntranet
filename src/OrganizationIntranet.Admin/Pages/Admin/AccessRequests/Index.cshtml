@@ -1,45 +1,82 @@
-@page
+﻿@page
 @model OrganizationIntranet.Pages.Admin.AccessRequests.IndexModel
 @using OrganizationIntranet.Contracts
 @using OrganizationIntranet.Helper
-@{ ViewData["Title"] = "درخواست‌های دسترسی"; Layout = "_LayoutAdmin"; }
-<ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li><li class="breadcrumb-item active">درخواست‌های دسترسی</li></ol>
-<div class="card custom-card"><div class="card-header"><h1 class="card-title">بررسی درخواست‌های دسترسی به سامانه‌ها</h1></div><div class="card-body">
-@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
-@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
-<form method="get" class="d-flex gap-3 align-items-end mb-4">
-    <div><label asp-for="Status" class="form-label">وضعیت درخواست</label><select asp-for="Status" class="form-select"><option value="">همه</option>
-    @foreach (var status in new[] { AccessRequestStatuses.Pending, AccessRequestStatuses.Approved, AccessRequestStatuses.Rejected, AccessRequestStatuses.Cancelled })
-    { <option value="@status">@AccessRequestStatuses.Label(status)</option> }
-    </select></div><button type="submit" class="btn btn-primary">نمایش</button>
-</form>
-<p>@Model.Result.Total درخواست · <a asp-page="Notifications">وضعیت پیامک‌های اطلاع‌رسانی</a></p>
-@if (Model.Result.Items.Count == 0) { <p class="text-muted">درخواستی با این وضعیت وجود ندارد.</p> }
-@foreach (var request in Model.Result.Items)
-{
-    <article class="border rounded p-3 mb-3">
-        <div class="d-flex justify-content-between gap-2 flex-wrap"><h2 class="h5">@request.ApplicationName</h2><span class="badge bg-secondary">@AccessRequestStatuses.Label(request.Status)</span></div>
-        <p>@request.DisplayName <span dir="ltr">(@request.Username)</span> · شماره درخواست: @request.Id · @request.CreatedAt.ToPersianDate()</p>
-        <p style="white-space:pre-wrap;overflow-wrap:anywhere">@request.Reason</p>
-        @if (request.Status == AccessRequestStatuses.Pending)
-        {
-            <form method="post" asp-page-handler="Review" asp-route-status="@Model.Status" asp-route-pageNumber="@Model.PageNumber">
-                <input type="hidden" name="requestId" value="@request.Id" /><input type="hidden" name="revision" value="@request.Revision" />
-                <label for="note-@request.Id" class="form-label">توضیح تصمیم (برای رد درخواست الزامی)</label>
-                <textarea id="note-@request.Id" name="note" class="form-control mb-3" maxlength="1000" rows="2">@(Model.SubmittedId == request.Id ? Model.SubmittedNote : "")</textarea>
-                <button type="submit" name="decision" value="approve" class="btn btn-success">تأیید و اعطای دسترسی</button>
-                <button type="submit" name="decision" value="reject" class="btn btn-outline-danger">رد درخواست</button>
-            </form>
-        }
-        else
-        {
-            <p style="white-space:pre-wrap;overflow-wrap:anywhere">@request.ReviewNote</p>
-            <small>@request.Reviewer · @request.ResolvedAt.ToPersianDate()</small>
-        }
-    </article>
+@{
+    ViewData["Title"] = "درخواست‌های دسترسی";
+    ViewData["Icon"] = "ti ti-clipboard-check";
+    ViewData["Subtitle"] = "بررسی و تصمیم‌گیری درباره‌ی درخواست دسترسی کاربران به سامانه‌ها";
+    Layout = "_LayoutAdmin";
+    static string Tone(string status) => status switch
+    {
+        AccessRequestStatuses.Pending => "warning", AccessRequestStatuses.Approved => "success", AccessRequestStatuses.Rejected => "danger", _ => "muted"
+    };
 }
-<nav aria-label="صفحه‌بندی درخواست‌ها">
-@if (Model.PageNumber > 1) { <a asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-status="@Model.Status" class="btn btn-light">قبلی</a> }
-@if ((long)Model.PageNumber * Model.Result.PageSize < Model.Result.Total) { <a asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-status="@Model.Status" class="btn btn-light">بعدی</a> }
-</nav>
-</div></div>
+@section PageActions {
+    <a asp-page="Notifications" class="btn btn-primary-light"><i class="ti ti-message-2 me-1"></i>وضعیت پیامک‌ها</a>
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="card custom-card">
+    <div class="admin-toolbar">
+        <nav class="filter-tabs" aria-label="فیلتر وضعیت درخواست">
+            <a asp-route-status="" class="@(string.IsNullOrEmpty(Model.Status) ? "active" : "")" aria-current="@(string.IsNullOrEmpty(Model.Status) ? "page" : null)">همه</a>
+            @foreach (var status in new[] { AccessRequestStatuses.Pending, AccessRequestStatuses.Approved, AccessRequestStatuses.Rejected, AccessRequestStatuses.Cancelled })
+            {
+                <a asp-route-status="@status" class="@(Model.Status == status ? "active" : "")" aria-current="@(Model.Status == status ? "page" : null)">@AccessRequestStatuses.Label(status)</a>
+            }
+        </nav>
+        <span class="admin-toolbar__count">@Model.Result.Total درخواست</span>
+    </div>
+
+    <div class="card-body">
+        @if (Model.Result.Items.Count == 0)
+        {
+            <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState(Model.Status == AccessRequestStatuses.Pending ? "ti ti-circle-check" : "ti ti-inbox", Model.Status == AccessRequestStatuses.Pending ? "درخواستی در انتظار بررسی نیست" : "درخواستی با این وضعیت وجود ندارد")' />
+        }
+        <div class="item-list">
+            @foreach (var request in Model.Result.Items)
+            {
+                var tone = Tone(request.Status);
+                <article class="item-card item-card--@tone" aria-labelledby="req-@request.Id">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div class="entity">
+                            <span class="entity__avatar">@(request.DisplayName.Length > 0 ? request.DisplayName[..1] : "?")</span>
+                            <div>
+                                <div class="entity__name" id="req-@request.Id">@request.DisplayName <span class="entity__sub" dir="ltr">(@request.Username)</span></div>
+                                <div class="entity__sub"><i class="ti ti-apps me-1"></i>درخواست دسترسی به <strong class="text-default">@request.ApplicationName</strong></div>
+                            </div>
+                        </div>
+                        <span class="status-pill status-pill--@tone">@AccessRequestStatuses.Label(request.Status)</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(request.Reason)) { <div class="item-card__quote"><span class="text-muted fs-12 d-block mb-1">دلیل درخواست</span>@request.Reason</div> }
+                    <div class="item-card__meta">
+                        <span><i class="ti ti-hash"></i>@request.Id</span>
+                        <span><i class="ti ti-calendar"></i>@request.CreatedAt.ToPersianDate()</span>
+                        @if (request.ResolvedAt.HasValue) { <span><i class="ti ti-user-check"></i>@request.Reviewer · @request.ResolvedAt.ToPersianDate()</span> }
+                    </div>
+
+                    @if (request.Status == AccessRequestStatuses.Pending)
+                    {
+                        <form method="post" asp-page-handler="Review" asp-route-status="@Model.Status" asp-route-pageNumber="@Model.PageNumber" class="mt-3 pt-3 border-top" data-busy>
+                            <input type="hidden" name="requestId" value="@request.Id" /><input type="hidden" name="revision" value="@request.Revision" />
+                            <label for="note-@request.Id" class="form-label fs-13">توضیح تصمیم <span class="text-muted">(برای رد درخواست الزامی)</span></label>
+                            <textarea id="note-@request.Id" name="note" class="form-control mb-3" maxlength="1000" rows="2" data-counter>@(Model.SubmittedId == request.Id ? Model.SubmittedNote : "")</textarea>
+                            <div class="d-flex flex-wrap justify-content-end gap-2">
+                                <button type="submit" name="decision" value="approve" class="btn btn-success btn-wave"><i class="ti ti-check me-1"></i>تأیید و اعطای دسترسی</button>
+                                <button type="submit" name="decision" value="reject" class="btn btn-outline-danger" data-confirm="درخواست رد شود؟ توضیح تصمیم برای کاربر نمایش داده می‌شود."><i class="ti ti-x me-1"></i>رد درخواست</button>
+                            </div>
+                        </form>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(request.ReviewNote))
+                    {
+                        <div class="item-card__quote"><span class="text-muted fs-12 d-block mb-1">توضیح تصمیم</span>@request.ReviewNote</div>
+                    }
+                </article>
+            }
+        </div>
+    </div>
+
+    <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Result.PageSize, Model.Result.Total, "درخواست", new Dictionary<string, string?> { ["status"] = Model.Status })' />
+</div>

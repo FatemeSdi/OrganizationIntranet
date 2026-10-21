@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/OrganizationIntranet.Api", "--launch-profile", "https"],
+      "port": 7232,
+      "url": "https://localhost:7232"
+    },
+    {
+      "name": "portal",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/OrganizationIntranet.Portal", "--launch-profile", "https"],
+      "port": 7230,
+      "url": "https://localhost:7230"
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/OrganizationIntranet.Admin", "--launch-profile", "https"],
+      "port": 7231,
+      "url": "https://localhost:7231"
+    }
+  ]
+}

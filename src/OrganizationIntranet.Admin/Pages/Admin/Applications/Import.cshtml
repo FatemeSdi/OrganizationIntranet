@@ -1,15 +1,46 @@
-@page
+﻿@page
 @model OrganizationIntranet.Pages.Admin.Applications.ImportModel
-@{ ViewData["Title"] = "ثبت فهرست سامانه‌های سازمان"; Layout = "_LayoutAdmin"; }
-<a asp-page="Index">بازگشت به سامانه‌ها</a>
-<div class="card custom-card mt-3"><div class="card-body"><h1 class="h4">ثبت ۱۲ سامانه سازمان و دسترسی‌های اولیه</h1>
-@if (Model.ErrorMessage is not null) { <p class="alert alert-danger" role="alert">@Model.ErrorMessage</p> }
+@{
+    ViewData["Title"] = "ثبت فهرست سامانه‌های سازمان";
+    ViewData["Icon"] = "ti ti-file-import";
+    ViewData["Subtitle"] = "ثبت یک‌جای سامانه‌های سازمان و دسترسی‌های اولیه";
+    ViewData["ParentTitle"] = "سامانه‌ها";
+    ViewData["ParentUrl"] = "/Admin/Applications";
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, Model.ErrorMessage)' />
+
 @if (Model.Preview is not null)
 {
-<p>سامانه‌های موجود تکرار نمی‌شوند و تنظیمات قبلی آن‌ها حفظ می‌شود. آدرس‌های واقعی ورود و سرویس‌ها را پس از ثبت، در تنظیمات هر سامانه وارد کنید.</p>
-<div class="table-responsive"><table class="table"><thead><tr><th>سامانه</th><th>کارکرد</th><th>دسترسی اولیه</th><th>وضعیت ثبت</th></tr></thead><tbody>
-@foreach (var item in Model.Preview.Items) { <tr><td>@item.Name</td><td>@item.Description</td><td>@item.Access</td><td>@(item.Exists ? "موجود" : "جدید")</td></tr> }
-</tbody></table></div>
-<form method="post"><button type="submit" class="btn btn-primary">ثبت فهرست و اعمال دسترسی‌های نمایش‌داده‌شده</button></form>
+    <div class="admin-callout mb-4">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        <div>سامانه‌های موجود تکرار نمی‌شوند و تنظیمات قبلی آن‌ها حفظ می‌شود. نشانی‌های واقعی ورود و سرویس‌ها را پس از ثبت، در تنظیمات هر سامانه وارد کنید.</div>
+    </div>
+    <form method="post" class="card custom-card" data-busy>
+        <div class="card-header justify-content-between">
+            <div class="card-title">پیش‌نمایش (@Model.Preview.Items.Count سامانه)</div>
+            <span class="text-muted fs-12">@Model.Preview.Items.Count(i => !i.Exists) جدید · @Model.Preview.Items.Count(i => i.Exists) موجود</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-admin">
+                <thead><tr><th>سامانه</th><th>کارکرد</th><th>دسترسی اولیه</th><th>وضعیت ثبت</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Model.Preview.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold text-nowrap">@item.Name</td>
+                            <td class="text-muted fs-13">@item.Description</td>
+                            <td class="fs-13">@item.Access</td>
+                            <td><span class="status-pill @(item.Exists ? "status-pill--muted" : "status-pill--primary")">@(item.Exists ? "موجود" : "جدید")</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-check me-1"></i>ثبت فهرست و اعمال دسترسی‌های نمایش‌داده‌شده</button>
+            <a asp-page="Index" class="btn btn-primary-light">انصراف</a>
+        </div>
+    </form>
 }
-</div></div>

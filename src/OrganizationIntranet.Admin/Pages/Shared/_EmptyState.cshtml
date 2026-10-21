@@ -1,0 +1,7 @@
+@model OrganizationIntranet.Pages.Shared.EmptyState
+<div class="admin-empty">
+    <div class="admin-empty__icon" aria-hidden="true"><i class="@Model.Icon"></i></div>
+    <h3>@Model.Title</h3>
+    @if (Model.Text is not null) { <p>@Model.Text</p> }
+    @if (Model.ActionUrl is not null) { <a href="@Model.ActionUrl" class="btn btn-primary btn-sm"><i class="ti ti-plus me-1"></i>@Model.ActionText</a> }
+</div>

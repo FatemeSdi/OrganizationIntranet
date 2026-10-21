@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model IndexModel
 @{
     ViewData["Title"] = "پورتال داخلی | اداره کل بنادر و دریانوردی هرمزگان";
@@ -125,6 +125,11 @@
   .notif-body p{margin:0; font-size:12.5px; color:var(--ink-500); overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
   .dropdown-foot{padding:12px 18px; text-align:center; border-top:1px solid var(--line)}
   .dropdown-foot a{font-size:13px; font-weight:700; color:var(--blue-600)}
+  .dropdown-unread{display:inline-block; margin-inline-start:8px; font-size:11px; font-weight:700; color:var(--danger); background:rgba(214,91,76,.1); padding:2px 8px; border-radius:99px; vertical-align:middle}
+  .read-all-btn{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:99px; border:1px solid var(--line); background:var(--sand-50); color:var(--navy-900); font-size:12px; font-weight:700; cursor:pointer; transition:background .15s, border-color .15s}
+  .read-all-btn:hover{background:#fff; border-color:var(--gold-500)}
+  .read-all-btn svg{width:15px; height:15px; color:var(--success, #2E8B57)}
+  .dropdown-head form{margin:0}
 
   /* profile chip + dropdown */
   .profile-wrap{position:relative}
@@ -218,7 +223,6 @@
   .section-head .eyebrow{color:var(--blue-600)}
   .section-head .eyebrow::before{background:var(--blue-600)}
   h2.section-title{font-size:clamp(21px,2.4vw,28px); font-weight:800; margin:0; letter-spacing:-.3px}
-  .section-desc{color:var(--ink-500); font-size:14.5px; max-width:420px; margin:0}
 
   /* ---------- systems grid (role-based) ---------- */
   .systems-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:20px}
@@ -252,23 +256,37 @@
   .request-access-card .sys-icon{background:var(--sand-100); color:var(--ink-500)}
   .request-access-card .go{color:var(--ink-500)}
 
-  /* ---------- announcements ---------- */
-  .news-wrap{display:grid; grid-template-columns:1.3fr 1fr; gap:22px}
-  .news-feature{
-    background:linear-gradient(150deg, var(--navy-950), var(--navy-800)); color:#fff; border-radius:20px; padding:34px;
-    display:flex; flex-direction:column; justify-content:flex-end; min-height:260px; position:relative; overflow:hidden;
-  }
-  .news-feature .tag{align-self:flex-start; background:var(--gold-500); color:var(--navy-950); font-weight:800; font-size:12px; padding:5px 12px; border-radius:100px; margin-bottom:auto}
-  .news-feature h3{font-size:21px; font-weight:800; margin:16px 0 8px}
-  .news-feature p{color:#C6D5E1; font-size:13.5px; margin:0 0 14px}
-  .news-feature .meta{font-size:12.5px; color:#9CB1C1}
-  .news-side{display:flex; flex-direction:column; gap:16px}
-  .news-item{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; display:flex; gap:14px; align-items:flex-start}
-  .news-item .date{flex-shrink:0; width:54px; height:54px; border-radius:12px; background:var(--sand-100); color:var(--navy-800); display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800}
-  .news-item .date b{font-size:17px; line-height:1}
-  .news-item .date span{font-size:10px; color:var(--ink-500); font-weight:600}
-  .news-item h4{margin:0 0 4px; font-size:14px; font-weight:700}
-  .news-item p{margin:0; font-size:12.5px; color:var(--ink-500)}
+  /* ---------- news carousel (اخبار سازمان) ---------- */
+  .news-section{background:var(--sand-100); padding:46px 0 40px}
+  .news-tools{display:flex; align-items:center; gap:8px}
+  .news-nav{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; border:1px solid var(--line); background:var(--card); color:var(--navy-900); cursor:pointer; transition:background .15s, border-color .15s}
+  .news-nav:hover{border-color:var(--gold-500); background:#fff}
+  .news-nav svg{width:18px; height:18px}
+  .news-all{display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:999px; background:var(--navy-900); color:#fff; font-size:13px; font-weight:700; margin-inline-start:6px}
+  .news-all:hover{background:var(--navy-800)}
+  .news-track{display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; padding:8px calc(50% - 170px) 18px; scrollbar-width:none; overscroll-behavior-x:contain}
+  .news-track::-webkit-scrollbar{display:none}
+  .news-track:focus-visible{outline:2px solid var(--blue-500); outline-offset:4px; border-radius:20px}
+  .news-card{flex:0 0 min(340px, 82vw); scroll-snap-align:center; background:var(--card); border:1px solid var(--line); border-radius:20px; overflow:hidden;
+    transform:scale(.94); opacity:.72; transition:transform .35s ease, opacity .35s ease, box-shadow .35s ease}
+  .news-card.is-active{transform:scale(1); opacity:1; box-shadow:var(--shadow-lg); border-color:transparent}
+  .news-card a{display:flex; flex-direction:column; height:100%}
+  .news-card a:focus-visible{outline:2px solid var(--blue-500); outline-offset:-2px; border-radius:20px}
+  .news-media{aspect-ratio:16/9; background:linear-gradient(135deg, var(--navy-900), var(--blue-600)); display:grid; place-items:center; position:relative}
+  .news-media[data-kind="Announcement"]{background:linear-gradient(135deg, #8A6320, var(--gold-500))}
+  .news-media[data-kind="Circular"]{background:linear-gradient(135deg, var(--navy-800), var(--teal-500))}
+  .news-media img{width:100%; height:100%; object-fit:cover; display:block}
+  .news-media svg{width:46px; height:46px; color:rgba(255,255,255,.75)}
+  .news-media .tag{position:absolute; top:12px; right:12px; background:var(--gold-500); color:var(--navy-950); font-weight:800; font-size:11.5px; padding:4px 12px; border-radius:100px}
+  .news-body{padding:16px 18px 18px; display:flex; flex-direction:column; gap:6px; flex:1}
+  .news-body h3{margin:0; font-size:16px; font-weight:800; line-height:1.6; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere}
+  .news-body p{margin:0; font-size:13px; color:var(--ink-500); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere}
+  .news-body .meta{margin-top:auto; padding-top:6px; font-size:12px; color:var(--ink-500); display:flex; align-items:center; gap:6px}
+  .news-dots{display:flex; justify-content:center; gap:6px; margin-top:4px}
+  .news-dots button{width:8px; height:8px; padding:0; border-radius:99px; border:0; background:#CFC8B6; cursor:pointer; transition:width .25s, background .25s}
+  .news-dots button[aria-current="true"]{width:24px; background:var(--navy-900)}
+  .news-empty{text-align:center; color:var(--ink-500); padding:30px 0}
+  @@media (prefers-reduced-motion: reduce){ .news-track{scroll-behavior:auto} .news-card, .news-dots button{transition:none} }
 
   /* ---------- quick links ---------- */
   .quick-links{background:var(--sand-100); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
@@ -322,7 +340,6 @@
     nav.main{display:none}
     .hero-grid{grid-template-columns:1fr}
     .systems-grid{grid-template-columns:repeat(2,1fr)}
-    .news-wrap{grid-template-columns:1fr}
     .ql-grid{grid-template-columns:1fr; gap:26px}
     .ql-col{border-inline-start:none; padding-inline-start:0; padding-bottom:20px; border-bottom:1px solid var(--line)}
     .dropdown, .profile-menu{left:auto; right:0}
@@ -368,11 +385,14 @@ else
         </button>
         <div class="dropdown" id="bellDropdown">
           <div class="dropdown-head">
-            <b>اعلانات سامانه‌ها</b>
-            <form method="post" asp-page-handler="ReadNotifications"><button type="submit" id="markAllRead" class="btn-link">خواندن همه اعلان‌ها</button></form>
+            <b>اعلان‌ها@if (Model.UnreadTotal > 0) { <span class="dropdown-unread">@Model.UnreadTotal خوانده‌نشده</span> }</b>
+            @if (Model.UnreadTotal > 0)
+            {
+              <form method="post" asp-page-handler="ReadNotifications"><button type="submit" id="markAllRead" class="read-all-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>خواندن همه</button></form>
+            }
           </div>
           <div class="notif-list" id="notifList"><partial name="_SupervisionAlerts" model="Model.SupervisionAlerts" /><partial name="_ApplicationNotifications" model="Model.Notifications" /></div>
-          <div class="dropdown-foot"><a href="#">مشاهده همه اعلانات</a></div>
+          <div class="dropdown-foot"><a href="/Notifications">مشاهده همه اعلان‌ها</a></div>
         </div>
       </div>
 
@@ -393,17 +413,7 @@ else
               <span>@Model.RoleNames</span>
             </div>
           </div>
-          <ul>
-            @if (User.IsInRole("ADMIN"))
-            {
-                <li><a href="@(Configuration["Sites:Admin"] + "/Admin")"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>پنل مدیریت</a></li>
-            }
-            <li><a href="/Account/Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>پروفایل من</a></li>
-            <li><a href="#systems"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>سامانه‌های من</a></li>
-            <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/></svg>تنظیمات حساب</a></li>
-            <li><a href="#access-requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>درخواست دسترسی جدید</a></li>
-            <li><a href="/Account/Logout" class="pm-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>خروج از حساب (همه سامانه‌ها)</a></li>
-          </ul>
+          <ul><partial name="_PortalUserMenuItems" model='(User.IsInRole("ADMIN"), (string?)null)' /></ul>
         </div>
       </div>
 }
@@ -424,12 +434,11 @@ else
 @if (Model.IsAuthenticated)
 {
         <h1 class="hero-title"><em>@Model.DisplayName</em></h1>
-        <p class="hero-role">شما با نقش <b>@Model.RoleNames</b> وارد شده‌اید. سامانه‌های عمومی و دسترسی‌های اختصاص‌یافته به شما در این صفحه نمایش داده می‌شوند.</p>
+        <p class="hero-role"><b>@Model.RoleNames</b></p>
 }
 else
 {
         <h1 class="hero-title">به <em>پورتال داخلی</em> خوش آمدید</h1>
-        <p class="hero-role">سامانه‌های عمومی، اطلاعیه‌ها و فرم‌های سازمان را بدون ورود ببینید. برای دسترسی به سامانه‌های اختصاصی خود وارد حساب کاربری شوید.</p>
         <a class="hero-login" href="/Account/Login?returnUrl=%2FPortal">ورود به حساب کاربری</a>
 }
         <form class="hero-search" role="search" onsubmit="return false;">
@@ -442,7 +451,6 @@ else
 @if (Model.IsAuthenticated)
 {
         <h3>خلاصه وضعیت شما</h3>
-        <div class="big">۱ ورود، دسترسی به همه سامانه‌های مجاز</div>
         <div class="stat-row">
           <div class="stat"><b id="myCount">@Model.Applications.Count</b><span>سامانه در اختیار من</span></div>
           <div class="stat"><b id="unreadCount">@Model.UnreadTotal</b><span>اعلان خوانده‌نشده</span></div>
@@ -452,7 +460,6 @@ else
 else
 {
         <h3>در یک نگاه</h3>
-        <div class="big">برای سامانه‌های اختصاصی وارد شوید</div>
         <div class="stat-row">
           <div class="stat"><b id="myCount">@Model.Applications.Count</b><span>سامانه عمومی</span></div>
           <div class="stat"><b>@Model.Publications.Total</b><span>مطلب عمومی</span></div>
@@ -461,7 +468,69 @@ else
       </div>
     </div>
   </section>
-  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d="M0 20 C 240 60 480 0 720 20 C 960 40 1200 60 1440 20 L1440 60 L0 60 Z" fill="#F6F4EE"/></svg>
+  <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 C 240 60 480 0 720 20 C 960 40 1200 60 1440 20 L1440 60 L0 60 Z" fill="#EFEBE0"/></svg>
+
+  @* اخبار و اطلاعیه‌ها بالاتر از سامانه‌ها: کاربر اول اخبار سازمان را می‌بیند. اسلایدر خودکار با فوکوس روی یک کارت (wwwroot/js/news-carousel.js). *@
+  <section id="news" class="news-section" aria-labelledby="news-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">اخبار سازمان</div>
+          <h2 class="section-title" id="news-title">اخبار و اطلاعیه‌ها</h2>
+        </div>
+        <div class="news-tools">
+@if (Model.Publications.Items.Count > 1)
+{
+          <button type="button" class="news-nav" data-news-prev aria-label="خبر قبلی"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+          <button type="button" class="news-nav" data-news-next aria-label="خبر بعدی"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+}
+          <a class="news-all" href="/Publications">همه‌ی مطالب</a>
+        </div>
+      </div>
+@if (Model.Publications.Items.Count == 0)
+{
+      <p class="news-empty">هنوز مطلبی منتشر نشده است.</p>
+}
+else
+{
+      var news = Model.Publications.Items.Take(10).ToList();
+      <div class="news-carousel" data-news-carousel aria-roledescription="carousel" aria-label="اخبار و اطلاعیه‌های سازمان">
+        <div class="news-track" tabindex="0">
+        @for (var i = 0; i < news.Count; i++)
+        {
+          var item = news[i];
+          <article class="news-card@(i == 0 ? " is-active" : "")" aria-roledescription="slide" aria-label="@(i + 1) از @news.Count">
+            <a href="/Publications/Details/@item.PublicationId">
+              <div class="news-media" data-kind="@item.Kind">
+                @if (item.HasImage)
+                {
+                  <img src="/Publications/Image/@item.PublicationId?v=@item.ImageVersion" alt="" loading="@(i < 2 ? "eager" : "lazy")" />
+                }
+                else
+                {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2Z"/><path d="M19 9h1a1 1 0 0 1 1 1v8"/><path d="M8 9h7M8 13h7M8 17h4"/></svg>
+                }
+                <span class="tag">@OrganizationIntranet.Contracts.PublicationKinds.Label(item.Kind)</span>
+              </div>
+              <div class="news-body">
+                <h3>@item.Title</h3>
+                <p>@item.Summary</p>
+                <span class="meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>@OrganizationIntranet.Helper.PersianDateHelper.ToPersianDate(item.PublishedAt ?? item.CreatedAt)</span>
+              </div>
+            </a>
+          </article>
+        }
+        </div>
+        @if (news.Count > 1)
+        {
+        <div class="news-dots" role="group" aria-label="انتخاب خبر">
+          @for (var i = 0; i < news.Count; i++) { <button type="button" data-news-dot="@i" aria-label="خبر @(i + 1)" aria-current="@(i == 0 ? "true" : "false")"></button> }
+        </div>
+        }
+      </div>
+}
+    </div>
+  </section>
 
   <section id="systems">
     <div class="container">
@@ -470,7 +539,6 @@ else
           <div class="eyebrow">@(Model.IsAuthenticated ? "دسترسی من" : "سامانه‌های عمومی")</div>
           <h2 class="section-title">@(Model.IsAuthenticated ? "سامانه‌های در اختیار شما" : "سامانه‌های سازمان")</h2>
         </div>
-        <p class="section-desc">@(Model.IsAuthenticated ? "سامانه‌های عمومی و سامانه‌های تخصیص‌یافته به شما یا نقش‌های فعال شما نمایش داده می‌شوند. شیوه ورود و شبکه دسترسی هر سامانه روی کارت مشخص است." : "سامانه‌هایی که برای همه‌ی کارکنان باز هستند. سامانه‌های اختصاصی شما بعد از ورود به حساب کاربری نمایش داده می‌شوند.")</p>
       </div>
       <div class="systems-grid" id="systemsGrid">
         @foreach (var app in Model.Applications)
@@ -494,12 +562,12 @@ else
         <a class="sys-card request-access-card" href="/Account/Login?returnUrl=%2FPortal">
           <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg></div>
           <h3>سامانه‌های اختصاصی من</h3>
-          <p>برای دیدن سامانه‌هایی که به شما یا نقش شما تخصیص داده شده، وارد حساب کاربری شوید.</p>
+          <p>با ورود به حساب کاربری نمایش داده می‌شوند.</p>
           <span class="go">ورود به حساب <span aria-hidden="true">←</span></span>
         </a>
 }
       </div>
-            <p class="no-results" id="noResults" role="status" data-empty="@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است. برای دیدن سامانه‌های خود وارد شوید.")">@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. برای دریافت دسترسی، لطفاً با مدیر سامانه تماس بگیرید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است. برای دیدن سامانه‌های خود وارد شوید.")</p>
+            <p class="no-results" id="noResults" role="status" data-empty="@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است.")">@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است.")</p>
     </div>
   </section>
 
@@ -508,29 +576,6 @@ else
   <partial name="_AccessRequests" model="Model" />
   <partial name="_SupervisionInbox" model="Model" />
 }
-  <section id="news" style="background:var(--sand-100)">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">اخبار سازمان</div>
-          <h2 class="section-title">اطلاعیه‌ها و رویدادها</h2>
-        </div>
-        <p class="section-desc">این بخش برای همه پرسنل یکسان است و مستقل از سامانه‌های تخصیص‌یافته نمایش داده می‌شود.</p>
-      </div>
-      <a href="/Publications">مشاهده همه اخبار، اطلاعیه‌ها و بخشنامه‌ها</a>
-      <div class="news-wrap">
-        @foreach (var item in Model.Publications.Items.Take(4))
-        {
-          <article class="news-feature">
-            <span class="tag">@OrganizationIntranet.Contracts.PublicationKinds.Label(item.Kind)</span>
-            <h3 style="overflow-wrap:anywhere"><a href="/Publications/Details/@item.PublicationId">@item.Title</a></h3>
-            <p style="white-space:pre-wrap;overflow-wrap:anywhere">@item.Summary</p>
-          </article>
-        }
-        @if (Model.Publications.Total == 0) { <p>هنوز مطلبی منتشر نشده است.</p> }
-      </div>
-    </div>
-  </section>
   @{
     // فهرست‌ها فعلاً ثابت‌اند؛ با اتصال به API فرم‌ها/اسناد (فاز ۳) فقط منبع این آرایه عوض می‌شود.
     const int QuickLimit = 10;
@@ -627,6 +672,7 @@ else
 @section Scripts {
     <script src="~/js/portal-navigation.js" asp-append-version="true"></script>
     <script src="~/js/portal-access-requests.js" asp-append-version="true"></script>
+    <script src="~/js/news-carousel.js" asp-append-version="true"></script>
     <script>
 
 const grid = document.getElementById('systemsGrid');

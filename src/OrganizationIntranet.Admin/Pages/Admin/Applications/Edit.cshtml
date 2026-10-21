@@ -1,49 +1,124 @@
-@page
+﻿@page
 @model EditModel
-@{ ViewData["Title"] = "تنظیمات سامانه"; Layout = "_LayoutAdmin"; }
-<ol class="breadcrumb mb-4"><li class="breadcrumb-item"><a asp-page="Index">سامانه‌ها</a></li><li class="breadcrumb-item active">تنظیمات سامانه</li></ol>
-@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
-@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
-<p><a asp-page="Supervision" asp-route-id="@Model.Id" class="btn btn-outline-primary">گروه‌های نظارت این سامانه</a></p>
-<form method="post">
+@using OrganizationIntranet.Pages.Shared
+@{
+    ViewData["Title"] = "تنظیمات سامانه";
+    ViewData["Icon"] = "ti ti-settings";
+    ViewData["Subtitle"] = Model.Input.ApplicationName;
+    ViewData["ParentTitle"] = "سامانه‌ها";
+    ViewData["ParentUrl"] = "/Admin/Applications";
+    Layout = "_LayoutAdmin";
+}
+@section PageActions {
+    <a asp-page="Supervision" asp-route-id="@Model.Id" class="btn btn-primary-light"><i class="ti ti-eye me-1"></i>گروه‌های نظارت</a>
+}
+
+<partial name="_ToastMessages" model='new ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<form method="post" class="card custom-card" data-busy data-dirty-guard>
     <input type="hidden" asp-for="Id" />
-    <div class="card custom-card"><div class="card-header"><h1 class="card-title">مشخصات سامانه</h1></div><div class="card-body row g-3">
-        <div class="col-md-6"><label asp-for="Input.ApplicationName" class="form-label">نام</label><input asp-for="Input.ApplicationName" class="form-control" required maxlength="150" /></div>
-        <div class="col-md-6"><label asp-for="Input.ApplicationCode" class="form-label">کد</label><input asp-for="Input.ApplicationCode" class="form-control" dir="ltr" required maxlength="50" /></div>
-        <div class="col-md-8"><label asp-for="Input.BaseUrl" class="form-label">آدرس ورود سامانه</label><input asp-for="Input.BaseUrl" class="form-control" dir="ltr" maxlength="500" /></div>
-        <div class="col-md-4"><label asp-for="Input.DisplayOrder" class="form-label">اولویت نمایش (عدد کمتر، جلوتر)</label><input asp-for="Input.DisplayOrder" class="form-control" /></div>
-        <div class="col-md-8"><label asp-for="Input.Description" class="form-label">خلاصه کارکرد سامانه</label><textarea asp-for="Input.Description" class="form-control" maxlength="500"></textarea></div>
-        <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select">
-            @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@icon</option> }
-        </select></div>
-        <div class="col-md-4"><label><input asp-for="Input.RequiresLogin" /> ورود با لاگین</label></div>
-        <div class="col-md-4"><label><input asp-for="Input.IsInternetAccessible" /> قابل دسترسی از اینترنت</label></div>
-        <div class="col-md-4"><label><input asp-for="Input.IsPublic" /> عمومی؛ بدون نیاز به تخصیص دسترسی</label></div>
-    </div></div>
-    <div class="card custom-card"><div class="card-header"><h2 class="card-title">دسترسی کاربران و نقش‌ها</h2></div><div class="card-body">
-        <p>دسترسی مستقیم یا عضویت در یکی از نقش‌های انتخاب‌شده کافی است. کاربران و نقش‌های غیرفعال دسترسی ایجاد نمی‌کنند. سامانه عمومی برای همه کاربران فعال پورتال نمایش داده می‌شود.</p>
-        <div class="row g-3"><div class="col-md-6"><label asp-for="Input.UserIds" class="form-label">کاربران (انتخاب چندگانه)</label><select asp-for="Input.UserIds" class="form-select" size="8">
-            @foreach (var user in Model.Users) { <option value="@user.UserId">@user.Name @user.LastName (@user.Username) @(user.IsActive ? "" : "— غیرفعال")</option> }
-        </select></div><div class="col-md-6"><label asp-for="Input.RoleIds" class="form-label">نقش‌ها (انتخاب چندگانه)</label><select asp-for="Input.RoleIds" class="form-select" size="8">
-            @foreach (var role in Model.Roles) { <option value="@role.RoleId">@role.RoleName @(role.IsActive ? "" : "— غیرفعال")</option> }
-        </select></div></div>
-    </div></div>
-    <div class="card custom-card"><div class="card-header"><h2 class="card-title">سرویس‌های ثبت‌شده</h2></div><div class="card-body">
-        <p>برای نمایش اعلان‌های سامانه، سرویس با کد <code>NOTIFICATIONS</code> را فعال کنید. آدرس سرویس اختیاری است. برای افزودن سرویس، ردیف خالی را تکمیل و ذخیره کنید.</p>
-        @foreach (var sync in Model.SyncStatuses.Where(s => s.ServiceCode == "NOTIFICATIONS"))
-        { <p>آخرین واکشی موفق: @(sync.LastSyncedAt?.ToString("yyyy/MM/dd HH:mm") ?? "هنوز انجام نشده")</p>
-          @if (sync.LastSyncError is not null) { <p class="text-danger" role="status">@sync.LastSyncError</p> }
-        }
-        <div class="table-responsive"><table class="table"><thead><tr><th>کد سرویس</th><th>نام</th><th>آدرس سرویس</th><th>فعال</th><th>حذف</th></tr></thead><tbody>
-        @for (var i = 0; i < Model.Input.Services.Count; i++)
-        {
-            <tr><td><input asp-for="Input.Services[i].ServiceCode" aria-label="کد سرویس" class="form-control" dir="ltr" maxlength="50" /></td>
-                <td><input asp-for="Input.Services[i].DisplayName" aria-label="نام سرویس" class="form-control" maxlength="150" /></td>
-                <td><input asp-for="Input.Services[i].EndpointUrl" aria-label="آدرس سرویس" class="form-control" dir="ltr" maxlength="500" /></td>
-                <td><input asp-for="Input.Services[i].IsActive" aria-label="فعال" /></td><td><input asp-for="Input.Services[i].Remove" aria-label="حذف" /></td></tr>
-        }
-        </tbody></table></div>
-    </div></div>
-    <div class="mb-3"><label asp-for="Input.AccessRequestNotificationChannels" class="form-label">اطلاع‌رسانی درخواست‌های دسترسی به مدیر و گروه‌های نظارت</label><select asp-for="Input.AccessRequestNotificationChannels" class="form-select"><option value="InApp">درون‌برنامه‌ای</option><option value="Sms">پیامک موبایل</option><option value="Both">درون‌برنامه‌ای و پیامک</option></select></div>
-<button class="btn btn-primary" type="submit">ذخیره تنظیمات</button> <a asp-page="Index" class="btn btn-light">بازگشت</a>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-apps"></i>مشخصات سامانه</h2>
+            <p class="form-section__help">نام، آیکن و خلاصه در کارت سامانه در پورتال نمایش داده می‌شوند. عدد کمتر در «ترتیب نمایش»، سامانه را جلوتر نشان می‌دهد.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="Input.ApplicationName" class="form-label">نام <span class="text-danger">*</span></label><input asp-for="Input.ApplicationName" class="form-control" required maxlength="150" /></div>
+            <div class="col-md-6"><label asp-for="Input.ApplicationCode" class="form-label">کد <span class="text-danger">*</span></label><input asp-for="Input.ApplicationCode" class="form-control" dir="ltr" required maxlength="50" /></div>
+            <div class="col-md-8"><label asp-for="Input.BaseUrl" class="form-label">نشانی ورود سامانه</label><input asp-for="Input.BaseUrl" class="form-control" dir="ltr" maxlength="500" placeholder="https://..." /></div>
+            <div class="col-md-4"><label asp-for="Input.DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="Input.DisplayOrder" class="form-control" /></div>
+            <div class="col-md-8"><label asp-for="Input.Description" class="form-label">خلاصه کارکرد</label><textarea asp-for="Input.Description" class="form-control" rows="2" maxlength="500" data-counter></textarea></div>
+            <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select">
+                @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@AdminLabels.Icon(icon)</option> }
+            </select></div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-world"></i>نحوه‌ی دسترسی</h2>
+            <p class="form-section__help">این ویژگی‌ها نوع نمایش سامانه را در پورتال مشخص می‌کنند.</p>
+        </div>
+        <div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_RequiresLogin">نیازمند ورود در سامانه</label><p class="switch-row__help">کاربر برای استفاده از سامانه باید وارد شده باشد.</p></div>
+                <input asp-for="Input.RequiresLogin" class="form-check-input" role="switch" />
+            </div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">فقط برای اطلاع کاربر نمایش داده می‌شود؛ دسترسی شبکه را تغییر نمی‌دهد.</p></div>
+                <input asp-for="Input.IsInternetAccessible" class="form-check-input" role="switch" />
+            </div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_IsPublic">عمومی</label><p class="switch-row__help">برای همه‌ی کاربران فعال پورتال، بدون تخصیص دسترسی نمایش داده می‌شود.</p></div>
+                <input asp-for="Input.IsPublic" class="form-check-input" role="switch" />
+            </div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-users"></i>دسترسی کاربران و نقش‌ها</h2>
+            <p class="form-section__help">دسترسی مستقیم یا عضویت در یکی از نقش‌های انتخاب‌شده کافی است. کاربران و نقش‌های غیرفعال دسترسی ایجاد نمی‌کنند.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-lg-6"><partial name="_PickList" model='PickList.ForUsers("Input.UserIds", "کاربران", Model.Users, Model.Input.UserIds)' /></div>
+            <div class="col-lg-6"><partial name="_PickList" model='PickList.ForRoles("Input.RoleIds", "نقش‌ها", Model.Roles, Model.Input.RoleIds)' /></div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-bell"></i>اطلاع‌رسانی درخواست‌ها</h2>
+            <p class="form-section__help">درخواست‌های دسترسی این سامانه از این راه به مدیران و گروه‌های نظارت اطلاع داده می‌شود.</p>
+        </div>
+        <div class="row"><div class="col-md-6">
+            <label asp-for="Input.AccessRequestNotificationChannels" class="form-label">روش اطلاع‌رسانی</label>
+            <select asp-for="Input.AccessRequestNotificationChannels" class="form-select">
+                @foreach (var channel in new[] { "InApp", "Sms", "Both" }) { <option value="@channel">@AdminLabels.NotificationChannel(channel)</option> }
+            </select>
+        </div></div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-plug-connected"></i>سرویس‌های ثبت‌شده</h2>
+            <p class="form-section__help">برای نمایش اعلان‌های سامانه، سرویس با کد <code>NOTIFICATIONS</code> را فعال کنید. برای افزودن سرویس، ردیف خالی را تکمیل و ذخیره کنید.</p>
+        </div>
+        <div>
+            @foreach (var sync in Model.SyncStatuses.Where(s => s.ServiceCode == "NOTIFICATIONS"))
+            {
+                <div class="admin-callout @(sync.LastSyncError is null ? "" : "admin-callout--warning") mb-3" role="status">
+                    <i class="ti @(sync.LastSyncError is null ? "ti-info-circle" : "ti-alert-triangle")" aria-hidden="true"></i>
+                    <div>
+                        آخرین واکشی موفق: <span dir="ltr">@(sync.LastSyncedAt?.ToString("yyyy/MM/dd HH:mm") ?? "هنوز انجام نشده")</span>
+                        @if (sync.LastSyncError is not null) { <div class="text-danger">@sync.LastSyncError</div> }
+                    </div>
+                </div>
+            }
+            <div class="table-responsive border rounded-3">
+                <table class="table table-admin">
+                    <thead><tr><th>کد سرویس</th><th>نام</th><th>نشانی سرویس</th><th class="text-center">فعال</th><th class="text-center">حذف</th></tr></thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Input.Services.Count; i++)
+                        {
+                            <tr>
+                                <td style="min-width:140px"><input asp-for="Input.Services[i].ServiceCode" aria-label="کد سرویس" class="form-control form-control-sm" dir="ltr" maxlength="50" placeholder="@(i == Model.Input.Services.Count - 1 ? "سرویس جدید" : "")" /></td>
+                                <td style="min-width:140px"><input asp-for="Input.Services[i].DisplayName" aria-label="نام سرویس" class="form-control form-control-sm" maxlength="150" /></td>
+                                <td style="min-width:200px"><input asp-for="Input.Services[i].EndpointUrl" aria-label="نشانی سرویس" class="form-control form-control-sm" dir="ltr" maxlength="500" /></td>
+                                <td class="text-center"><input asp-for="Input.Services[i].IsActive" aria-label="فعال" class="form-check-input" /></td>
+                                <td class="text-center"><input asp-for="Input.Services[i].Remove" aria-label="حذف" class="form-check-input" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button class="btn btn-primary btn-wave" type="submit"><i class="ti ti-device-floppy me-1"></i>ذخیره تنظیمات</button>
+        <a asp-page="Index" class="btn btn-primary-light">بازگشت</a>
+        <span class="form-actions__hint"><span class="text-danger">*</span> فیلد الزامی</span>
+    </div>
 </form>

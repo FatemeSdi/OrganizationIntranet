@@ -8,4 +8,6 @@
  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10"><PrivateAssets>all</PrivateAssets></PackageReference>
  </ItemGroup>
+ <!-- Local development keys stay on the developer machine: never part of a publish/deployment. -->
+ <ItemGroup><Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" /></ItemGroup>
 </Project>

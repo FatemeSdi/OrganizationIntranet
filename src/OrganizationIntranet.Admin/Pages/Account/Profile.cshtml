@@ -1,8 +1,9 @@
-@page
+﻿@page
 @model ProfileModel
 @using OrganizationIntranet.Helper
 @{
     ViewData["Title"] = "پروفایل";
+    ViewData["HidePageHead"] = true; // سربرگ و مسیر اختصاصی خودش را دارد
     Layout = User.IsInRole("ADMIN") ? "_LayoutAdmin" : "_LayoutApp";
 }
 @section Styles {
@@ -185,7 +186,7 @@
                                     </div>
 
                                     <div class="text-end mt-4">
-                                        <a href="@(Configuration["Sites:Portal"] + "/Portal")" class="btn btn-light border btn-wave me-2">بازگشت به پورتال</a>
+                                        <a href="@(Configuration["Sites:Portal"] + "/Portal")" class="btn btn-primary-light btn-wave me-2">بازگشت به پورتال</a>
                                         <button type="submit" id="pwBtn" class="btn btn-primary btn-wave">ثبت</button>
                                     </div>
                                 </li>
@@ -201,7 +202,7 @@
 @section Scripts {
     @if (Layout == "_LayoutApp") { <script src="~/lib/jquery/dist/jquery.min.js"></script> }
     @if (Layout == "_LayoutApp") { <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script> }
-    @if (Layout == "_LayoutApp") { <script src="~/assets/js/app-toast.js"></script> }
+    @if (Layout == "_LayoutApp") { <script src="~/assets/js/app-toast.js" asp-append-version="true"></script> }
     <script>
         $(document).ready(function () {
             $("#changePasswordForm").submit(function (e) {

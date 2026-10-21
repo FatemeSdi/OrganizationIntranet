@@ -1,0 +1,31 @@
+@model OrganizationIntranet.ViewComponents.PortalHeaderModel
+<header class="pp-site">
+    <div class="pp-container pp-header">
+        <a class="pp-brand" href="/Portal">
+            <img src="~/assets/images/brand-logos/logo-pmo.png" alt="نشان اداره کل بنادر و دریانوردی استان هرمزگان" />
+            <div><b>اداره کل بنادر و دریانوردی استان هرمزگان</b><span>پورتال داخلی سازمان</span></div>
+        </a>
+        <nav class="pp-nav" aria-label="پیمایش اصلی">
+            <a href="/Portal">خانه</a>
+            <a href="/Portal#news">اخبار و اطلاعیه‌ها</a>
+            <a href="/Portal#systems">سامانه‌های من</a>
+        </nav>
+        <div class="pp-actions">
+            <a class="pp-icon-btn" href="/Notifications" aria-label="@(Model.Unread > 0 ? $"اعلان‌ها، {Model.Unread} خوانده‌نشده" : "اعلان‌ها")" aria-current="@(Model.Active == "notifications" ? "page" : null)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+                @if (Model.Unread > 0) { <span class="pp-count" aria-hidden="true">@Model.Unread</span> }
+            </a>
+            <div class="pp-user">
+                <button type="button" class="pp-user-chip" id="ppUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="ppUserMenu">
+                    <span class="pp-avatar" aria-hidden="true">@Model.Initials</span>
+                    <span class="pp-user-info"><b>@Model.DisplayName</b><small>@Model.RoleNames</small></span>
+                    <svg class="pp-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="pp-menu" id="ppUserMenu" hidden>
+                    <div class="pp-menu-head"><span class="pp-avatar" aria-hidden="true">@Model.Initials</span><div><b>@Model.DisplayName</b><span>@Model.RoleNames</span></div></div>
+                    <ul><partial name="_PortalUserMenuItems" model="(Model.IsAdmin, Model.Active)" /></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

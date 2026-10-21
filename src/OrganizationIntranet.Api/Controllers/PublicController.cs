@@ -21,4 +21,8 @@ public sealed class PublicController(ApplicationCatalogService applications, Pub
 
     [HttpGet("publications/{id:long}")]
     public Task<PublicationDto> Publication(long id) => publications.GetPublicAsync(id);
+
+    /// <summary>تصویر شاخص فقط برای مطلب منتشرشده‌ی عمومی؛ برای پیش‌نویس یا مطلب داخلی «یافت نشد».</summary>
+    [HttpGet("publications/{id:long}/image"), EnableRateLimiting("public-media")]
+    public async Task<IActionResult> PublicationImage(long id) => PublicationImages.File(this, await publications.GetImageAsync(id, OrganizationIntranet.Application.Abstractions.PublicationScope.Public));
 }

@@ -1,0 +1,66 @@
+@page
+@model SettingsModel
+@{
+    ViewData["Title"] = "تنظیمات حساب";
+    ViewData["PortalNav"] = "settings";
+    Layout = "_LayoutPortal";
+}
+@section Styles {
+    <style>
+        .pp-settings { display: grid; grid-template-columns: 1.6fr 1fr; gap: 22px; align-items: start; }
+        .pp-status-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+        .pp-status-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 13.5px; }
+        @@media (max-width: 900px) { .pp-settings { grid-template-columns: 1fr; } }
+    </style>
+}
+
+<div class="pp-settings">
+    <form method="post" asp-page-handler="ChangePassword" class="pp-card" data-busy autocomplete="off" aria-labelledby="password-title">
+        <h2 class="pp-section-title" id="password-title">تغییر رمز عبور</h2>
+        <div asp-validation-summary="All" class="pp-alert pp-alert-error" role="alert"></div>
+        <div class="pp-form-grid">
+            <div class="pp-field" style="grid-column: 1 / -1">
+                <label for="CurrentPassword">رمز عبور فعلی</label>
+                <div class="pp-input-group">
+                    <button type="button" class="pp-addon" data-password-toggle="CurrentPassword" aria-label="نمایش رمز" aria-pressed="false"><i class="ti ti-eye"></i></button>
+                    <input asp-for="CurrentPassword" type="password" class="pp-input" autocomplete="current-password" value="" />
+                </div>
+            </div>
+            <div class="pp-field">
+                <label for="NewPassword">رمز عبور جدید</label>
+                <div class="pp-input-group">
+                    <button type="button" class="pp-addon" data-password-toggle="NewPassword" aria-label="نمایش رمز" aria-pressed="false"><i class="ti ti-eye"></i></button>
+                    <input asp-for="NewPassword" type="password" class="pp-input" autocomplete="new-password" value="" />
+                </div>
+            </div>
+            <div class="pp-field">
+                <label for="ConfirmNewPassword">تکرار رمز عبور جدید</label>
+                <div class="pp-input-group">
+                    <button type="button" class="pp-addon" data-password-toggle="ConfirmNewPassword" aria-label="نمایش رمز" aria-pressed="false"><i class="ti ti-eye"></i></button>
+                    <input asp-for="ConfirmNewPassword" type="password" class="pp-input" autocomplete="new-password" value="" />
+                </div>
+            </div>
+        </div>
+        <p class="pp-hint" style="margin:12px 0 0">پس از تغییر رمز، با رمز جدید دوباره وارد می‌شوید.</p>
+        <div class="pp-actions-row">
+            <button type="submit" class="pp-btn pp-btn-primary">ثبت رمز جدید</button>
+            <a href="/Account/Profile" class="pp-btn pp-btn-soft">بازگشت به پروفایل</a>
+        </div>
+    </form>
+
+    <div>
+        <section class="pp-card" aria-labelledby="security-title">
+            <h2 class="pp-section-title" id="security-title">امنیت ورود</h2>
+            <ul class="pp-status-list">
+                <li>ورود دومرحله‌ای<span class="pp-badge @(Model.Security.TwoFactorRequired ? "pp-badge-warning" : "pp-badge-muted")">@(Model.Security.TwoFactorRequired ? "الزامی" : "اختیاری")</span></li>
+                <li>Google Authenticator<span class="pp-badge @(Model.Security.AuthenticatorConfigured ? "pp-badge-success" : "pp-badge-muted")">@(Model.Security.AuthenticatorConfigured ? "تنظیم شده" : "تنظیم نشده")</span></li>
+                <li>تأیید با پیامک<span class="pp-badge @(Model.Security.SmsAvailable ? "pp-badge-success" : "pp-badge-muted")">@(Model.Security.SmsAvailable ? "در دسترس" : "در دسترس نیست")</span></li>
+            </ul>
+            <div class="pp-actions-row"><a asp-page="/Account/Security" class="pp-btn pp-btn-outline"><i class="ti ti-shield-lock" aria-hidden="true"></i>مدیریت Google Authenticator</a></div>
+        </section>
+        <section class="pp-card" aria-labelledby="session-title">
+            <h2 class="pp-section-title" id="session-title">نشست</h2>
+            <div class="pp-actions-row" style="margin-top:0"><a href="/Account/Logout" class="pp-btn pp-btn-danger-soft"><i class="ti ti-logout" aria-hidden="true"></i>خروج از حساب (همه سامانه‌ها)</a></div>
+        </section>
+    </div>
+</div>

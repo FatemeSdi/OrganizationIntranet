@@ -10,6 +10,8 @@ public sealed class AuthenticationSettingsDto
     public bool TwoFactorEnabled { get; set; }
     public bool AuthenticatorEnabled { get; set; } = true;
     public bool SmsEnabled { get; set; }
+    /// <summary>ورود بدون رمز با کد ملی و کد یک‌بارمصرف پیامکی (یک عامل: در اختیار داشتن تلفن). به سرویس پیامک فعال نیاز دارد.</summary>
+    public bool NationalIdSmsEnabled { get; set; }
     [MaxLength(253), DisplayFormat(ConvertEmptyStringToNull = false)] public string LdapHost { get; set; } = "";
     [Range(1, 65535)] public int LdapPort { get; set; } = 636;
     [MaxLength(253), DisplayFormat(ConvertEmptyStringToNull = false)] public string LdapDomain { get; set; } = "";
@@ -21,7 +23,15 @@ public sealed class AuthenticationSettingsDto
     public Guid Revision { get; set; }
 }
 
-public record AuthenticationMethodsDto(bool PasswordEnabled, bool LdapEnabled, bool ForgotPasswordEnabled, bool TwoFactorEnabled, bool AuthenticatorEnabled, bool SmsEnabled);
+public record AuthenticationMethodsDto(bool PasswordEnabled, bool LdapEnabled, bool ForgotPasswordEnabled, bool TwoFactorEnabled, bool AuthenticatorEnabled, bool SmsEnabled, bool NationalIdSmsEnabled = false);
+public static class LoginMethods
+{
+    public const string Password = "password";
+    public const string Ldap = "ldap";
+    public const string NationalIdSms = "national-id-sms";
+}
+public record NationalIdLoginRequest(string NationalId);
+public record VerifyNationalIdLoginRequest(string ChallengeToken, string Code);
 public record AuthenticationChallengeDto(string ChallengeToken, string[] Methods, int ExpiresIn = 300);
 public record VerifyLoginRequest(string ChallengeToken, string Method, string Code);
 public record SendLoginSmsRequest(string ChallengeToken);

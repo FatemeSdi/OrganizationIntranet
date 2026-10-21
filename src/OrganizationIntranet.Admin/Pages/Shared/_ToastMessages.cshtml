@@ -1,0 +1,5 @@
+@model OrganizationIntranet.Pages.Shared.ToastMessages
+@* پیام نتیجه‌ی عملیات به‌صورت toast تمپلیت yzen. app-toast.js این عنصرها را هنگام بارگذاری صفحه نمایش می‌دهد.
+   متن فقط از textContent خوانده می‌شود (Razor آن را encode کرده)، پس هرگز به‌عنوان HTML اجرا نمی‌شود. *@
+@if (!string.IsNullOrWhiteSpace(Model.Success)) { <div class="d-none" data-toast="success">@Model.Success</div> }
+@if (!string.IsNullOrWhiteSpace(Model.Error)) { <div class="d-none" data-toast="danger">@Model.Error</div> }

@@ -39,4 +39,23 @@ public sealed class AuthenticationDatabaseTests
         stale.Consumed = true;
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => new OrganizationIntranet.Api.Data.AuthenticationRepository(concurrent).SaveAsync());
     }
+
+    [Fact]
+    public async Task National_id_login_challenges_are_allowed_but_other_values_are_still_rejected()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        connection.CreateFunction("GETUTCDATE", () => DateTime.UtcNow);
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var user = new User { Username = "otp-test", Name = "Otp", LastName = "Test", NationalId = "0012345679" };
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        var challenge = new AuthenticationChallenge { Id = new string('B', 64), UserId = user.UserId, Purpose = "otp-login", LoginMethod = "national-id-sms", ExpiresAt = DateTime.UtcNow.AddMinutes(5) };
+        db.Add(challenge);
+        await db.SaveChangesAsync(); // ۰۰۶: مقدارهای جدید پذیرفته می‌شوند
+        db.Add(new AuthenticationChallenge { Id = new string('C', 64), UserId = user.UserId, Purpose = "otp-login", LoginMethod = "sms", ExpiresAt = DateTime.UtcNow.AddMinutes(5) });
+        await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
+        Assert.Contains(db.Model.FindEntityType(typeof(User))!.GetIndexes(), i => i.GetDatabaseName() == "IX_User_NationalId" && !i.IsUnique);
+    }
 }

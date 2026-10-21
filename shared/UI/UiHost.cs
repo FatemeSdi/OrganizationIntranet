@@ -3,23 +3,43 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication;
 using OrganizationIntranet.Contracts;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace OrganizationIntranet.UI;
 
 public static class UiHost
 {
+    /// <summary>Where this process looked for User Secrets and what it effectively sees: names and lengths only, never values.</summary>
+    private static string SecretsDiagnostics(string applicationName, IConfiguration configuration)
+    {
+        string? id = null;
+        try { id = System.Reflection.Assembly.Load(new System.Reflection.AssemblyName(applicationName)).GetCustomAttribute<Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute>()?.UserSecretsId; } catch (Exception) { }
+        var file = id is null ? null : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", id, "secrets.json");
+        var exists = file is not null && File.Exists(file);
+        var keys = "n/a";
+        if (exists)
+        {
+            try { using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file!)); keys = string.Join(", ", document.RootElement.EnumerateObject().Select(p => $"{p.Name}(len={p.Value.ToString().Length})")); }
+            catch (Exception) { keys = "unreadable"; }
+        }
+        var client = configuration["Api:ClientKey"]; var admin = configuration["Api:AdminClientKey"];
+        return $" Secrets: windowsUser={Environment.UserName}, id={id ?? "<none>"}, file={file ?? "<none>"}, exists={exists}, keysInFile=[{keys}]; effective ClientKey len={client?.Length ?? 0}, AdminClientKey len={admin?.Length ?? 0}, equal={(client is not null && client == admin)}.";
+    }
+
     public static WebApplication Create(string[] args, string assemblyName)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, ApplicationName = assemblyName, WebRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot") });
         var name = builder.Configuration["Ui:Name"] ?? throw new InvalidOperationException("Configure Ui:Name.");
+        // User Secrets are read only in Development; say which environment is active so a wrong launch profile is obvious.
+        var hint = $" (Environment: {builder.Environment.EnvironmentName}. User Secrets are read only when ASPNETCORE_ENVIRONMENT=Development; start with the 'https' launch profile or tools/Start-Dev.ps1.{(builder.Environment.IsDevelopment() ? SecretsDiagnostics(assemblyName, builder.Configuration) : "")})"; // paths/user details only on a developer machine
         var key = builder.Configuration["Api:ClientKey"];
-        if (string.IsNullOrWhiteSpace(key) || key.Length < 32) throw new InvalidOperationException("Configure Api:ClientKey in user secrets or the deployment secret store.");
+        if (string.IsNullOrWhiteSpace(key) || key.Length < 32) throw new InvalidOperationException("Configure Api:ClientKey in user secrets or the deployment secret store." + hint);
         if (name == "Admin")
         {
             var adminKey = builder.Configuration["Api:AdminClientKey"];
             if (string.IsNullOrWhiteSpace(adminKey) || adminKey.Length < 32 || adminKey == key)
-                throw new InvalidOperationException("Configure a distinct Api:AdminClientKey for Admin and API only.");
+                throw new InvalidOperationException("Configure a distinct Api:AdminClientKey for Admin and API only." + hint);
             if (!Uri.TryCreate(builder.Configuration["Sites:Admin"], UriKind.Absolute, out var adminOrigin)
                 || adminOrigin.Scheme != "https" || adminOrigin.AbsolutePath != "/" || !string.IsNullOrEmpty(adminOrigin.Query)
                 || !string.IsNullOrEmpty(adminOrigin.UserInfo) || !string.IsNullOrEmpty(adminOrigin.Fragment))

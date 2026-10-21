@@ -1,0 +1,55 @@
+@* نمای بندر برای کادر خوش‌آمد داشبورد: سیلوئت ساده و رسمی با رنگ‌های تم (admin-ui.css، بخش port-art).
+   درون‌خطی است تا CSS تم بتواند در حالت تیره خورشید را به ماه و ستاره تبدیل کند. *@
+<svg class="port-art admin-hero__art" viewBox="0 0 480 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs>
+        <mask id="port-art-moon-cut">
+            <rect x="0" y="0" width="120" height="100" fill="#fff" />
+            <circle cx="62" cy="38" r="15" fill="#000" />
+        </mask>
+    </defs>
+
+    <!-- خورشید (روشن) / ماه و ستاره (تیره) -->
+    <g class="pi-sun"><circle cx="52" cy="46" r="30" class="pi-sun-halo" /><circle cx="52" cy="46" r="18" class="pi-sun-disc" /></g>
+    <g class="pi-moon"><circle cx="52" cy="46" r="18" mask="url(#port-art-moon-cut)" /></g>
+    <g class="pi-star"><circle cx="110" cy="26" r="1.4" /><circle cx="160" cy="44" r="1.1" /><circle cx="96" cy="70" r="1" /><circle cx="214" cy="22" r="1.3" /><circle cx="300" cy="36" r="1" /><circle cx="22" cy="92" r="1.1" /></g>
+
+    <!-- افق شهر و بندر در دوردست -->
+    <path class="pi-far" d="M0 150V118h18v-8h16v14h14V104h20v20h12v-12h18v38h22v-26h16v10h20V96h14v54h18v-30h24v30h16v-22h20v22h22v-40h12v-10h10v50h20v-18h18v18h16v-28h22v28h20v-36h14v36h12V150Z" />
+
+    <!-- جرثقیل‌های اسکله -->
+    <g class="pi-crane">
+        <path d="M162 150 168 70M204 150 198 70M165 116h36M167 92h32M168 70l15-28 15 28M183 42l92 28M183 42l-42 28M138 70h146" />
+        <path d="M282 150 288 78M320 150 314 78M285 120h32M287 98h28M288 78l13-24 13 24M301 54l78 24M301 54l-36 24M262 78h124" />
+        <path class="pi-hoist" d="M244 74v30M352 82v26" />
+    </g>
+    <rect class="pi-trolley" x="238" y="70" width="12" height="6" rx="1" />
+    <rect class="pi-trolley" x="346" y="78" width="12" height="6" rx="1" />
+
+    <!-- محوطه‌ی کانتینر روی اسکله -->
+    <g class="pi-box">
+        <rect x="8" y="132" width="30" height="16" /><rect x="40" y="132" width="30" height="16" class="pi-box-2" /><rect x="72" y="132" width="30" height="16" />
+        <rect x="24" y="114" width="30" height="16" class="pi-box-3" /><rect x="56" y="114" width="30" height="16" />
+        <rect x="104" y="132" width="30" height="16" class="pi-box-accent" />
+    </g>
+    <rect class="pi-quay" x="0" y="148" width="480" height="5" />
+
+    <!-- فانوس دریایی -->
+    <g class="pi-lighthouse">
+        <path d="M452 148 456 100h12l4 48Z" /><rect x="454" y="92" width="16" height="8" rx="1" /><path d="M458 92 462 84l4 8Z" />
+        <rect class="pi-light" x="457" y="94" width="10" height="4" rx="1" />
+    </g>
+
+    <!-- کشتی کانتینربر -->
+    <g class="pi-box">
+        <rect x="196" y="128" width="26" height="12" /><rect x="224" y="128" width="26" height="12" class="pi-box-2" /><rect x="252" y="128" width="26" height="12" />
+        <rect x="280" y="128" width="26" height="12" class="pi-box-accent" /><rect x="308" y="128" width="26" height="12" class="pi-box-3" /><rect x="336" y="128" width="26" height="12" />
+        <rect x="224" y="114" width="26" height="12" class="pi-box-3" /><rect x="252" y="114" width="26" height="12" /><rect x="280" y="114" width="26" height="12" class="pi-box-2" /><rect x="308" y="114" width="26" height="12" />
+    </g>
+    <path class="pi-ship" d="M370 140V108h26v8h8v24Z" />
+    <path class="pi-ship" d="M180 140h244l-14 24H194Z" />
+    <path class="pi-ship-line" d="M188 148h228" />
+
+    <!-- آب -->
+    <rect class="pi-water" x="0" y="153" width="480" height="47" />
+    <path class="pi-wave" d="M24 172h40M110 182h56M236 176h48M330 188h60M410 172h40" />
+</svg>

@@ -1,109 +1,79 @@
-@page
+﻿@page
 @model EditModel
 @{
     ViewData["Title"] = Model.IsNew ? "افزودن کاربر" : "ویرایش کاربر";
+    ViewData["Icon"] = Model.IsNew ? "ti ti-user-plus" : "ti ti-user-edit";
+    ViewData["Subtitle"] = Model.IsNew ? "حساب جدید بسازید و نقش‌های آن را مشخص کنید" : $"{Model.Name} {Model.LastName}".Trim();
+    ViewData["ParentTitle"] = "کاربران";
+    ViewData["ParentUrl"] = "/Admin/Users";
     Layout = "_LayoutAdmin";
 }
 
-<ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
-    <li class="breadcrumb-item"><a href="/Admin/Users">کاربران</a></li>
-    <li aria-current="page" class="breadcrumb-item active">@ViewData["Title"]</li>
-</ol>
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, Model.ErrorMessage)' />
 
-<div class="card custom-card">
-    <div class="card-header">
-        <div class="card-title d-flex align-items-center gap-2">
-            <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-user-edit fs-14"></i></span>
-            @ViewData["Title"]
+<form method="post" class="card custom-card" data-busy data-dirty-guard>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-id-badge-2"></i>اطلاعات هویتی</h2>
+            <p class="form-section__help">کد ملی و شماره همراه برای «ورود با کد ملی و پیامک»، بازیابی رمز و پیامک‌های اطلاع‌رسانی استفاده می‌شوند.</p>
         </div>
-    </div>
-    <div class="card-body">
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-        {
-            <div id="errorMessageData" class="d-none">@Model.ErrorMessage</div>
-        }
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="Name" class="form-label">نام <span class="text-danger">*</span></label><input asp-for="Name" class="form-control" required /></div>
+            <div class="col-md-6"><label asp-for="LastName" class="form-label">نام خانوادگی <span class="text-danger">*</span></label><input asp-for="LastName" class="form-control" required /></div>
+            <div class="col-md-6"><label asp-for="NationalId" class="form-label">کد ملی</label><input asp-for="NationalId" class="form-control" maxlength="10" inputmode="numeric" dir="ltr" placeholder="۱۰ رقم" /></div>
+            <div class="col-md-6"><label asp-for="MobileNumber" class="form-label">شماره همراه</label><input asp-for="MobileNumber" class="form-control" maxlength="11" inputmode="tel" dir="ltr" placeholder="09xxxxxxxxx" /></div>
+            <div class="col-md-6"><label asp-for="Email" class="form-label">ایمیل</label><input asp-for="Email" type="email" class="form-control" dir="ltr" /></div>
+        </div>
+    </section>
 
-        <form method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="Id" />
-
-            <h6 class="fw-semibold text-primary mb-3"><i class="ti ti-id-badge-2 me-1"></i>اطلاعات هویتی</h6>
-            <div class="row gy-3">
-                <div class="col-xl-6">
-                    <label class="form-label">نام</label>
-                    <input asp-for="Name" class="form-control" required />
-                </div>
-                <div class="col-xl-6">
-                    <label class="form-label">نام خانوادگی</label>
-                    <input asp-for="LastName" class="form-control" required />
-                </div>
-                <div class="col-xl-6">
-                    <label class="form-label">کد ملی</label>
-                    <input asp-for="NationalId" class="form-control" maxlength="10" dir="ltr" />
-                </div>
-                <div class="col-xl-6">
-                    <label class="form-label">شماره همراه</label>
-                    <input asp-for="MobileNumber" class="form-control" maxlength="11" dir="ltr" />
-                </div>
-                <div class="col-xl-6">
-                    <label class="form-label">ایمیل</label>
-                    <input asp-for="Email" class="form-control" dir="ltr" />
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-lock"></i>اطلاعات ورود</h2>
+            <p class="form-section__help">@(Model.IsNew ? "برای کاربرانی که فقط با LDAP یا کد ملی وارد می‌شوند، رمز محلی را خالی بگذارید." : "برای حفظ رمز فعلی، فیلد رمز را خالی بگذارید.")</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6"><label asp-for="Username" class="form-label">نام کاربری <span class="text-danger">*</span></label><input asp-for="Username" class="form-control" dir="ltr" required autocomplete="off" /></div>
+            <div class="col-md-6"><label asp-for="NewPassword" class="form-label">@(Model.IsNew ? "رمز عبور" : "رمز عبور جدید")</label><input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" /></div>
+            <div class="col-12">
+                <div class="switch-row">
+                    <div>
+                        <label class="switch-row__label" for="IsActive">حساب فعال است</label>
+                        <p class="switch-row__help">حساب غیرفعال نمی‌تواند وارد شود و دسترسی‌های آن اعمال نمی‌شود.</p>
+                    </div>
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
                 </div>
             </div>
+        </div>
+    </section>
 
-            <hr class="my-4" />
-
-            <h6 class="fw-semibold text-primary mb-3"><i class="ti ti-lock me-1"></i>اطلاعات ورود</h6>
-            <div class="row gy-3">
-                <div class="col-xl-6">
-                    <label class="form-label">نام کاربری</label>
-                    <input asp-for="Username" class="form-control" dir="ltr" required />
-                </div>
-                <div class="col-xl-6">
-                    <label class="form-label">@(Model.IsNew ? "رمز عبور" : "رمز عبور جدید (اختیاری)")</label>
-                    <input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" />
-                </div>
-                <div class="col-xl-6 d-flex align-items-center">
-                    <div class="form-check form-switch">
-                        <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
-                        <label class="form-check-label" for="IsActive">کاربر فعال است</label>
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-user-shield"></i>نقش‌ها</h2>
+            <p class="form-section__help">نقش، سطح کلی دسترسی را تعیین می‌کند و مجوزهای هر سامانه از طریق نقش‌ها داده می‌شود. تغییر نقش پس از ورود دوباره‌ی کاربر اعمال می‌شود.</p>
+        </div>
+        <div class="row g-2">
+            @foreach (var role in Model.AllRoles)
+            {
+                <div class="col-md-6">
+                    <div class="switch-row mb-0">
+                        <label class="switch-row__label" for="role-@role.RoleId">@role.RoleName <span class="code-chip ms-1">@role.RoleCode</span></label>
+                        <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" />
                     </div>
                 </div>
-            </div>
+            }
+            @if (Model.AllRoles.Count == 0)
+            {
+                <div class="col-12"><span class="text-muted fs-13">هیچ نقشی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span></div>
+            }
+        </div>
+    </section>
 
-            <hr class="my-4" />
-
-            <h6 class="fw-semibold text-primary mb-3"><i class="ti ti-shield-lock me-1"></i>نقش‌ها و سطح دسترسی</h6>
-            <div class="d-flex flex-wrap gap-2">
-                @foreach (var role in Model.AllRoles)
-                {
-                    var isChecked = Model.SelectedRoleIds.Contains(role.RoleId);
-                    <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 @(isChecked ? "border-primary bg-primary-transparent" : "")" style="cursor:pointer;">
-                        <input type="checkbox" class="form-check-input m-0" name="SelectedRoleIds" value="@role.RoleId"
-                               id="role-@role.RoleId" checked="@isChecked" />
-                        <span class="fw-medium">@role.RoleName</span>
-                    </label>
-                }
-                @if (Model.AllRoles.Count == 0)
-                {
-                    <span class="text-muted fs-13">هیچ نقشی تعریف نشده است.</span>
-                }
-            </div>
-
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
-                <a href="/Admin/Users" class="btn btn-light border btn-wave">انصراف</a>
-            </div>
-        </form>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+        <a href="/Admin/Users" class="btn btn-primary-light">انصراف</a>
+        <span class="form-actions__hint"><span class="text-danger">*</span> فیلد الزامی</span>
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        (function () {
-            var errorEl = document.getElementById('errorMessageData');
-            if (errorEl) showToast(errorEl.textContent, 'danger');
-        })();
-    </script>
-}
+</form>

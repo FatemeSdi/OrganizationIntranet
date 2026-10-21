@@ -1,0 +1,27 @@
+@model OrganizationIntranet.Pages.Shared.PickList
+@{ var id = "pick-" + Model.Name.Replace('.', '-'); }
+<div class="pick-list" data-filter-scope data-pick-list>
+    <div class="pick-list__head">
+        <span class="form-label mb-0" id="@id-label">@Model.Label</span>
+        <span class="text-muted fs-12"><span data-pick-count>@Model.Items.Count(i => i.Selected)</span> مورد انتخاب‌شده</span>
+    </div>
+    @if (Model.Items.Count > 6)
+    {
+        <div class="admin-toolbar__search mw-100 mb-2"><i class="ti ti-search" aria-hidden="true"></i><input type="search" class="form-control form-control-sm" placeholder="@Model.SearchPlaceholder" aria-label="@Model.SearchPlaceholder" data-filter="search" /></div>
+    }
+    <div class="pick-list__items" role="group" aria-labelledby="@id-label">
+        @foreach (var item in Model.Items.OrderByDescending(i => i.Selected).ThenBy(i => i.Inactive).ThenBy(i => i.Label))
+        {
+            <label class="pick-list__item" data-row data-search="@item.Label @item.Sub">
+                <input type="checkbox" class="form-check-input m-0" name="@Model.Name" value="@item.Value" checked="@item.Selected" />
+                <span class="min-w-0">
+                    <span class="d-block text-truncate">@item.Label</span>
+                    @if (item.Sub is not null) { <small class="d-block text-muted text-truncate" dir="ltr">@item.Sub</small> }
+                </span>
+                @if (item.Inactive) { <span class="status-pill status-pill--muted ms-auto">غیرفعال</span> }
+            </label>
+        }
+        @if (Model.Items.Count == 0) { <div class="text-muted fs-12 p-3">موردی تعریف نشده است.</div> }
+    </div>
+    <div data-filter-empty hidden class="text-muted fs-12 pt-2">موردی پیدا نشد.</div>
+</div>

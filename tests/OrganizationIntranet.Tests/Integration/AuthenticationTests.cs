@@ -217,6 +217,93 @@ public sealed class AuthenticationTests : IDisposable
         Mutate(db => Assert.True(db.Users.Single(u => u.Username == "admin").LockedUntil > DateTime.UtcNow));
     }
 
+    private const string MemberNationalId = "0012345679";
+    private async Task EnableNationalId(bool enabled = true)
+    {
+        await Login();
+        var s = await Settings();
+        s.SmsEnabled = true; s.SmsEndpoint = "https://sms.example.org/send"; s.SmsApiKey = "private-test-key";
+        s.NationalIdSmsEnabled = enabled;
+        await Save(s);
+        client.DefaultRequestHeaders.Authorization = null; // ذخیره، نشست‌ها را باطل می‌کند؛ ادامه به‌صورت ناشناس
+    }
+    private async Task<AuthenticationChallengeDto> StartNationalId(string nationalId)
+    {
+        var response = await client.PostAsJsonAsync("/api/account/national-id/start", new NationalIdLoginRequest(nationalId));
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<AuthenticationChallengeDto>())!;
+    }
+    private Task<HttpResponseMessage> VerifyNationalId(string token, string code) =>
+        client.PostAsJsonAsync("/api/account/national-id/verify", new VerifyNationalIdLoginRequest(token, code));
+
+    [Fact]
+    public async Task National_id_sms_login_issues_tokens_without_revealing_whether_the_id_is_registered()
+    {
+        Mutate(db => db.Users.Single(u => u.Username == "member").NationalId = MemberNationalId);
+        await EnableNationalId();
+        Assert.True((await client.GetFromJsonAsync<AuthenticationMethodsDto>("/api/account/methods"))!.NationalIdSmsEnabled);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/account/national-id/start", new NationalIdLoginRequest("0012345678"))).StatusCode); // checksum
+
+        var unknown = await StartNationalId("1234567891"); // معتبر ولی ثبت‌نشده: همان شکل پاسخ، بدون پیامک
+        Assert.Equal(64, unknown.ChallengeToken.Length);
+        Assert.Equal(["sms"], unknown.Methods);
+        Assert.Equal(0, providers.SmsCalls);
+
+        var real = await StartNationalId("۰۰۱۲۳۴۵۶۷۹"); // ارقام فارسی پذیرفته می‌شود
+        Assert.Equal(1, providers.SmsCalls);
+        var code = providers.LastCode!;
+        Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(real.ChallengeToken, code == "000000" ? "111111" : "000000")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(unknown.ChallengeToken, code)).StatusCode); // کد درست روی چالش دیگر کار نمی‌کند
+
+        var ok = await VerifyNationalId(real.ChallengeToken, code);
+        ok.EnsureSuccessStatusCode();
+        var tokens = (await ok.Content.ReadFromJsonAsync<Tokens>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+        Assert.Equal("member", (await client.GetFromJsonAsync<ProfileDto>("/api/account/me"))!.Username);
+        client.DefaultRequestHeaders.Authorization = null;
+        Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(real.ChallengeToken, code)).StatusCode); // یک‌بارمصرف
+    }
+
+    [Fact]
+    public async Task National_id_login_fails_closed_for_ambiguous_inactive_throttled_and_wrong_codes()
+    {
+        Mutate(db => db.Users.Single(u => u.Username == "member").NationalId = MemberNationalId);
+        await EnableNationalId();
+        var c = await StartNationalId(MemberNationalId);
+        Assert.Equal(1, providers.SmsCalls);
+        (await client.PostAsJsonAsync("/api/account/national-id/resend", new SendLoginSmsRequest(c.ChallengeToken))).EnsureSuccessStatusCode();
+        Assert.Equal(1, providers.SmsCalls); // دوره‌ی انتظار ۶۰ ثانیه: پاسخ یکسان، بدون پیامک
+        (await client.PostAsJsonAsync("/api/account/national-id/resend", new SendLoginSmsRequest(new string('A', 64)))).EnsureSuccessStatusCode(); // چالش ناموجود: همان پاسخ
+        Mutate(db => db.Users.Single(u => u.Username == "member").LastSecuritySmsAt = DateTime.UtcNow.AddMinutes(-2));
+        (await client.PostAsJsonAsync("/api/account/national-id/resend", new SendLoginSmsRequest(c.ChallengeToken))).EnsureSuccessStatusCode();
+        Assert.Equal(2, providers.SmsCalls);
+
+        for (var i = 0; i < 5; i++) Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(c.ChallengeToken, "999999" == providers.LastCode ? "888888" : "999999")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(c.ChallengeToken, providers.LastCode!)).StatusCode); // پس از ۵ تلاش و قفل حساب
+        Mutate(db => Assert.True(db.Users.Single(u => u.Username == "member").LockedUntil > DateTime.UtcNow));
+
+        Mutate(db => { var m = db.Users.Single(u => u.Username == "member"); m.LockedUntil = null; m.LastSecuritySmsAt = null; db.Users.Single(u => u.Username == "admin").NationalId = MemberNationalId; });
+        await StartNationalId(MemberNationalId);
+        Assert.Equal(2, providers.SmsCalls); // کد ملی تکراری بین دو کاربر: مبهم ⇒ بدون پیامک
+        Mutate(db => { db.Users.Single(u => u.Username == "admin").NationalId = null; db.Users.Single(u => u.Username == "member").IsActive = false; });
+        await StartNationalId(MemberNationalId);
+        Assert.Equal(2, providers.SmsCalls); // کاربر غیرفعال
+    }
+
+    [Fact]
+    public async Task National_id_login_needs_sms_and_its_own_switch()
+    {
+        await Login();
+        var s = await Settings();
+        s.NationalIdSmsEnabled = true; s.SmsEnabled = false;
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/authentication", s)).StatusCode);
+        await EnableNationalId(enabled: false);
+        Assert.False((await client.GetFromJsonAsync<AuthenticationMethodsDto>("/api/account/methods"))!.NationalIdSmsEnabled);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/account/national-id/start", new NationalIdLoginRequest(MemberNationalId))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await VerifyNationalId(new string('A', 64), "123456")).StatusCode);
+        Assert.Equal(0, providers.SmsCalls);
+    }
+
     [Fact]
     public async Task Recovery_requires_sms_not_identity_fields_and_revokes_tokens()
     {

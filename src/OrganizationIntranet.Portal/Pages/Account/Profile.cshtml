@@ -2,248 +2,42 @@
 @model ProfileModel
 @using OrganizationIntranet.Helper
 @{
-    ViewData["Title"] = "پروفایل";
-    Layout = "_LayoutApp";
+    ViewData["Title"] = "پروفایل من";
+    ViewData["PortalNav"] = "profile";
+    Layout = "_LayoutPortal";
 }
 @section Styles {
-    <link href="~/assets/libs/bootstrap/css/bootstrap.rtl.min.css" rel="stylesheet" />
-    <link href="~/assets/css/vazir-font.css" rel="stylesheet" />
-    <link href="~/assets/css/styles.css" rel="stylesheet" />
-    <link href="~/assets/css/app-theme.css" rel="stylesheet" />
-    <link href="~/assets/css/icons.css" rel="stylesheet" />
     <style>
-        body { background: var(--default-body-bg-color, #f8f9fa); }
+        .pp-identity { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+        .pp-identity .pp-avatar { width: 76px; height: 76px; font-size: 26px; box-shadow: 0 0 0 5px #fff, 0 0 0 7px rgba(214, 162, 76, .45); }
+        .pp-identity h2 { font-size: 20px; font-weight: 800; margin: 0 0 6px; color: var(--navy-900); }
+        .pp-roles { display: flex; flex-wrap: wrap; gap: 6px; }
+        .pp-role { font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 999px; background: rgba(214, 162, 76, .14); color: #8A6320; }
+        .pp-identity-actions { display: flex; gap: 10px; margin-inline-start: auto; flex-wrap: wrap; }
+        @@media (max-width: 767px) { .pp-identity-actions { margin-inline-start: 0; width: 100%; } .pp-identity-actions .pp-btn { flex: 1; } }
     </style>
 }
-<div class="container-fluid mt-3"><a class="btn btn-outline-primary" asp-page="/Account/Security">امنیت حساب و Google Authenticator</a></div>
 
-<div class="container-fluid py-4">
-    <div class="my-2 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <nav>
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="@(Configuration["Sites:Portal"] + "/Portal")">پورتال داخلی</a></li>
-                    <li aria-current="page" class="breadcrumb-item active">پروفایل</li>
-                </ol>
-            </nav>
-        </div>
+<section class="pp-card pp-identity" aria-label="مشخصات کاربر">
+    <span class="pp-avatar" aria-hidden="true">@Model.Initials</span>
+    <div>
+        <h2>@Model.DisplayName</h2>
+        <div class="pp-roles">@foreach (var role in Model.RoleNames.Split("، ", StringSplitOptions.RemoveEmptyEntries)) { <span class="pp-role">@role</span> }</div>
     </div>
-
-    <div class="col-xxl-12">
-        <div class="card custom-card profile-card overflow-hidden bg-transparent shadow-none">
-            <div class="profile-background">
-                <img src="~/assets/images/media/backgrounds/7.png" alt="background">
-            </div>
-            <div class="main-profile-cover">
-                <div class="p-xl-5 pb-xl-0 p-4 position-relative">
-                    <div class="d-flex gap-3 align-items-center justify-content-center flex-wrap mb-4">
-                        <div class="main-avatar avatar avatar-rounded bg-primary-transparent d-flex align-items-center justify-content-center fs-24 fw-bold">
-                            @Model.Initials
-                        </div>
-                        <div class="text-center">
-                            <h4 class="fw-semibold mb-1">@Model.DisplayName</h4>
-                            <p class="mb-0 fs-15">
-                                <i class="ti ti-briefcase lh-1 align-middle me-2"></i>
-                                @Model.RoleNames
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-body p-0 position-relative mx-3 main-card-body mt-4">
-                    <div class="profile-content">
-                        <div class="row gy-3 mb-4">
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-primary-transparent flex-shrink-0">
-                                            <i class="ti ti-user fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">نام کاربری</span>
-                                            <span class="d-block fw-medium text-truncate" dir="ltr">@Model.Username</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-teal-transparent flex-shrink-0">
-                                            <i class="ti ti-id fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">کد ملی</span>
-                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.NationalId ?? "—")</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-success-transparent flex-shrink-0">
-                                            <i class="ti ti-device-mobile fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">شماره همراه</span>
-                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.MobileNumber ?? "—")</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-warning-transparent flex-shrink-0">
-                                            <i class="ti ti-mail fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">ایمیل</span>
-                                            <span class="d-block fw-medium text-truncate" dir="ltr">@(Model.Email ?? "—")</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-info-transparent flex-shrink-0">
-                                            <i class="ti ti-calendar fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">تاریخ عضویت</span>
-                                            <span class="d-block fw-medium text-truncate">@Model.CreatedAt.ToPersianDate()</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 col-xl-4">
-                                <div class="card custom-card border shadow-none mb-0 h-100">
-                                    <div class="card-body d-flex align-items-center gap-3 p-3">
-                                        <span class="avatar avatar-md avatar-rounded bg-danger-transparent flex-shrink-0">
-                                            <i class="ti ti-clock fs-16"></i>
-                                        </span>
-                                        <div class="overflow-hidden">
-                                            <span class="d-block fs-12 text-muted">آخرین ورود</span>
-                                            <span class="d-block fw-medium text-truncate">@Model.LastLogin.ToPersianDate()</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <form id="changePasswordForm">
-                            @Html.AntiForgeryToken()
-
-                            <ul class="list-group list-group-flush border rounded-3">
-                                <li class="list-group-item p-3">
-                                    <div class="row gy-3 align-items-center">
-                                        <div class="col-xl-3">
-                                            <span class="fw-medium">رمز عبور فعلی:</span>
-                                        </div>
-                                        <div class="col-xl-9">
-                                            <div class="input-group">
-                                                <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                                    <i class="ti ti-eye"></i>
-                                                </span>
-                                                <input class="form-control" type="password" name="CurrentPassword"
-                                                       autocomplete="current-password" placeholder="رمز عبور فعلی">
-                                            </div>
-                                        </div>
-
-                                        <div class="col-xl-3">
-                                            <span class="fw-medium">رمز عبور جدید:</span>
-                                        </div>
-                                        <div class="col-xl-9">
-                                            <div class="input-group">
-                                                <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                                    <i class="ti ti-eye"></i>
-                                                </span>
-                                                <input class="form-control" type="password" name="NewPassword"
-                                                       autocomplete="new-password" placeholder="رمز عبور جدید">
-                                            </div>
-                                        </div>
-
-                                        <div class="col-xl-3">
-                                            <span class="fw-medium">تأیید رمز عبور:</span>
-                                        </div>
-                                        <div class="col-xl-9">
-                                            <div class="input-group">
-                                                <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                                    <i class="ti ti-eye"></i>
-                                                </span>
-                                                <input class="form-control" type="password" name="ConfirmNewPassword"
-                                                       autocomplete="new-password" placeholder="تأیید رمز عبور">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-end mt-4">
-                                        <a href="@(Configuration["Sites:Portal"] + "/Portal")" class="btn btn-light border btn-wave me-2">بازگشت به پورتال</a>
-                                        <button type="submit" id="pwBtn" class="btn btn-primary btn-wave">ثبت</button>
-                                    </div>
-                                </li>
-                            </ul>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="pp-identity-actions">
+        <a class="pp-btn pp-btn-outline" href="/Account/Settings"><i class="ti ti-settings" aria-hidden="true"></i>تنظیمات حساب</a>
+        <a class="pp-btn pp-btn-soft" asp-page="/Account/Security"><i class="ti ti-shield-lock" aria-hidden="true"></i>امنیت و Google Authenticator</a>
     </div>
-</div>
+</section>
 
-@section Scripts {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/assets/js/app-toast.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#changePasswordForm").submit(function (e) {
-                e.preventDefault();
-                var form = $(this);
-                var btn = $("#pwBtn");
-                btn.prop("disabled", true);
-                $.ajax({
-                    url: '@Url.Page("/Account/Profile", "ChangePassword")',
-                    type: "POST",
-                    data: form.serialize(),
-                    dataType: "json",
-                    success: function (response) {
-                        if (response && response.success) {
-                            showToast(response.message || "رمز عبور با موفقیت تغییر کرد", "success");
-                            form[0].reset();
-                        } else {
-                            showToast(response?.message || "خطا در تغییر رمز عبور", "danger");
-                        }
-                    },
-                    error: function () {
-                        showToast("خطا در ارتباط با سرور", "danger");
-                    },
-                    complete: function () {
-                        btn.prop("disabled", false);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.toggle-password').forEach(element => {
-                element.addEventListener('click', function () {
-                    const input = this.closest('.input-group').querySelector('input');
-                    const icon = this.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.className = 'ti ti-eye-off';
-                    } else {
-                        input.type = 'password';
-                        icon.className = 'ti ti-eye';
-                    }
-                });
-            });
-        });
-    </script>
-}
+<section class="pp-section" aria-labelledby="info-title">
+    <h2 class="pp-section-title" id="info-title">اطلاعات حساب</h2>
+    <div class="pp-grid">
+        <div class="pp-item"><i class="ti ti-user" aria-hidden="true"></i><div class="min-w-0"><span>نام کاربری</span><b dir="ltr">@Model.Username</b></div></div>
+        <div class="pp-item"><i class="ti ti-id" aria-hidden="true"></i><div class="min-w-0"><span>کد ملی</span><b dir="ltr">@(Model.NationalId ?? "—")</b></div></div>
+        <div class="pp-item"><i class="ti ti-device-mobile" aria-hidden="true"></i><div class="min-w-0"><span>شماره همراه</span><b dir="ltr">@(Model.MobileNumber ?? "—")</b></div></div>
+        <div class="pp-item"><i class="ti ti-mail" aria-hidden="true"></i><div class="min-w-0"><span>ایمیل</span><b dir="ltr">@(Model.Email ?? "—")</b></div></div>
+        <div class="pp-item"><i class="ti ti-calendar" aria-hidden="true"></i><div class="min-w-0"><span>تاریخ عضویت</span><b>@Model.CreatedAt.ToPersianDate()</b></div></div>
+        <div class="pp-item"><i class="ti ti-clock" aria-hidden="true"></i><div class="min-w-0"><span>آخرین ورود</span><b>@(Model.LastLogin.HasValue ? Model.LastLogin.ToPersianDate() : "—")</b></div></div>
+    </div>
+</section>

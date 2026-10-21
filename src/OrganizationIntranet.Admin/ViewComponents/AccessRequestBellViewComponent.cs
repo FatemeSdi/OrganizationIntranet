@@ -8,7 +8,8 @@ public class AccessRequestBellViewComponent(ApiClient api) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()
     {
-        if (!HttpContext.Request.Path.StartsWithSegments("/Admin")) return Content("");
-        return View(await api.GetAsync<AccessRequestAlertsDto>("api/admin/supervision/alerts"));
+        // در همه‌ی صفحه‌های پوسته‌ی مدیریت (از جمله پروفایل) برای مدیر نمایش داده می‌شود؛ قبلاً فقط زیر /Admin بود و در پروفایل ناپدید می‌شد.
+        if (!UserClaimsPrincipal.IsInRole("ADMIN")) return Content("");
+        return View(await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts"));
     }
 }

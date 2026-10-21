@@ -18,8 +18,6 @@ public class IndexModel(ApiClient api) : PageModel
     public List<PortalApplicationDto> Applications { get; set; } = new();
     public List<PortalNotificationDto> Notifications { get; set; } = new();
     public List<RequestableApplicationDto> RequestableApplications { get; set; } = new();
-    public AccessRequestListDto AccessRequests { get; set; } = new([], 0, 1, 20);
-    [BindProperty(SupportsGet = true)] public int RequestPage { get; set; } = 1;
     [BindProperty] public int RequestedApplicationId { get; set; }
     [BindProperty] public string? RequestReason { get; set; }
     public string? RequestError { get; set; }
@@ -54,19 +52,6 @@ public class IndexModel(ApiClient api) : PageModel
         catch (ApiException ex) when ((int)ex.Status is 400 or 409)
         { RequestError = ex.Message; await OnGetAsync(); return Page(); }
     }
-    public async Task<IActionResult> OnPostCancelRequestAsync(long requestId, Guid revision)
-    {
-        if (RequireSignIn() is { } denied) return denied;
-        if (!ModelState.IsValid) return BadRequest();
-        try
-        {
-            var result = await api.PostAsync<OperationResult>($"api/portal/access-requests/{requestId}/cancel", new CancelAccessRequest(revision));
-            TempData["AccessRequestMessage"] = result.Message;
-            return RedirectToPage(pageName: null, pageHandler: null, routeValues: null, fragment: "access-requests");
-        }
-        catch (ApiException ex) when ((int)ex.Status is 400 or 409)
-        { RequestError = ex.Message; await OnGetAsync(); return Page(); }
-    }
     public async Task<IActionResult> OnPostReadNotificationsAsync()
     {
         if (RequireSignIn() is { } denied) return denied;
@@ -92,7 +77,6 @@ public class IndexModel(ApiClient api) : PageModel
         SupervisionAlerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
         SupervisionInbox = await api.GetAsync<AccessRequestListDto>($"api/portal/supervision/inbox?page={SupervisionPage}");
         RequestableApplications = await api.GetAsync<List<RequestableApplicationDto>>("api/portal/access-requests/applications");
-        AccessRequests = await api.GetAsync<AccessRequestListDto>($"api/portal/access-requests?page={RequestPage}");
         Publications = await api.GetAsync<PublicationListDto>("api/publications");
     }
 }

@@ -17,15 +17,18 @@
         info: 'اطلاعیه'
     };
 
+    // محل نمایش در یک جا تعیین می‌شود: بالای صفحه و وسط افقی (در RTL هم با bootstrap.rtl درست وسط می‌ماند).
+    var CONTAINER_CLASS = 'toast-container position-fixed top-0 start-50 translate-middle-x p-3';
+
     function ensureContainer() {
         var container = document.getElementById('appToastContainer');
         if (!container) {
             container = document.createElement('div');
             container.id = 'appToastContainer';
-            container.className = 'toast-container position-fixed top-0 start-0 p-3';
             container.style.zIndex = 1080;
             document.body.appendChild(container);
         }
+        container.className = CONTAINER_CLASS; // حتی اگر Layout کلاس قدیمی داشته باشد
         return container;
     }
 
@@ -83,4 +86,14 @@
             toastEl.remove();
         });
     };
+
+    // پیام‌های سمت سرور (partial _ToastMessages): <div class="d-none" data-toast="success|danger|warning|info">متن</div>
+    function showServerToasts() {
+        document.querySelectorAll('[data-toast]').forEach(function (el) {
+            window.showToast(el.textContent.trim(), el.getAttribute('data-toast'));
+            el.removeAttribute('data-toast');
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showServerToasts);
+    else showServerToasts();
 })();

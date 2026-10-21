@@ -1,183 +1,104 @@
-@page
+﻿@page
 @model IndexModel
 @using OrganizationIntranet.Helper
 @{
     ViewData["Title"] = "کاربران";
+    ViewData["Icon"] = "ti ti-users";
+    ViewData["Subtitle"] = "حساب‌های کاربری، نقش‌ها و وضعیت ورود";
     Layout = "_LayoutAdmin";
 }
-
-<ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
-    <li aria-current="page" class="breadcrumb-item active">کاربران</li>
-</ol>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div id="successMessageData" class="d-none">@TempData["SuccessMessage"]</div>
+@section PageActions {
+    <a href="/Admin/Users/Edit" class="btn btn-primary btn-wave"><i class="ti ti-user-plus me-1"></i>افزودن کاربر</a>
 }
 
-<div class="card custom-card mb-4">
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-5">
-                <label class="form-label fs-13 text-muted mb-1">جستجو</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="ti ti-search"></i></span>
-                    <input type="text" class="form-control" placeholder="نام، نام خانوادگی یا نام کاربری" id="searchInput">
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string)' />
+
+<div class="card custom-card" data-filter-scope data-page-size="10" data-noun="کاربر">
+    @if (Model.UserRows.Count == 0)
+    {
+        <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-users", "هنوز کاربری ثبت نشده است", "با افزودن کاربر و اختصاص نقش، دسترسی او به سامانه‌ها را مدیریت کنید.", "افزودن کاربر", "/Admin/Users/Edit")' />
+    }
+    else
+    {
+        <div class="admin-toolbar" role="search">
+            <div class="admin-toolbar__search">
+                <i class="ti ti-search" aria-hidden="true"></i>
+                <input type="search" class="form-control" placeholder="جست‌وجوی سریع در نام یا نام کاربری" aria-label="جست‌وجوی سریع کاربران" data-filter="quick" data-filter-mode="contains" />
+            </div>
+            <button type="button" class="btn btn-primary-light" data-bs-toggle="collapse" data-bs-target="#usersAdvancedSearch" aria-expanded="false" aria-controls="usersAdvancedSearch">
+                <i class="ti ti-adjustments-horizontal me-1"></i>جستجوی پیشرفته
+                <span class="badge bg-primary rounded-pill ms-1" data-filter-active-count hidden>0</span>
+            </button>
+            <span class="admin-toolbar__count"><span data-filter-count>@Model.UserRows.Count</span> از @Model.UserRows.Count کاربر</span>
+        </div>
+
+        @* جستجوی پیشرفته: هر فیلد جدا، ترکیب‌پذیر؛ فیلترهای فعال به‌صورت برچسب قابل حذف نمایش داده می‌شوند *@
+        <div class="collapse" id="usersAdvancedSearch">
+            <section class="advanced-search" aria-label="جستجوی پیشرفته کاربران">
+                <div class="row g-3">
+                    <div class="col-xl-3 col-md-6"><label class="form-label" for="f-name">نام و نام خانوادگی</label><input id="f-name" type="search" class="form-control" data-filter="name" data-filter-mode="contains" data-filter-label="نام" /></div>
+                    <div class="col-xl-3 col-md-6"><label class="form-label" for="f-username">نام کاربری</label><input id="f-username" type="search" class="form-control" dir="ltr" data-filter="username" data-filter-mode="contains" data-filter-label="نام کاربری" /></div>
+                    <div class="col-xl-3 col-md-6"><label class="form-label" for="f-nid">کد ملی</label><input id="f-nid" type="search" class="form-control" dir="ltr" inputmode="numeric" maxlength="10" data-filter="nationalid" data-filter-mode="contains" data-filter-label="کد ملی" /></div>
+                    <div class="col-xl-3 col-md-6"><label class="form-label" for="f-mobile">شماره همراه</label><input id="f-mobile" type="search" class="form-control" dir="ltr" inputmode="tel" maxlength="11" data-filter="mobile" data-filter-mode="contains" data-filter-label="موبایل" /></div>
+                    <div class="col-xl-3 col-md-4"><label class="form-label" for="f-role">نقش</label><select id="f-role" class="form-select" data-filter="roles" data-filter-label="نقش">
+                        <option value="">همه نقش‌ها</option>
+                        @foreach (var roleName in Model.AllRoleNames) { <option value="@roleName">@roleName</option> }
+                        <option value="none">بدون نقش</option>
+                    </select></div>
+                    <div class="col-xl-3 col-md-4"><label class="form-label" for="f-status">وضعیت حساب</label><select id="f-status" class="form-select" data-filter="status" data-filter-label="وضعیت">
+                        <option value="">همه</option><option value="active">فعال</option><option value="inactive">غیرفعال</option>
+                    </select></div>
+                    <div class="col-xl-3 col-md-4"><label class="form-label" for="f-login">سابقه‌ی ورود</label><select id="f-login" class="form-select" data-filter="login" data-filter-label="ورود">
+                        <option value="">همه</option><option value="yes">وارد شده است</option><option value="no">هرگز وارد نشده</option>
+                    </select></div>
+                    <div class="col-xl-3 col-md-12 d-flex align-items-end justify-content-end">
+                        <button type="button" class="btn btn-light border" data-filter-clear><i class="ti ti-filter-off me-1"></i>پاک‌کردن همه</button>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-3 col-6">
-                <label class="form-label fs-13 text-muted mb-1">نقش</label>
-                <select class="form-select" id="roleFilter">
-                    <option value="">همه نقش‌ها</option>
-                    @foreach (var roleName in Model.AllRoleNames)
+            </section>
+        </div>
+        <div class="filter-chips" data-filter-chips hidden aria-live="polite"></div>
+        <div class="table-responsive">
+            <table class="table table-admin text-nowrap">
+                <thead>
+                    <tr><th>کاربر</th><th>نقش‌ها</th><th>تاریخ ثبت</th><th>آخرین ورود</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model.UserRows)
                     {
-                        <option value="@roleName">@roleName</option>
-                    }
-                </select>
-            </div>
-            <div class="col-lg-3 col-6">
-                <label class="form-label fs-13 text-muted mb-1">وضعیت</label>
-                <select class="form-select" id="statusFilter">
-                    <option value="">همه وضعیت‌ها</option>
-                    <option value="active">فعال</option>
-                    <option value="inactive">غیرفعال</option>
-                </select>
-            </div>
-            <div class="col-lg-1 col-12">
-                <button type="button" id="clearFilters" class="btn btn-light border w-100" title="پاک‌کردن فیلترها">
-                    <i class="ti ti-filter-off"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card custom-card">
-    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div class="card-title d-flex align-items-center gap-2">
-            <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-users fs-14"></i></span>
-            لیست کاربران
-            <span class="badge bg-primary-transparent rounded-pill" id="resultCount">@Model.UserRows.Count</span>
-        </div>
-        <a href="/Admin/Users/Edit" class="btn btn-primary btn-wave">
-            <i class="ti ti-plus me-1"></i>افزودن کاربر
-        </a>
-    </div>
-    <div class="card-body">
-        @if (Model.UserRows.Count == 0)
-        {
-            <div class="text-center py-5">
-                <i class="ti ti-users fs-40 text-muted op-5 d-block mb-2"></i>
-                <p class="text-muted mb-0">کاربری ثبت نشده است.</p>
-            </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table text-nowrap text-center mb-0" id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>کاربر</th>
-                            <th>نام کاربری</th>
-                            <th>نقش‌ها</th>
-                            <th>تاریخ ثبت</th>
-                            <th>آخرین ورود</th>
-                            <th>وضعیت</th>
-                            <th>عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var u in Model.UserRows)
-                        {
-                            <tr class="user-row"
-                                data-search="@($"{u.Name} {u.LastName} {u.Username}".ToLower())"
-                                data-roles="@u.Roles"
-                                data-status="@(u.IsActive ? "active" : "inactive")">
-                                <td>
-                                    <div class="d-flex align-items-center gap-2 justify-content-center">
-                                        <span class="avatar avatar-md avatar-rounded bg-primary-transparent"><i class="ti ti-user fs-16"></i></span>
-                                        <span class="fw-semibold">@u.Name @u.LastName</span>
+                        var roles = string.IsNullOrEmpty(u.Roles) ? Array.Empty<string>() : u.Roles.Split("، ");
+                        <tr data-row
+                            data-quick="@($"{u.Name} {u.LastName} {u.Username}")"
+                            data-name="@($"{u.Name} {u.LastName}")" data-username="@u.Username" data-nationalid="@u.NationalId" data-mobile="@u.MobileNumber"
+                            data-roles="@(roles.Length == 0 ? "none" : string.Join("|", roles))"
+                            data-status="@(u.IsActive ? "active" : "inactive")" data-login="@(u.LastLogin.HasValue ? "yes" : "no")">
+                            <td>
+                                <div class="entity">
+                                    <span class="entity__avatar">@(u.Name.Length > 0 ? u.Name[..1] : "?")</span>
+                                    <div>
+                                        <div class="entity__name">@u.Name @u.LastName</div>
+                                        <div class="entity__sub" dir="ltr">@u.Username</div>
                                     </div>
-                                </td>
-                                <td dir="ltr">@u.Username</td>
-                                <td>
-                                    @if (string.IsNullOrEmpty(u.Roles))
-                                    {
-                                        <span class="text-muted fs-12">بدون نقش</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-info-transparent fs-12">@u.Roles</span>
-                                    }
-                                </td>
-                                <td>@u.CreatedAt.ToPersianDate()</td>
-                                <td>@u.LastLogin.ToPersianDate()</td>
-                                <td>
-                                    @if (u.IsActive)
-                                    {
-                                        <span class="badge bg-success-transparent">فعال</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger-transparent">غیرفعال</span>
-                                    }
-                                </td>
-                                <td>
-                                    <a href="/Admin/Users/Edit?id=@u.UserId" class="btn btn-primary-light btn-icon btn-sm" title="ویرایش">
-                                        <i class="ti ti-edit"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (roles.Length == 0) { <span class="text-muted fs-12">بدون نقش</span> }
+                                @foreach (var role in roles) { <span class="badge bg-info-transparent me-1">@role</span> }
+                            </td>
+                            <td>@u.CreatedAt.ToPersianDate()</td>
+                            <td>@(u.LastLogin.HasValue ? u.LastLogin.ToPersianDate() : "هرگز")</td>
+                            <td><span class="status-pill @(u.IsActive ? "status-pill--success" : "status-pill--danger")">@(u.IsActive ? "فعال" : "غیرفعال")</span></td>
+                            <td class="col-actions">
+                                <a href="/Admin/Users/Edit?id=@u.UserId" class="btn btn-sm btn-primary-light" aria-label="ویرایش @u.Name @u.LastName"><i class="ti ti-edit me-1"></i>ویرایش</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div data-filter-empty hidden>
+            <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "کاربری با این مشخصات پیدا نشد", "عبارت جست‌وجو یا فیلترها را تغییر دهید.")' />
+        </div>
+        <div class="admin-pager" data-pager hidden></div>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        (function () {
-            var successEl = document.getElementById('successMessageData');
-            if (successEl) showToast(successEl.textContent, 'success');
-        })();
-        (function () {
-            var searchInput = document.getElementById('searchInput');
-            var roleFilter = document.getElementById('roleFilter');
-            var statusFilter = document.getElementById('statusFilter');
-            var resultCount = document.getElementById('resultCount');
-            var rows = document.querySelectorAll('.user-row');
-
-            function applyFilters() {
-                var term = searchInput.value.trim().toLowerCase();
-                var role = roleFilter.value;
-                var status = statusFilter.value;
-                var visible = 0;
-
-                rows.forEach(function (row) {
-                    var matchesTerm = !term || row.dataset.search.includes(term);
-                    var matchesRole = !role || row.dataset.roles.includes(role);
-                    var matchesStatus = !status || row.dataset.status === status;
-                    var show = matchesTerm && matchesRole && matchesStatus;
-                    row.style.display = show ? '' : 'none';
-                    if (show) visible++;
-                });
-
-                if (resultCount) resultCount.textContent = visible;
-            }
-
-            searchInput.addEventListener('input', applyFilters);
-            roleFilter.addEventListener('change', applyFilters);
-            statusFilter.addEventListener('change', applyFilters);
-
-            document.getElementById('clearFilters').addEventListener('click', function () {
-                searchInput.value = '';
-                roleFilter.value = '';
-                statusFilter.value = '';
-                applyFilters();
-            });
-        })();
-    </script>
-}

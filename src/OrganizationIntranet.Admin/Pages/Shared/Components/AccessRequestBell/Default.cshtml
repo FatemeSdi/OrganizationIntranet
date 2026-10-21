@@ -1,16 +1,52 @@
 @model OrganizationIntranet.Contracts.AccessRequestAlertsDto
-<li class="header-element dropdown">
-<button type="button" class="header-link border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false" aria-label="اعلان درخواست‌های دسترسی"><i class="ti ti-bell fs-20"></i>
-@if (Model.UnreadCount > 0) { <span class="badge bg-danger">@Model.UnreadCount</span> }</button>
-<div class="dropdown-menu dropdown-menu-end p-3" style="min-width:300px;max-height:420px;overflow:auto">
-<strong>اعلان درخواست‌های دسترسی</strong>
-@if (Model.Items.Count == 0) { <p class="text-muted mt-3">اعلان جدیدی وجود ندارد.</p> }
-@foreach (var alert in Model.Items.Take(10))
-{
-<form method="post" asp-page="/Admin/AccessRequests/Notifications" asp-page-handler="Read">
-<input type="hidden" name="alertId" value="@alert.Id" />
-<button class="btn text-start w-100 @(alert.IsRead ? "" : "fw-bold")" type="submit">درخواست @alert.Requester برای @alert.ApplicationName</button>
-</form>
-}
-<a href="/Admin/AccessRequests">کارتابل درخواست‌ها</a>
-</div></li>
+@using OrganizationIntranet.Helper
+@* هم‌خوان با notifications-dropdown تمپلیت yzen: آیکن SVG مثل بقیه‌ی آیکن‌های هدر، جداکننده‌ی header-link و فهرست با پایین «مشاهده همه» *@
+<li class="header-element notifications-dropdown dropdown">
+    <a href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="notificationsDropdown" aria-expanded="false"
+       aria-label="@(Model.UnreadCount > 0 ? $"اعلان‌ها، {Model.UnreadCount} خوانده‌نشده" : "اعلان‌ها")">
+        <svg class="header-link-icon" height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 3.5a6 6 0 0 0-6 6v3.75L4.5 16h15L18 13.25V9.5a6 6 0 0 0-6-6Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+            <path d="M9.75 19a2.25 2.25 0 0 0 4.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+        </svg>
+        @if (Model.UnreadCount > 0) { <span class="header-icon-pulse bg-danger rounded pulse pulse-pink" aria-hidden="true"></span> }
+    </a>
+    <div class="main-header-dropdown dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+        <div class="p-3 d-flex align-items-center justify-content-between">
+            <p class="mb-0 fs-15 fw-medium">اعلان‌ها</p>
+            @if (Model.UnreadCount > 0) { <span class="badge bg-danger-transparent">@Model.UnreadCount خوانده‌نشده</span> }
+        </div>
+        <div class="dropdown-divider m-0"></div>
+        @if (Model.Items.Count == 0)
+        {
+            <div class="p-5 text-center">
+                <span class="avatar avatar-xl avatar-rounded bg-primary-transparent mb-2"><i class="ti ti-bell-off fs-24"></i></span>
+                <p class="fw-medium mb-0">اعلان جدیدی وجود ندارد</p>
+            </div>
+        }
+        else
+        {
+            <ul class="list-unstyled mb-0 header-notification-list">
+                @foreach (var alert in Model.Items.Take(10))
+                {
+                    <li class="dropdown-item p-0 @(alert.IsRead ? "" : "is-unread")">
+                        <form method="post" asp-page="/Admin/AccessRequests/Notifications" asp-page-handler="Read" class="m-0">
+                            <input type="hidden" name="alertId" value="@alert.Id" />
+                            <button type="submit" class="header-notification-item">
+                                <span class="avatar avatar-md avatar-rounded bg-primary-transparent flex-shrink-0"><i class="ti ti-clipboard-check fs-18"></i></span>
+                                <span class="flex-fill min-w-0">
+                                    <span class="d-block fw-medium text-truncate">درخواست دسترسی @alert.Requester</span>
+                                    <span class="d-block text-muted fs-12 text-truncate">@alert.ApplicationName</span>
+                                    <span class="d-block text-muted fs-10 op-8">@alert.CreatedAt.ToPersianDate()</span>
+                                </span>
+                                @if (!alert.IsRead) { <span class="header-notification-dot" aria-label="خوانده‌نشده"></span> }
+                            </button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        }
+        <div class="p-3 border-top">
+            <div class="d-grid"><a href="/Admin/AccessRequests" class="btn btn-primary btn-wave">مشاهده همه درخواست‌ها</a></div>
+        </div>
+    </div>
+</li>

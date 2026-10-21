@@ -459,10 +459,11 @@ public sealed partial class PortalSmokeTests : IDisposable
         Assert.EndsWith(destination, json.RootElement.GetProperty("redirectUrl").GetString());
         Assert.Contains(response.Headers.GetValues("Set-Cookie"), cookie => cookie.Contains("OrganizationIntranet.UI") && cookie.Contains("expires=", StringComparison.OrdinalIgnoreCase));
         (await ui.GetAsync("/Portal")).EnsureSuccessStatusCode();
-        csrf = await Antiforgery(ui, "/Account/Profile");
-        response = await ui.PostAsync("/Account/Profile?handler=ChangePassword", new FormUrlEncodedContent(new Dictionary<string,string> { ["__RequestVerificationToken"] = csrf, ["CurrentPassword"] = "test-password", ["NewPassword"] = "ui-password", ["ConfirmNewPassword"] = "ui-password" }));
-        using var passwordResult = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.True(passwordResult.RootElement.GetProperty("success").GetBoolean());
+        // تغییر رمز در «تنظیمات حساب»: پس از موفقیت نشست بسته و کاربر به ورود با پیام هدایت می‌شود.
+        csrf = await Antiforgery(ui, "/Account/Settings");
+        response = await ui.PostAsync("/Account/Settings?handler=ChangePassword", new FormUrlEncodedContent(new Dictionary<string,string> { ["__RequestVerificationToken"] = csrf, ["CurrentPassword"] = "test-password", ["NewPassword"] = "ui-password", ["ConfirmNewPassword"] = "ui-password" }));
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.EndsWith("/Account/Login", response.Headers.Location!.ToString());
         await Login(username, "ui-password");
         Assert.Equal(HttpStatusCode.Redirect, (await ui.GetAsync("/Account/Logout")).StatusCode);
         Assert.Equal(HttpStatusCode.Redirect, (await ui.GetAsync("/Account/Profile")).StatusCode); // بعد از خروج صفحه‌ی محافظت‌شده دوباره ورود می‌خواهد

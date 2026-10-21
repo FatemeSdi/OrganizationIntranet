@@ -31,12 +31,22 @@
 پیش‌نیاز: .NET SDK سازگار با net8.0، دسترسی API به SQL Server فعلی و گواهی توسعه HTTPS معتبر و مورد اعتماد.
 
 ```powershell
-pwsh -File tools/Initialize-Development.ps1 -UseExistingConnection
+powershell -File tools/Initialize-Development.ps1
 dotnet build OrganizationIntranet.sln
 dotnet run --project src/OrganizationIntranet.Api --launch-profile https
 dotnet run --project src/OrganizationIntranet.Portal --launch-profile https
 dotnet run --project src/OrganizationIntranet.Admin --launch-profile https
 ```
+
+برای راه‌اندازی هر سه برنامه با یک دستور (هر کدام در پنجره‌ی جدا، با پروفایل `https`):
+
+```powershell
+powershell -File tools/Start-Dev.ps1
+```
+
+**کلیدهای توسعه روی این سیستم** در فایل محلی `src/<پروژه>/appsettings.Development.json` هستند (در `.gitignore`؛ هرگز commit نمی‌شوند). Api و Admin هر دو کلید را دارند و Portal فقط `Api:ClientKey`. هر سه باید یک `ClientKey` داشته باشند. User Secrets هم همچنان پشتیبانی می‌شود و در صورت وجود بر این فایل مقدم است.
+
+**User Secrets و `appsettings.Development.json` فقط وقتی `ASPNETCORE_ENVIRONMENT=Development` باشد خوانده می‌شوند** و فقط پروفایل `https` در `launchSettings.json` این مقدار را می‌گذارد. اگر برنامه با محیط دیگری (مثلاً Production) اجرا شود، خطای «Configure … Api:AdminClientKey» می‌آید و پیام خطا نام محیط فعال را هم می‌گوید.
 
 سه دستور run در ترمینال‌های جدا اجرا شوند. در Visual Studio نیز Api، Portal و Admin را به‌عنوان Multiple Startup Projects با Action=Start انتخاب کنید. Domain و Application کتابخانه‌اند و اجرا نمی‌شوند.
 
@@ -46,7 +56,7 @@ dotnet run --project src/OrganizationIntranet.Admin --launch-profile https
 | Admin | https://localhost:7231 |
 | API | https://localhost:7232/api |
 
-اسکریپت راه‌اندازی PowerShell 7، یک کلید تصادفی مشترک تولید می‌کند و در User Secrets سه برنامه ذخیره می‌کند. اگر کلید API از قبل باشد آن را حفظ می‌کند. سوییچ `UseExistingConnection`، ConnectionString فعلی را بدون نمایش در خروجی به User Secrets API منتقل می‌کند؛ تنظیم موجود ریشه حذف یا اصلاح نمی‌شود. اجرای مجدد بدون این سوییچ ConnectionString ذخیره‌شده را حفظ می‌کند.
+اسکریپت راه‌اندازی (با Windows PowerShell 5.1 و PowerShell 7 کار می‌کند؛ **باید در ترمینال خود شما اجرا شود**، نه از داخل ابزاری که در یک برنامه‌ی بسته‌بندی‌شده‌ی MSIX/Sandbox اجرا می‌شود، چون ویندوز نوشتن آن‌ها در `%APPDATA%` را به پوشه‌ی خصوصی همان برنامه هدایت می‌کند و Visual Studio فایل‌ها را نمی‌بیند)، یک کلید تصادفی مشترک تولید می‌کند و در User Secrets سه برنامه ذخیره می‌کند. اگر کلید API از قبل باشد آن را حفظ می‌کند. سوییچ `UseExistingConnection`، ConnectionString فعلی را بدون نمایش در خروجی به User Secrets API منتقل می‌کند؛ تنظیم موجود ریشه حذف یا اصلاح نمی‌شود. اجرای مجدد بدون این سوییچ ConnectionString ذخیره‌شده را حفظ می‌کند.
 
 API و UI بدون `Api:ClientKey` معتبر شروع نمی‌شوند. این کلید فقط برای اعتماد بین سرورهای UI و API است و جایگزین Bearer Token و نقش کاربر نیست. کلید به JavaScript/HTML ارسال نمی‌شود؛ همه درخواست‌های API از جمله ورود باید آن را داشته باشند تا مسیر ورود مستقیم نتواند مرز CAPTCHA رابط کاربری را دور بزند. CAPTCHA ورود و Antiforgery فرم‌های Razor حفظ شده‌اند. روی عملیات حساب API محدودیت نرخ هم وجود دارد.
 

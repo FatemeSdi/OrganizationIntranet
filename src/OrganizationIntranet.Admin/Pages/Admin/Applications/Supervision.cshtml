@@ -1,23 +1,69 @@
-@page
+﻿@page
 @model OrganizationIntranet.Pages.Admin.Applications.SupervisionModel
-@{ ViewData["Title"] = "گروه‌های نظارت"; Layout = "_LayoutAdmin"; }
-<p><a asp-page="Edit" asp-route-id="@Model.Id">بازگشت به تنظیمات سامانه</a></p>
-<h1 class="h4">گروه‌های نظارت — @Model.ApplicationName</h1>
-@if (TempData["SuccessMessage"] is string message) { <div class="alert alert-success" role="status">@message</div> }
-@if (Model.ErrorMessage is not null) { <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div> }
-<div class="card custom-card"><div class="card-body">
-<p>کاربران و اعضای نقش‌های فعال هر گروه، درخواست‌های این سامانه را در کارتابل نظارت می‌بینند. اعلان بر اساس روش انتخاب‌شده در تنظیمات سامانه ارسال می‌شود. مدیران نیز اعلان دریافت می‌کنند؛ عضویت تکراری باعث پیامک تکراری نمی‌شود. عضویت در نظارت، دسترسی به خود نرم‌افزار یا مجوز تأیید درخواست ایجاد نمی‌کند.</p>
-@foreach (var group in Model.Groups)
-{ <p><a asp-route-id="@Model.Id" asp-route-groupId="@group.Id">@group.Name</a> — @(group.IsActive ? "فعال" : "غیرفعال") · @group.UserIds.Count کاربر و @group.RoleIds.Count نقش</p> }
-<a asp-route-id="@Model.Id" class="btn btn-light mb-3">گروه جدید</a>
-<form method="post">
-<input asp-for="Id" type="hidden" /><input asp-for="GroupId" type="hidden" /><input asp-for="Revision" type="hidden" />
-<div class="mb-3"><label asp-for="GroupName" class="form-label">نام گروه نظارت</label><input asp-for="GroupName" maxlength="150" required class="form-control" /></div>
-<div class="row mb-3"><div class="col-md-6"><label asp-for="UserIds" class="form-label">کاربران گروه (انتخاب چندگانه)</label><select asp-for="UserIds" class="form-select" size="8">
-@foreach (var user in Model.Users) { <option value="@user.UserId">@user.Name @user.LastName (@user.Username) @(user.IsActive ? "" : "غیرفعال")</option> }
-</select></div><div class="col-md-6"><label asp-for="RoleIds" class="form-label">نقش‌های گروه (انتخاب چندگانه)</label><select asp-for="RoleIds" class="form-select" size="8">
-@foreach (var role in Model.Roles) { <option value="@role.RoleId">@role.RoleName @(role.IsActive ? "" : "غیرفعال")</option> }
-</select></div></div>
-<label class="d-block mb-3"><input asp-for="IsActive" /> گروه فعال باشد</label>
-<button type="submit" class="btn btn-primary">ذخیره گروه نظارت</button>
-</form></div></div>
+@using OrganizationIntranet.Pages.Shared
+@{
+    ViewData["Title"] = "گروه‌های نظارت";
+    ViewData["Icon"] = "ti ti-eye";
+    ViewData["Subtitle"] = Model.ApplicationName;
+    ViewData["ParentTitle"] = "سامانه‌ها";
+    ViewData["ParentUrl"] = "/Admin/Applications";
+    Layout = "_LayoutAdmin";
+}
+@section PageActions {
+    <a asp-page="Edit" asp-route-id="@Model.Id" class="btn btn-primary-light"><i class="ti ti-arrow-right me-1"></i>تنظیمات سامانه</a>
+}
+
+<partial name="_ToastMessages" model='new ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="admin-callout mb-4">
+    <i class="ti ti-info-circle" aria-hidden="true"></i>
+    <div>کاربران و اعضای نقش‌های فعال هر گروه، درخواست‌های این سامانه را در کارتابل نظارت می‌بینند و بر اساس روش انتخاب‌شده در تنظیمات سامانه اعلان می‌گیرند. عضویت تکراری پیامک تکراری نمی‌فرستد. عضویت در نظارت، دسترسی به خود سامانه یا مجوز تأیید درخواست ایجاد نمی‌کند.</div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header justify-content-between">
+                <div class="card-title">گروه‌ها <span class="badge bg-light text-muted rounded-pill ms-1">@Model.Groups.Count</span></div>
+                <a asp-route-id="@Model.Id" class="btn btn-sm btn-primary-light"><i class="ti ti-plus me-1"></i>گروه جدید</a>
+            </div>
+            @if (Model.Groups.Count == 0)
+            {
+                <partial name="_EmptyState" model='new EmptyState("ti ti-eye", "گروه نظارتی تعریف نشده است", "از فرم روبه‌رو اولین گروه را بسازید.")' />
+            }
+            else
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var group in Model.Groups)
+                    {
+                        <a asp-route-id="@Model.Id" asp-route-groupId="@group.Id" class="list-group-item list-group-item-action d-flex align-items-center gap-2 py-3 @(group.Id == Model.GroupId ? "active" : "")" aria-current="@(group.Id == Model.GroupId ? "true" : null)">
+                            <div class="flex-fill">
+                                <div class="fw-semibold">@group.Name</div>
+                                <small class="@(group.Id == Model.GroupId ? "" : "text-muted")">@group.UserIds.Count کاربر · @group.RoleIds.Count نقش</small>
+                            </div>
+                            <span class="status-pill @(group.IsActive ? "status-pill--success" : "status-pill--muted")">@(group.IsActive ? "فعال" : "غیرفعال")</span>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-8">
+        <form method="post" class="card custom-card" data-busy data-dirty-guard>
+            <input asp-for="Id" type="hidden" /><input asp-for="GroupId" type="hidden" /><input asp-for="Revision" type="hidden" />
+            <div class="card-header"><div class="card-title">@(Model.GroupId == 0 ? "گروه نظارت جدید" : $"ویرایش «{Model.GroupName}»")</div></div>
+            <div class="card-body">
+                <div class="mb-3"><label asp-for="GroupName" class="form-label">نام گروه نظارت</label><input asp-for="GroupName" maxlength="150" required class="form-control" /></div>
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6"><partial name="_PickList" model='PickList.ForUsers("UserIds", "کاربران گروه", Model.Users, Model.UserIds)' /></div>
+                    <div class="col-lg-6"><partial name="_PickList" model='PickList.ForRoles("RoleIds", "نقش‌های گروه", Model.Roles, Model.RoleIds)' /></div>
+                </div>
+                <div class="switch-row"><label class="switch-row__label" for="IsActive">گروه فعال باشد</label><input asp-for="IsActive" class="form-check-input" role="switch" /></div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره گروه نظارت</button>
+            </div>
+        </form>
+    </div>
+</div>

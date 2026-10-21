@@ -1,67 +1,60 @@
-@page
+﻿@page
 @model AssignModel
 @{
-    ViewData["Title"] = "مدیریت نقش‌های Permission";
+    ViewData["Title"] = "اختصاص مجوز به نقش‌ها";
+    ViewData["Icon"] = "ti ti-user-shield";
+    ViewData["Subtitle"] = Model.Permission!.PermissionName;
+    ViewData["ParentTitle"] = "مجوزها";
+    ViewData["ParentUrl"] = "/Admin/Permissions";
     Layout = "_LayoutAdmin";
 }
 
-<ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
-    <li class="breadcrumb-item"><a href="/Admin/Permissions">Permissionها</a></li>
-    <li aria-current="page" class="breadcrumb-item active">مدیریت نقش‌ها</li>
-</ol>
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, Model.ErrorMessage)' />
 
-<div class="card custom-card">
-    <div class="card-header">
-        <div class="card-title d-flex align-items-center gap-2">
-            <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-shield-lock fs-14"></i></span>
-            مدیریت نقش‌های Permission
+<form method="post" class="card custom-card" data-busy data-dirty-guard>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-lock-access"></i>مشخصات مجوز</h2>
+            <p class="form-section__help">مجوزها در لحظه‌ی ورود در نشست کاربر بارگذاری می‌شوند؛ تغییر این صفحه پس از ورود دوباره‌ی کاربران اعمال می‌شود.</p>
         </div>
-    </div>
-    <div class="card-body">
-        <div class="row gy-2 align-items-center mb-4 border rounded-3 p-3">
-            <div class="col-md-3"><span class="fw-medium text-muted">سامانه:</span></div>
-            <div class="col-md-9"><span class="badge bg-primary-transparent">@Model.Permission!.ApplicationName</span></div>
-
-            <div class="col-md-3"><span class="fw-medium text-muted">نام Permission:</span></div>
-            <div class="col-md-9 fw-semibold">@Model.Permission.PermissionName</div>
-
-            <div class="col-md-3"><span class="fw-medium text-muted">کد:</span></div>
-            <div class="col-md-9" dir="ltr"><span class="badge bg-light text-default border">@Model.Permission.PermissionCode</span></div>
-
+        <dl class="row mb-0 fs-13">
+            <dt class="col-sm-3 text-muted fw-medium">سامانه</dt><dd class="col-sm-9"><span class="badge bg-primary-transparent">@Model.Permission.ApplicationName</span></dd>
+            <dt class="col-sm-3 text-muted fw-medium">نام</dt><dd class="col-sm-9 fw-semibold">@Model.Permission.PermissionName</dd>
+            <dt class="col-sm-3 text-muted fw-medium">کد</dt><dd class="col-sm-9"><span class="code-chip">@Model.Permission.PermissionCode</span></dd>
             @if (!string.IsNullOrEmpty(Model.Permission.Description))
             {
-                <div class="col-md-3"><span class="fw-medium text-muted">توضیحات:</span></div>
-                <div class="col-md-9">@Model.Permission.Description</div>
+                <dt class="col-sm-3 text-muted fw-medium">توضیحات</dt><dd class="col-sm-9 mb-0">@Model.Permission.Description</dd>
+            }
+        </dl>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-user-shield"></i>نقش‌های دارای این مجوز</h2>
+            <p class="form-section__help">فقط نقش‌های فعال نمایش داده می‌شوند.</p>
+        </div>
+        <div class="row g-2">
+            @foreach (var role in Model.AllRoles)
+            {
+                <div class="col-md-6">
+                    <div class="switch-row mb-0">
+                        <label class="switch-row__label" for="role-@role.RoleId">@role.RoleName <span class="code-chip ms-1">@role.RoleCode</span></label>
+                        <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" />
+                    </div>
+                </div>
+            }
+            @if (Model.AllRoles.Count == 0)
+            {
+                <div class="col-12"><span class="text-muted fs-13">هیچ نقش فعالی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span></div>
             }
         </div>
+    </section>
 
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage)) { <div class="alert alert-danger">@Model.ErrorMessage</div> }
-        <form method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="Id" />
-
-            <h6 class="fw-semibold text-primary mb-3"><i class="ti ti-users me-1"></i>نقش‌هایی که این Permission را دارند</h6>
-            <div class="d-flex flex-wrap gap-2">
-                @foreach (var role in Model.AllRoles)
-                {
-                    var isChecked = Model.SelectedRoleIds.Contains(role.RoleId);
-                    <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 @(isChecked ? "border-primary bg-primary-transparent" : "")" style="cursor:pointer;">
-                        <input type="checkbox" class="form-check-input m-0" name="SelectedRoleIds" value="@role.RoleId"
-                               id="role-@role.RoleId" checked="@isChecked" />
-                        <span class="fw-medium">@role.RoleName</span>
-                    </label>
-                }
-                @if (Model.AllRoles.Count == 0)
-                {
-                    <span class="text-muted fs-13">هیچ نقش فعالی تعریف نشده است.</span>
-                }
-            </div>
-
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
-                <a href="/Admin/Permissions" class="btn btn-light border btn-wave">انصراف</a>
-            </div>
-        </form>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+        <a href="/Admin/Permissions" class="btn btn-primary-light">انصراف</a>
     </div>
-</div>
+</form>

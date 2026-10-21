@@ -21,11 +21,15 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
         var count = await query.CountAsync();
         var items = await query.OrderByDescending(p => p.PublishedAt ?? p.CreatedAt).ThenByDescending(p => p.PublicationId)
             .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision }).ToListAsync();
+            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision, ImageUpdatedAt = p.ImageUpdatedAt }).ToListAsync();
         return (items, count);
     }
     public Task<Publication?> FindAsync(long id, PublicationScope scope) => Scoped(db.Publications, scope).FirstOrDefaultAsync(p => p.PublicationId == id);
     public void Add(Publication publication) => db.Publications.Add(publication);
+    public Task<PublicationImage?> FindImageAsync(long publicationId, PublicationScope scope) =>
+        db.PublicationImages.Where(i => i.PublicationId == publicationId && Scoped(db.Publications, scope).Any(p => p.PublicationId == i.PublicationId)).FirstOrDefaultAsync();
+    public void AddImage(PublicationImage image) => db.PublicationImages.Add(image);
+    public void RemoveImage(PublicationImage image) => db.PublicationImages.Remove(image);
     public async Task SaveAsync()
     {
         try { await db.SaveChangesAsync(); }

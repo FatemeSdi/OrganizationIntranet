@@ -5,5 +5,7 @@
  <Content Include="../../wwwroot/**" Link="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
  <Compile Include="../../shared/UI/**/*.cs" Link="Shared/%(RecursiveDir)%(Filename)%(Extension)" />
  </ItemGroup>
-<ItemGroup><Compile Include="../../shared/Contracts/**/*.cs" Link="Contracts/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup></Project>
+<ItemGroup><Compile Include="../../shared/Contracts/**/*.cs" Link="Contracts/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup> <!-- Local development keys stay on the developer machine: never part of a publish/deployment. -->
+ <ItemGroup><Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" /></ItemGroup>
+</Project>
 

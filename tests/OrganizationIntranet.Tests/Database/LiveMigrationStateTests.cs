@@ -18,6 +18,8 @@ public sealed class LiveMigrationStateTests
         "003_ApplicationCatalog",
         "004_AccessWorkflow",
         "005_PublicPublications",
+        "006_NationalIdLogin",
+        "007_PublicationImages",
     ];
 
     [LiveSchemaFact]

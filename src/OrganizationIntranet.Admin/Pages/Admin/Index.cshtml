@@ -3,122 +3,140 @@
 @using OrganizationIntranet.Helper
 @{
     ViewData["Title"] = "داشبورد";
+    ViewData["HidePageHead"] = true; // کادر خوش‌آمد جای سربرگ صفحه را می‌گیرد
     Layout = "_LayoutAdmin";
+    var activePercent = Model.TotalUsers == 0 ? 0 : (int)Math.Round(Model.ActiveUsers * 100.0 / Model.TotalUsers);
 }
 
-<ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item"><a asp-page="/Admin/Index">مدیریت</a></li>
-    <li aria-current="page" class="breadcrumb-item active">داشبورد</li>
-</ol>
+<section class="admin-hero mb-4" aria-labelledby="dashboard-title">
+    <div class="admin-hero__text">
+        <span class="admin-hero__eyebrow"><i class="ti ti-calendar" aria-hidden="true"></i>@Model.TodayPersian</span>
+        <h1 id="dashboard-title">@(string.IsNullOrWhiteSpace(Model.AdminDisplayName) ? "خوش آمدید" : $"{Model.AdminDisplayName}، خوش آمدید")</h1>
+        <p>پنل مدیریت اینترانت اداره کل بنادر و دریانوردی استان هرمزگان؛ کاربران، سامانه‌ها، درخواست‌های دسترسی و اطلاع‌رسانی سازمانی را از این‌جا مدیریت کنید.</p>
+    </div>
+    <partial name="_PortIllustration" />
+</section>
 
-<div class="card custom-card border-0 mb-4 text-white overflow-hidden position-relative"
-     style="background: linear-gradient(120deg, var(--primary-color) 0%, rgba(var(--secondary-rgb), 1) 100%);">
-    <i class="ti ti-building-skyscraper position-absolute op-2" style="font-size:8rem; left:1rem; bottom:-1rem;"></i>
-    <div class="card-body position-relative py-4">
-        <h5 class="fw-semibold mb-1 text-fixed-white">@Model.AdminDisplayName</h5>
-        <p class="mb-0 fs-13 text-fixed-white op-8">پنل مدیریت اینترانت اداره کل بنادر و دریانوردی استان هرمزگان &mdash; @Model.TodayPersian</p>
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <a class="stat-tile" href="/Admin/Users">
+            <span class="stat-tile__icon bg-primary-transparent"><i class="ti ti-users"></i></span>
+            <div class="flex-fill">
+                <div class="stat-tile__value">@Model.TotalUsers.ToString("N0")</div>
+                <div class="stat-tile__label">کل کاربران</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <a class="stat-tile" href="/Admin/Users">
+            <span class="stat-tile__icon bg-success-transparent"><i class="ti ti-user-check"></i></span>
+            <div class="flex-fill">
+                <div class="stat-tile__value">@Model.ActiveUsers.ToString("N0")</div>
+                <div class="stat-tile__label">کاربران فعال · @(activePercent)%</div>
+                <div class="stat-tile__meter" role="progressbar" aria-label="درصد کاربران فعال" aria-valuenow="@activePercent" aria-valuemin="0" aria-valuemax="100"><span style="width:@(activePercent)%"></span></div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <a class="stat-tile" href="/Admin/Roles">
+            <span class="stat-tile__icon bg-warning-transparent"><i class="ti ti-user-shield"></i></span>
+            <div class="flex-fill">
+                <div class="stat-tile__value">@Model.TotalRoles.ToString("N0")</div>
+                <div class="stat-tile__label">نقش‌ها</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <a class="stat-tile" href="/Admin/Applications">
+            <span class="stat-tile__icon bg-info-transparent"><i class="ti ti-apps"></i></span>
+            <div class="flex-fill">
+                <div class="stat-tile__value">@Model.TotalApplications.ToString("N0")</div>
+                <div class="stat-tile__label">سامانه‌ها</div>
+            </div>
+        </a>
     </div>
 </div>
 
-<div class="card custom-card mb-4"><div class="card-header d-flex justify-content-between"><h2 class="card-title">درخواست‌های دسترسی در انتظار بررسی (@Model.PendingRequests.Total)</h2><a href="/Admin/AccessRequests">بررسی همه درخواست‌ها</a></div><div class="card-body">
-@if (Model.PendingRequests.Total == 0) { <p class="text-muted mb-0">درخواست جدیدی برای بررسی وجود ندارد.</p> }
-@foreach (var request in Model.PendingRequests.Items.Take(5))
-{ <p><strong>@request.DisplayName</strong> — @request.ApplicationName — @request.CreatedAt.ToPersianDate() <a href="/Admin/AccessRequests">بررسی درخواست</a></p> }
-</div></div>
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card custom-card stat-card overflow-hidden position-relative">
-            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
-                <span class="avatar avatar-xl avatar-rounded bg-primary flex-shrink-0"><i class="ti ti-users fs-24 text-fixed-white"></i></span>
-                <div>
-                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalUsers</div>
-                    <div class="fs-14 fw-medium text-default">کل کاربران</div>
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="card custom-card h-100">
+            <div class="card-header justify-content-between">
+                <div class="card-title d-flex align-items-center gap-2">
+                    درخواست‌های دسترسی در انتظار
+                    <span class="badge @(Model.PendingRequests.Total > 0 ? "bg-warning" : "bg-light text-muted") rounded-pill">@Model.PendingRequests.Total</span>
                 </div>
+                <a href="/Admin/AccessRequests?status=Pending" class="btn btn-sm btn-primary-light">بررسی همه <i class="ti ti-arrow-left ms-1"></i></a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.PendingRequests.Total == 0)
+                {
+                    <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-circle-check", "کاری در انتظار نیست", "درخواست دسترسی جدیدی برای بررسی وجود ندارد.")' />
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var request in Model.PendingRequests.Items.Take(5))
+                        {
+                            <li class="list-group-item d-flex align-items-center gap-3 py-3">
+                                <span class="entity__avatar">@(request.DisplayName.Length > 0 ? request.DisplayName[..1] : "?")</span>
+                                <div class="flex-fill min-w-0">
+                                    <div class="entity__name text-truncate">@request.DisplayName</div>
+                                    <div class="entity__sub text-truncate"><i class="ti ti-apps me-1"></i>@request.ApplicationName · @request.CreatedAt.ToPersianDate()</div>
+                                </div>
+                                <a href="/Admin/AccessRequests?status=Pending" class="btn btn-sm btn-primary-light">بررسی</a>
+                            </li>
+                        }
+                    </ul>
+                }
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card custom-card stat-card overflow-hidden position-relative">
-            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
-                <span class="avatar avatar-xl avatar-rounded bg-success flex-shrink-0"><i class="ti ti-user-check fs-24 text-fixed-white"></i></span>
-                <div>
-                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.ActiveUsers</div>
-                    <div class="fs-14 fw-medium text-default">کاربران فعال</div>
-                </div>
+    <div class="col-xl-5">
+        <div class="card custom-card h-100">
+            <div class="card-header"><div class="card-title">دسترسی سریع</div></div>
+            <div class="card-body">
+                <nav class="quick-actions" aria-label="دسترسی سریع">
+                    <a class="quick-action" href="/Admin/Users/Edit"><i class="ti ti-user-plus"></i>افزودن کاربر</a>
+                    <a class="quick-action" href="/Admin/Publications/Edit"><i class="ti ti-speakerphone"></i>انتشار اطلاعیه</a>
+                    <a class="quick-action" href="/Admin/Applications"><i class="ti ti-apps"></i>مدیریت سامانه‌ها</a>
+                    <a class="quick-action" href="/Admin/Permissions"><i class="ti ti-lock-access"></i>مجوزها</a>
+                    <a class="quick-action" href="/Admin/AccessRequests/Notifications"><i class="ti ti-message-2"></i>وضعیت پیامک‌ها</a>
+                    <a class="quick-action" href="/Admin/Authentication"><i class="ti ti-fingerprint"></i>ورود و امنیت</a>
+                </nav>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card custom-card stat-card overflow-hidden position-relative">
-            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
-                <span class="avatar avatar-xl avatar-rounded bg-warning flex-shrink-0"><i class="ti ti-shield-lock fs-24 text-fixed-white"></i></span>
-                <div>
-                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalRoles</div>
-                    <div class="fs-14 fw-medium text-default">نقش‌ها</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card custom-card stat-card overflow-hidden position-relative">
-            <div class="card-body d-flex align-items-center gap-3 position-relative py-3">
-                <span class="avatar avatar-xl avatar-rounded bg-info flex-shrink-0"><i class="ti ti-apps fs-24 text-fixed-white"></i></span>
-                <div>
-                    <div class="fs-24 fw-bold lh-1 mb-1">@Model.TotalApplications</div>
-                    <div class="fs-14 fw-medium text-default">سامانه‌ها</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
     <div class="col-12">
         <div class="card custom-card">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <div class="card-title d-flex align-items-center gap-2">
-                    <span class="avatar avatar-sm avatar-rounded bg-primary-transparent"><i class="ti ti-clock-hour-4 fs-14"></i></span>
-                    آخرین کاربران ثبت‌شده
-                </div>
-                <a href="/Admin/Users" class="fs-13 fw-medium">مشاهده همه <i class="ti ti-arrow-left"></i></a>
+            <div class="card-header justify-content-between">
+                <div class="card-title">آخرین کاربران ثبت‌شده</div>
+                <a href="/Admin/Users" class="btn btn-sm btn-primary-light">مشاهده همه <i class="ti ti-arrow-left ms-1"></i></a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 @if (Model.RecentUsers.Count == 0)
                 {
-                    <div class="text-center py-4">
-                        <i class="ti ti-users fs-40 text-muted op-5 d-block mb-2"></i>
-                        <p class="text-muted mb-0">کاربری ثبت نشده است.</p>
-                    </div>
+                    <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-users", "کاربری ثبت نشده است", null, "افزودن کاربر", "/Admin/Users/Edit")' />
                 }
                 else
                 {
                     <div class="table-responsive">
-                        <table class="table text-nowrap text-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th>کاربر</th>
-                                    <th>نام کاربری</th>
-                                    <th>تاریخ ثبت</th>
-                                    <th>وضعیت</th>
-                                </tr>
-                            </thead>
+                        <table class="table table-admin text-nowrap">
+                            <thead><tr><th>کاربر</th><th>تاریخ ثبت</th><th>آخرین ورود</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr></thead>
                             <tbody>
                                 @foreach (var u in Model.RecentUsers)
                                 {
                                     <tr>
-                                        <td>@u.Name @u.LastName</td>
-                                        <td dir="ltr">@u.Username</td>
-                                        <td>@u.CreatedAt.ToPersianDate()</td>
                                         <td>
-                                            @if (u.IsActive)
-                                            {
-                                                <span class="badge bg-success-transparent">فعال</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger-transparent">غیرفعال</span>
-                                            }
+                                            <div class="entity">
+                                                <span class="entity__avatar">@(u.Name.Length > 0 ? u.Name[..1] : "?")</span>
+                                                <div><div class="entity__name">@u.Name @u.LastName</div><div class="entity__sub" dir="ltr">@u.Username</div></div>
+                                            </div>
                                         </td>
+                                        <td>@u.CreatedAt.ToPersianDate()</td>
+                                        <td>@(u.LastLogin.HasValue ? u.LastLogin.ToPersianDate() : "—")</td>
+                                        <td><span class="status-pill @(u.IsActive ? "status-pill--success" : "status-pill--danger")">@(u.IsActive ? "فعال" : "غیرفعال")</span></td>
+                                        <td class="col-actions"><a href="/Admin/Users/Edit?id=@u.UserId" class="btn btn-icon btn-sm btn-primary-light" title="ویرایش @u.Name @u.LastName" aria-label="ویرایش @u.Name @u.LastName"><i class="ti ti-edit"></i></a></td>
                                     </tr>
                                 }
                             </tbody>

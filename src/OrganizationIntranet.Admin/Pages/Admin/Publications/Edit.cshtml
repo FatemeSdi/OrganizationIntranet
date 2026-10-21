@@ -1,19 +1,125 @@
-@page
+﻿@page
 @model OrganizationIntranet.Pages.Admin.Publications.EditModel
-@{ ViewData["Title"] = Model.Id.HasValue ? "ویرایش محتوا" : "افزودن محتوا"; Layout = "_LayoutAdmin"; }
-<div class="card custom-card"><div class="card-body">
-<h1 class="h4">@ViewData["Title"]</h1>
-<form method="post">
-<input type="hidden" asp-for="Id" />
-<input type="hidden" asp-for="Input.Revision" />
-<div asp-validation-summary="All" class="text-danger" role="alert"></div>
-<div class="mb-3"><label asp-for="Input.Kind" class="form-label">نوع محتوا</label><select asp-for="Input.Kind" class="form-select"><option value="News">خبر</option><option value="Announcement">اطلاعیه</option><option value="Circular">بخشنامه</option></select></div>
-<div class="mb-3"><label asp-for="Input.Title" class="form-label">عنوان</label><input asp-for="Input.Title" required maxlength="200" class="form-control" /></div>
-<div class="mb-3"><label asp-for="Input.Summary" class="form-label">خلاصه</label><textarea asp-for="Input.Summary" required maxlength="1000" rows="3" class="form-control"></textarea></div>
-<div class="mb-3"><label asp-for="Input.Body" class="form-label">متن کامل</label><textarea asp-for="Input.Body" required maxlength="50000" rows="14" class="form-control"></textarea><small class="text-muted">متن به صورت ساده نمایش داده می‌شود.</small></div>
-<div class="form-check mb-3"><input asp-for="Input.IsPublished" class="form-check-input" /><label asp-for="Input.IsPublished" class="form-check-label">انتشار برای تمام کاربران سازمان</label></div>
-<div class="form-check mb-3"><input asp-for="Input.IsPublic" class="form-check-input" /><label asp-for="Input.IsPublic" class="form-check-label">نمایش عمومی: بازدیدکننده‌ی بدون ورود هم ببیند</label><div class="form-text">فقط همراه با «انتشار» ممکن است. محتوای حساس یا داخلی را عمومی نکنید.</div></div>
-<p class="text-muted">با برداشتن گزینه انتشار و ذخیره، مطلب به پیش‌نویس تبدیل می‌شود.</p>
-<button type="submit" class="btn btn-primary">ذخیره</button>
-<a asp-page="Index" class="btn btn-light">بازگشت</a>
-</form></div></div>
+@using OrganizationIntranet.Contracts
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "ویرایش محتوا" : "افزودن محتوا";
+    ViewData["Icon"] = Model.Id.HasValue ? "ti ti-edit" : "ti ti-speakerphone";
+    ViewData["Subtitle"] = Model.Id.HasValue ? Model.Input.Title : "خبر، اطلاعیه یا بخشنامه‌ی جدید";
+    ViewData["ParentTitle"] = "اطلاع‌رسانی سازمانی";
+    ViewData["ParentUrl"] = "/Admin/Publications";
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, TempData["ImageError"] as string)' />
+
+<form method="post" enctype="multipart/form-data" class="card custom-card" data-busy data-dirty-guard>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Input.Revision" />
+    <div asp-validation-summary="All" class="alert alert-danger m-3 mb-0" role="alert"></div>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-file-text"></i>متن مطلب</h2>
+            <p class="form-section__help">خلاصه در فهرست پورتال و متن کامل در صفحه‌ی مطلب نمایش داده می‌شود. متن به‌صورت ساده (بدون قالب‌بندی) نمایش داده می‌شود.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4"><label asp-for="Input.Kind" class="form-label">نوع محتوا</label><select asp-for="Input.Kind" class="form-select">
+                @foreach (var kind in new[] { "News", "Announcement", "Circular" }) { <option value="@kind">@PublicationKinds.Label(kind)</option> }
+            </select></div>
+            <div class="col-md-8"><label asp-for="Input.Title" class="form-label">عنوان <span class="text-danger">*</span></label><input asp-for="Input.Title" required maxlength="200" class="form-control" data-counter /></div>
+            <div class="col-12"><label asp-for="Input.Summary" class="form-label">خلاصه <span class="text-danger">*</span></label><textarea asp-for="Input.Summary" required maxlength="1000" rows="3" class="form-control" data-counter></textarea></div>
+            <div class="col-12"><label asp-for="Input.Body" class="form-label">متن کامل <span class="text-danger">*</span></label><textarea asp-for="Input.Body" required maxlength="50000" rows="14" class="form-control" data-counter></textarea></div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-photo"></i>تصویر کارت خبر</h2>
+            <p class="form-section__help">در بخش «اخبار سازمان» پورتال بالای عنوان نمایش داده می‌شود. JPEG، PNG یا WebP تا ۲ مگابایت؛ تصویر افقی (نسبت ۱۶ به ۹) بهترین نتیجه را دارد. بدون تصویر، کارت با زمینه‌ی رنگی نوع مطلب نمایش داده می‌شود.</p>
+        </div>
+        <div class="publication-image-editor">
+            <figure class="publication-card-preview" aria-label="پیش‌نمایش کارت در پورتال">
+                <div class="publication-card-preview__media" data-kind="@Model.Input.Kind">
+                    <img id="imagePreview" alt="" src="@(Model.ImageVersion != 0 ? $"/Admin/Publications/Image?id={Model.Id}&v={Model.ImageVersion}" : "")" hidden="@(Model.ImageVersion == 0)" />
+                    <span class="publication-card-preview__placeholder" id="imagePlaceholder" hidden="@(Model.ImageVersion != 0)"><i class="ti ti-photo"></i></span>
+                </div>
+                <figcaption>
+                    <span class="badge bg-primary-transparent" id="previewKind">@PublicationKinds.Label(Model.Input.Kind)</span>
+                    <b id="previewTitle">@(string.IsNullOrWhiteSpace(Model.Input.Title) ? "عنوان مطلب" : Model.Input.Title)</b>
+                    <span id="previewSummary">@(string.IsNullOrWhiteSpace(Model.Input.Summary) ? "خلاصه‌ی مطلب" : Model.Input.Summary)</span>
+                </figcaption>
+            </figure>
+            <div>
+                <label asp-for="ImageFile" class="form-label">انتخاب تصویر</label>
+                <input asp-for="ImageFile" type="file" class="form-control" accept="@PublicationImageRules.Accept" />
+                <span asp-validation-for="ImageFile" class="text-danger fs-12"></span>
+                @if (Model.ImageVersion != 0)
+                {
+                    <div class="switch-row mt-3">
+                        <div><label class="switch-row__label" for="RemoveImage">حذف تصویر فعلی</label><p class="switch-row__help">کارت با زمینه‌ی رنگی نمایش داده می‌شود.</p></div>
+                        <input asp-for="RemoveImage" class="form-check-input" role="switch" />
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-eye"></i>انتشار و مخاطبان</h2>
+            <p class="form-section__help">با خاموش‌کردن «انتشار» و ذخیره، مطلب به پیش‌نویس تبدیل می‌شود.</p>
+        </div>
+        <div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_IsPublished">انتشار برای کاربران سازمان</label><p class="switch-row__help">همه‌ی کاربرانی که وارد پورتال می‌شوند مطلب را می‌بینند.</p></div>
+                <input asp-for="Input.IsPublished" class="form-check-input" role="switch" />
+            </div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_IsPublic">نمایش عمومی</label><p class="switch-row__help">بازدیدکننده‌ی بدون ورود هم می‌بیند؛ فقط همراه با «انتشار» ممکن است. محتوای حساس یا داخلی را عمومی نکنید.</p></div>
+                <input asp-for="Input.IsPublic" class="form-check-input" role="switch" />
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+        <a asp-page="Index" class="btn btn-primary-light">بازگشت</a>
+        <span class="form-actions__hint"><span class="text-danger">*</span> فیلد الزامی</span>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // «عمومی» بدون «انتشار» معنا ندارد؛ سرور هم همین را بررسی می‌کند.
+        (function () {
+            var published = document.getElementById('Input_IsPublished'), pub = document.getElementById('Input_IsPublic');
+            function sync() { pub.disabled = !published.checked; if (!published.checked) pub.checked = false; }
+            published.addEventListener('change', sync); sync();
+        })();
+        // پیش‌نمایش زنده‌ی کارت خبر: تصویر انتخاب‌شده (بدون بارگذاری)، عنوان، خلاصه و نوع.
+        (function () {
+            var file = document.getElementById('ImageFile'), img = document.getElementById('imagePreview'), placeholder = document.getElementById('imagePlaceholder');
+            var remove = document.getElementById('RemoveImage'), original = img.getAttribute('src');
+            var max = @PublicationImageRules.MaxBytes;
+            function show(src) { img.hidden = !src; placeholder.hidden = !!src; if (src) img.src = src; }
+            file.addEventListener('change', function () {
+                var f = file.files[0];
+                if (!f) { show(remove && remove.checked ? '' : original); return; }
+                if (f.size > max) { showToast('حجم تصویر باید حداکثر ۲ مگابایت باشد', 'danger'); file.value = ''; show(original); return; }
+                show(URL.createObjectURL(f));
+                if (remove) remove.checked = false;
+            });
+            if (remove) remove.addEventListener('change', function () { if (remove.checked) { file.value = ''; show(''); } else show(original); });
+            function bind(id, target, fallback) {
+                var el = document.getElementById(id), out = document.getElementById(target);
+                el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', function () {
+                    out.textContent = (el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : el.value.trim()) || fallback;
+                    if (el.tagName === 'SELECT') out.closest('.publication-card-preview').querySelector('[data-kind]').dataset.kind = el.value;
+                });
+            }
+            bind('Input_Title', 'previewTitle', 'عنوان مطلب');
+            bind('Input_Summary', 'previewSummary', 'خلاصه‌ی مطلب');
+            bind('Input_Kind', 'previewKind', '');
+        })();
+    </script>
+}
