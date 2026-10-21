@@ -151,6 +151,9 @@ public sealed partial class PortalSmokeTests
 
         // منوی حساب در صفحه‌ی اصلی به همان صفحه‌ها می‌رود؛ مدال کارت سامانه‌ها جمع‌وجور و بدون «درخواست‌های من» است.
         var home = WebUtility.HtmlDecode(await browser.GetStringAsync("/Portal"));
+        Assert.DoesNotContain("@if", home);                     // کد Razor نباید به‌صورت متن دیده شود (تشخیص ایمیل در «اعلان‌ها@if»)
+        Assert.DoesNotContain("Model.UnreadTotal", home);
+        Assert.DoesNotContain("0 خوانده‌نشده", home);           // بدون اعلان خوانده‌نشده، برچسب شمارش نمایش داده نمی‌شود
         Assert.Contains("href=\"/AccessRequests\"", home);
         Assert.Contains("href=\"/Account/Settings\"", home);
         Assert.Contains("href=\"/Notifications\"", home);
