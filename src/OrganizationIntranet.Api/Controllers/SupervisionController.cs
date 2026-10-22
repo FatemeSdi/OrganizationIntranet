@@ -11,7 +11,8 @@ namespace OrganizationIntranet.Api.Controllers;
 public sealed class SupervisionController(SupervisionService service) : ControllerBase
 {
     private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    [HttpGet("inbox")] public Task<AccessRequestListDto> Inbox(int page = 1) => service.InboxAsync(UserId, page);
+    [HttpGet("inbox")] public Task<AccessRequestListDto> Inbox(int page = 1, string? status = null, int? applicationId = null) => service.InboxAsync(UserId, page, status, applicationId);
+    [HttpGet("inbox/summary")] public Task<SupervisionSummaryDto> InboxSummary(int? applicationId = null) => service.InboxSummaryAsync(UserId, applicationId);
     [HttpGet("alerts")] public Task<AccessRequestAlertsDto> Alerts() => service.AlertsAsync(UserId);
     [HttpPost("alerts/read")] public async Task<OperationResult> ReadAll() { await service.MarkReadAsync(UserId, null); return new(true); }
     [HttpPost("alerts/{id:long}/read")] public async Task<OperationResult> Read(long id) { await service.MarkReadAsync(UserId, id); return new(true); }

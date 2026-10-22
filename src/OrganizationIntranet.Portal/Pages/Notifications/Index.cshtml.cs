@@ -5,32 +5,41 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 namespace OrganizationIntranet.Pages.Notifications;
 
-/// <summary>یک اعلان در فهرست یکپارچه: اعلان سامانه‌ها یا هشدار درخواست دسترسی (کارتابل نظارت).</summary>
-public sealed record NotificationRow(string Kind, long Id, string Source, string Title, DateTime CreatedAt, bool Unread, bool HasDestination);
-
-/// <summary>همه‌ی اعلان‌های کاربر با تب خوانده‌نشده/خوانده‌شده و فیلتر منبع؛ تب‌ها با query string کار می‌کنند تا بدون JavaScript هم کار کند.</summary>
+/// <summary>
+/// همه‌ی اعلان‌های کاربر (سامانه‌ها + هشدار درخواست دسترسی) با صفحه‌بندی، تب وضعیت، فیلتر منبع و بازه‌ی زمانی؛
+/// همه‌ی فیلترها در API اعمال می‌شوند و با query string کار می‌کنند تا بدون JavaScript هم کار کند.
+/// </summary>
 [Authorize]
 public class IndexModel(ApiClient api) : PageModel
 {
-    public const string SystemKind = "system", RequestKind = "request";
     [BindProperty(SupportsGet = true)] public string? Tab { get; set; }
     [BindProperty(SupportsGet = true)] public string? Source { get; set; }
-    public List<NotificationRow> All { get; private set; } = new();
-    public IEnumerable<NotificationRow> Visible => All
-        .Where(n => Source is null || n.Kind == Source)
-        .Where(n => Tab switch { "unread" => n.Unread, "read" => !n.Unread, _ => true });
-    public int Count(string? tab) => All.Where(n => Source is null || n.Kind == Source)
-        .Count(n => tab switch { "unread" => n.Unread, "read" => !n.Unread, _ => true });
+    [BindProperty(SupportsGet = true)] public int? Days { get; set; }
+    [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    public NotificationCenterDto Center { get; private set; } = new([], 0, 1, NotificationCenter.PageSize, 0, 0);
+
+    /// <summary>پارامترهای فعلی با جایگزینی بعضی؛ تغییر فیلتر صفحه را به ۱ برمی‌گرداند.</summary>
+    public Dictionary<string, string?> Route(string? tab = "", string? source = "", int? days = -1, int? page = null) => new()
+    {
+        ["tab"] = tab == "" ? Tab : tab,
+        ["source"] = source == "" ? Source : source,
+        ["days"] = (days == -1 ? Days : days)?.ToString(),
+        ["pageNumber"] = page is > 1 ? page.ToString() : null,
+    };
 
     public async Task OnGetAsync()
     {
-        if (Tab is not ("unread" or "read")) Tab = null;
-        if (Source is not (SystemKind or RequestKind)) Source = null;
-        var notifications = await api.GetAsync<List<PortalNotificationDto>>("api/portal/notifications");
-        var alerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
-        All = notifications.Select(n => new NotificationRow(SystemKind, n.Id, n.System, n.Title, n.CreatedAt, n.Unread, n.TargetUrl is not null))
-            .Concat(alerts.Items.Select(a => new NotificationRow(RequestKind, a.Id, a.ApplicationName, $"درخواست دسترسی جدید از {a.Requester}", a.CreatedAt, !a.IsRead, true)))
-            .OrderByDescending(n => n.CreatedAt).ToList();
+        // مقدار نامعتبر از query string به پیش‌فرض برمی‌گردد (API آن را رد می‌کند).
+        if (!NotificationCenter.ValidStatus(Tab)) Tab = null;
+        if (!NotificationCenter.ValidKind(Source)) Source = null;
+        if (!NotificationCenter.ValidDays(Days)) Days = null;
+        if (PageNumber < 1) PageNumber = 1;
+        Center = await api.GetAsync<NotificationCenterDto>($"api/portal/notifications/page?kind={Source}&status={Tab}&days={Days}&page={PageNumber}");
+        if (Center.Items.Count == 0 && PageNumber > Center.TotalPages)
+        {
+            PageNumber = Center.TotalPages; // مثلاً پس از «خواندن همه» در تب خوانده‌نشده
+            Center = await api.GetAsync<NotificationCenterDto>($"api/portal/notifications/page?kind={Source}&status={Tab}&days={Days}&page={PageNumber}");
+        }
     }
 
     public async Task<IActionResult> OnPostOpenAsync(long id)
@@ -42,7 +51,7 @@ public class IndexModel(ApiClient api) : PageModel
     public async Task<IActionResult> OnPostReadAlertAsync(long id)
     {
         await api.PostAsync<OperationResult>($"api/portal/supervision/alerts/{id}/read");
-        return Redirect("/Portal#supervision");
+        return Redirect("/Supervision?status=" + AccessRequestStatuses.Pending);
     }
 
     public async Task<IActionResult> OnPostReadAllAsync()
@@ -50,6 +59,6 @@ public class IndexModel(ApiClient api) : PageModel
         await api.PostAsync<OperationResult>("api/portal/notifications/read");
         await api.PostAsync<OperationResult>("api/portal/supervision/alerts/read");
         TempData["NotificationsMessage"] = "همه‌ی اعلان‌ها خوانده شد";
-        return RedirectToPage(new { Tab, Source });
+        return RedirectToPage(Route());
     }
 }

@@ -1,0 +1,39 @@
+@model OrganizationIntranet.Contracts.SupervisionSummaryDto
+@using OrganizationIntranet.Contracts
+@* کارت کوچک کارتابل نظارت در صفحه‌ی اصلی؛ فقط برای ناظر. فهرست کامل در /Supervision است. *@
+@if (Model.IsSupervisor)
+{
+    var pending = Model.Count(AccessRequestStatuses.Pending);
+    <section id="supervision" class="supervision-strip-section" aria-labelledby="supervision-title">
+        <style>
+            .supervision-strip-section { padding: 8px 0 34px; }
+            .supervision-strip { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 18px 22px; border-radius: var(--radius);
+                background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
+            .supervision-strip__icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0;
+                background: rgba(214,162,76,.16); color: var(--gold-600); }
+            .supervision-strip__icon svg { width: 24px; height: 24px; }
+            .supervision-strip__text { flex: 1 1 260px; min-width: 0; }
+            .supervision-strip__text h2 { margin: 0; font-size: 17px; font-weight: 800; }
+            .supervision-strip__text p { margin: 2px 0 0; color: var(--ink-500); font-size: 13.5px; }
+            .supervision-strip__stat { text-align: center; padding: 0 12px; }
+            .supervision-strip__stat b { display: block; font-size: 22px; line-height: 1.2; color: var(--navy-900); }
+            .supervision-strip__stat.is-pending b { color: var(--gold-600); }
+            .supervision-strip__stat span { font-size: 12px; color: var(--ink-500); }
+            .supervision-strip__link { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;
+                background: var(--navy-900); color: #fff; text-decoration: none; }
+            .supervision-strip__link:hover { background: var(--navy-800); color: #fff; }
+        </style>
+        <div class="container">
+            <div class="supervision-strip">
+                <span class="supervision-strip__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                <div class="supervision-strip__text">
+                    <h2 id="supervision-title">کارتابل نظارت</h2>
+                    <p>درخواست‌های دسترسی @(Model.Applications.Count == 1 ? $"سامانه‌ی {Model.Applications[0].Name}" : $"{Model.Applications.Count} سامانه‌ی تحت نظارت شما")</p>
+                </div>
+                <div class="supervision-strip__stat is-pending"><b>@pending</b><span>در انتظار بررسی</span></div>
+                <div class="supervision-strip__stat"><b>@Model.Count(null)</b><span>همه‌ی درخواست‌ها</span></div>
+                <a class="supervision-strip__link" href="@(pending > 0 ? "/Supervision?status=Pending" : "/Supervision")">مشاهده‌ی کارتابل</a>
+            </div>
+        </div>
+    </section>
+}

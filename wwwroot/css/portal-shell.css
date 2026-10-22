@@ -150,6 +150,16 @@ header.pp-site { position: sticky; top: 0; z-index: 60; background: rgba(10, 32,
 .pp-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; font-size: 13px; color: var(--ink-500); flex-wrap: wrap; }
 .pp-pager nav { display: flex; gap: 6px; }
 
+/* فیلترهای چیپی (منبع، بازه‌ی زمانی، سامانه) — با لینک کار می‌کنند و JavaScript لازم ندارند */
+.pp-filters { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.pp-filter-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pp-filter-label { font-size: 12px; font-weight: 700; color: var(--ink-500); margin-inline-end: 2px; }
+.pp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.pp-chips a { padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; border: 1px solid var(--line); color: var(--ink-500); background: var(--card); }
+.pp-chips a:hover { color: var(--navy-900); border-color: var(--gold-500); }
+.pp-chips a.active { background: var(--sand-100); border-color: var(--gold-500); color: var(--navy-900); }
+.pp-filter-select { height: 36px; width: auto; min-width: 180px; font-size: 13px; }
+
 /* ---------- اخبار و اطلاعیه‌ها (Publications) ---------- */
 .pp-link { color: var(--blue-600); font-weight: 700; }
 .pp-pub-toolbar { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 14px; }

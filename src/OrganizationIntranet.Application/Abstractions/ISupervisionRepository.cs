@@ -12,7 +12,9 @@ public interface ISupervisionRepository
     Task EnqueueAsync(ApplicationAccessRequest request);
     Task<(List<AccessRequestAlert> Items, int UnreadCount)> AlertsAsync(long userId);
     Task MarkReadAsync(long userId, long? alertId);
-    Task<(List<ApplicationAccessRequest> Items, int Total)> InboxAsync(long userId, int page, int pageSize);
+    Task<(List<ApplicationAccessRequest> Items, int Total)> InboxAsync(long userId, int page, int pageSize, string? status = null, int? applicationId = null);
+    /// <summary>سامانه‌های تحت نظارت کاربر و شمار درخواست‌هایشان به تفکیک وضعیت.</summary>
+    Task<(List<(int Id, string Name)> Applications, Dictionary<string, int> StatusCounts)> InboxSummaryAsync(long userId, int? applicationId);
     Task<(List<AccessRequestAlert> Items, int Total)> SmsAsync(int page, int pageSize);
     Task<AccessRequestAlert?> FindSmsAsync(long id);
     Task SaveAsync();

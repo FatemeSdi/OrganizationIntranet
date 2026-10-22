@@ -21,16 +21,16 @@ public class IndexModel(ApiClient api) : PageModel
     [BindProperty] public int RequestedApplicationId { get; set; }
     [BindProperty] public string? RequestReason { get; set; }
     public string? RequestError { get; set; }
-    [BindProperty(SupportsGet = true)] public int SupervisionPage { get; set; } = 1;
     public AccessRequestAlertsDto SupervisionAlerts { get; set; } = new([], 0);
-    public AccessRequestListDto SupervisionInbox { get; set; } = new([], 0, 1, 20);
+    /// <summary>خلاصه‌ی کارتابل نظارت برای کارت صفحه‌ی اصلی؛ خود کارتابل در /Supervision است.</summary>
+    public SupervisionSummaryDto Supervision { get; set; } = new([], new());
     public int UnreadTotal => Applications.Sum(a => a.UnreadCount) + SupervisionAlerts.UnreadCount;
     private IActionResult? RequireSignIn() => IsAuthenticated ? null : Challenge();
     public async Task<IActionResult> OnPostReadSupervisionAlertAsync(long alertId)
     {
         if (RequireSignIn() is { } denied) return denied;
         await api.PostAsync<OperationResult>($"api/portal/supervision/alerts/{alertId}/read");
-        return RedirectToPage(pageName: null, pageHandler: null, routeValues: null, fragment: "supervision");
+        return Redirect("/Supervision");
     }
     public async Task<IActionResult> OnPostOpenNotificationAsync(long notificationId)
     {
@@ -75,7 +75,7 @@ public class IndexModel(ApiClient api) : PageModel
         Applications = await api.GetAsync<List<PortalApplicationDto>>("api/portal/applications");
         Notifications = await api.GetAsync<List<PortalNotificationDto>>("api/portal/notifications");
         SupervisionAlerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
-        SupervisionInbox = await api.GetAsync<AccessRequestListDto>($"api/portal/supervision/inbox?page={SupervisionPage}");
+        Supervision = await api.GetAsync<SupervisionSummaryDto>("api/portal/supervision/inbox/summary");
         RequestableApplications = await api.GetAsync<List<RequestableApplicationDto>>("api/portal/access-requests/applications");
         Publications = await api.GetAsync<PublicationListDto>("api/publications");
     }

@@ -53,6 +53,8 @@ builder.Services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
 builder.Services.AddScoped<AccessRequestService>();
 builder.Services.AddScoped<ISupervisionRepository, SupervisionRepository>();
 builder.Services.AddScoped<SupervisionService>();
+builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepository>();
+builder.Services.AddScoped<NotificationCenterService>();
 OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))

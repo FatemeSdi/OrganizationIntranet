@@ -1,0 +1,126 @@
+@page
+@model OrganizationIntranet.Pages.Supervision.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "کارتابل نظارت";
+    ViewData["PortalNav"] = "supervision";
+    Layout = "_LayoutPortal";
+    static string Tone(string status) => status switch
+    {
+        AccessRequestStatuses.Pending => "pp-badge-warning", AccessRequestStatuses.Approved => "pp-badge-success",
+        AccessRequestStatuses.Rejected => "pp-badge-danger", _ => "pp-badge-muted"
+    };
+    var statuses = new string?[] { null, AccessRequestStatuses.Pending, AccessRequestStatuses.Approved, AccessRequestStatuses.Rejected, AccessRequestStatuses.Cancelled };
+    var apps = Model.Summary.Applications;
+}
+@section Styles {
+    <style>
+        .pp-sv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        .pp-sv-head p { margin: 2px 0 0; font-size: 13px; color: var(--ink-500); }
+        .pp-sv-requester { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .pp-sv-avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-weight: 800; font-size: 13px; background: var(--sand-100); color: var(--navy-900); }
+        .pp-sv-requester b { display: block; font-size: 13.5px; }
+        .pp-sv-requester span { font-size: 12px; color: var(--ink-500); direction: ltr; }
+        .pp-sv-reason { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--sand-50); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .pp-sv-review { margin-top: 8px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .pp-sv-filter { display: flex; gap: 8px; align-items: center; }
+    </style>
+}
+
+<section class="pp-card" aria-labelledby="supervision-title">
+    <div class="pp-sv-head">
+        <div>
+            <h2 class="pp-section-title" id="supervision-title" style="margin:0">درخواست‌های دسترسی</h2>
+            <p>سامانه‌های تحت نظارت شما. این کارتابل فقط برای اطلاع است؛ تأیید یا رد درخواست با مدیر سامانه است.</p>
+        </div>
+        @if (Model.CanReview)
+        {
+            <a href="@(Configuration["Sites:Admin"] + "/Admin/AccessRequests?status=Pending")" class="pp-btn pp-btn-outline pp-btn-sm">بررسی در پنل مدیریت</a>
+        }
+    </div>
+
+    @if (!Model.Summary.IsSupervisor)
+    {
+        <div class="pp-empty">
+            <div class="pp-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <b>شما ناظر هیچ سامانه‌ای نیستید</b>
+            عضویت در گروه نظارت هر سامانه را مدیر سامانه تعیین می‌کند.
+        </div>
+    }
+    else
+    {
+        @if (apps.Count > 1)
+        {
+            <div class="pp-filters">
+                <div class="pp-filter-group">
+                    <span class="pp-filter-label" id="app-label">سامانه</span>
+                    @if (apps.Count <= 6)
+                    {
+                        <nav class="pp-chips" aria-labelledby="app-label">
+                            <a asp-all-route-data="Model.Route(app: null)" class="@(Model.App is null ? "active" : "")" aria-current="@(Model.App is null ? "true" : null)">همه</a>
+                            @foreach (var a in apps)
+                            {
+                                <a asp-all-route-data="Model.Route(app: a.ApplicationId)" class="@(Model.App == a.ApplicationId ? "active" : "")" aria-current="@(Model.App == a.ApplicationId ? "true" : null)">@a.Name</a>
+                            }
+                        </nav>
+                    }
+                    else
+                    {
+                        <form method="get" class="pp-sv-filter">
+                            @if (Model.Status is not null) { <input type="hidden" name="status" value="@Model.Status" /> }
+                            <select name="app" class="pp-select pp-filter-select" aria-labelledby="app-label" onchange="this.form.submit()">
+                                <option value="">همه‌ی سامانه‌ها</option>
+                                @foreach (var a in apps) { <option value="@a.ApplicationId" selected="@(Model.App == a.ApplicationId)">@a.Name</option> }
+                            </select>
+                            <noscript><button type="submit" class="pp-btn pp-btn-soft pp-btn-sm">اعمال</button></noscript>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+
+        <nav class="pp-tabs" aria-label="وضعیت درخواست">
+            @foreach (var s in statuses)
+            {
+                <a asp-all-route-data="Model.Route(status: s)" class="@(Model.Status == s ? "active" : "")" aria-current="@(Model.Status == s ? "page" : null)">@(s is null ? "همه" : AccessRequestStatuses.Label(s)) <span class="pp-tab-count">@Model.Summary.Count(s)</span></a>
+            }
+        </nav>
+
+        @if (Model.Requests.Items.Count == 0)
+        {
+            <div class="pp-empty"><b>@(Model.Status == AccessRequestStatuses.Pending ? "درخواستی در انتظار بررسی نیست" : "درخواستی با این فیلتر وجود ندارد")</b></div>
+        }
+        <div class="pp-list">
+            @foreach (var request in Model.Requests.Items)
+            {
+                <article class="pp-list-item" id="request-@request.Id">
+                    <div class="pp-list-body">
+                        <div class="pp-list-top">
+                            <span class="pp-list-source">@request.ApplicationName</span>
+                            <span class="pp-badge @Tone(request.Status)">@AccessRequestStatuses.Label(request.Status)</span>
+                        </div>
+                        <div class="pp-sv-requester">
+                            <span class="pp-sv-avatar" aria-hidden="true">@(request.DisplayName.Length > 0 ? request.DisplayName[..1] : "?")</span>
+                            <div><b>@request.DisplayName</b><span>@request.Username</span></div>
+                        </div>
+                        <div class="pp-sv-reason">@request.Reason</div>
+                        @if (request.ReviewNote is not null) { <div class="pp-sv-review"><b>پاسخ مدیر:</b> @request.ReviewNote</div> }
+                        <div class="pp-list-time" style="margin-top:8px">ثبت: @request.CreatedAt.ToPersianDate()@(request.ResolvedAt.HasValue ? " · آخرین تغییر: " + request.ResolvedAt.ToPersianDate() : "")</div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pp-pager">
+                <span>صفحه @Model.PageNumber از @Model.TotalPages · @Model.Requests.Total درخواست</span>
+                <nav aria-label="صفحه‌بندی کارتابل نظارت">
+                    @if (Model.PageNumber > 1) { <a asp-all-route-data="Model.Route(page: Model.PageNumber - 1)" class="pp-btn pp-btn-soft pp-btn-sm">قبلی</a> }
+                    @if (Model.PageNumber < Model.TotalPages) { <a asp-all-route-data="Model.Route(page: Model.PageNumber + 1)" class="pp-btn pp-btn-soft pp-btn-sm">بعدی</a> }
+                </nav>
+            </div>
+        }
+    }
+</section>

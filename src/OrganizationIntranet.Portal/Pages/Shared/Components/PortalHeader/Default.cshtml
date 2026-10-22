@@ -29,7 +29,7 @@
                     </button>
                     <div class="pp-menu" id="ppUserMenu" hidden>
                         <div class="pp-menu-head"><span class="pp-avatar" aria-hidden="true">@Model.Initials</span><div><b>@Model.DisplayName</b><span>@Model.RoleNames</span></div></div>
-                        <ul><partial name="_PortalUserMenuItems" model="(Model.IsAdmin, Model.Active)" /></ul>
+                        <ul><partial name="_PortalUserMenuItems" model="(Model.IsAdmin, Model.IsSupervisor, Model.Active)" /></ul>
                     </div>
                 </div>
             }

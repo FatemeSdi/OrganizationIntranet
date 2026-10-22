@@ -16,7 +16,8 @@ public class IndexModel(ApiClient api) : PageModel
     [BindProperty, Required(ErrorMessage = "دلیل نیاز به دسترسی را بنویسید"), StringLength(1000)] public string? RequestReason { get; set; }
     public List<RequestableApplicationDto> RequestableApplications { get; set; } = new();
     public AccessRequestListDto AccessRequests { get; set; } = new([], 0, 1, 20);
-    public IEnumerable<AccessRequestDto> Visible => AccessRequests.Items.Where(r => Status is null || r.Status == Status);
+    // فیلتر وضعیت و صفحه‌بندی هر دو در API انجام می‌شوند (نه فقط روی صفحه‌ی جاری).
+    public IEnumerable<AccessRequestDto> Visible => AccessRequests.Items;
     public string? Error { get; set; }
 
     private async Task LoadAsync()
@@ -24,7 +25,7 @@ public class IndexModel(ApiClient api) : PageModel
         if (RequestPage < 1) RequestPage = 1;
         if (Status is not (AccessRequestStatuses.Pending or AccessRequestStatuses.Approved or AccessRequestStatuses.Rejected or AccessRequestStatuses.Cancelled)) Status = null;
         RequestableApplications = await api.GetAsync<List<RequestableApplicationDto>>("api/portal/access-requests/applications");
-        AccessRequests = await api.GetAsync<AccessRequestListDto>($"api/portal/access-requests?page={RequestPage}");
+        AccessRequests = await api.GetAsync<AccessRequestListDto>($"api/portal/access-requests?page={RequestPage}&status={Status}");
     }
     public async Task OnGetAsync() => await LoadAsync();
 

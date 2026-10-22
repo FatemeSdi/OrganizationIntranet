@@ -31,11 +31,7 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
                 SmsStatus = app.AccessRequestNotificationChannels is "Sms" or "Both" ? "Pending" : "NotRequested",
                 NextAttemptAt = app.AccessRequestNotificationChannels is "Sms" or "Both" ? DateTime.UtcNow : null });
     }
-    private IQueryable<AccessRequestAlert> Visible(long userId)
-    {
-        var apps = SupervisionQueries.Applications(db, userId);
-        return db.AccessRequestAlerts.Where(a => a.UserId == userId && a.InApp && apps.Contains(a.Request.ApplicationId));
-    }
+    private IQueryable<AccessRequestAlert> Visible(long userId) => SupervisionQueries.Alerts(db, userId);
     public async Task<(List<AccessRequestAlert> Items, int UnreadCount)> AlertsAsync(long userId)
     {
         var query = Visible(userId);
@@ -49,10 +45,20 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
         if (alertId.HasValue && alerts.Count == 0) throw new KeyNotFoundException();
         foreach (var alert in alerts.Where(a => !a.IsRead)) { alert.IsRead = true; alert.ReadAt = DateTime.UtcNow; alert.Revision = Guid.NewGuid(); }
     }
-    public async Task<(List<ApplicationAccessRequest> Items, int Total)> InboxAsync(long userId, int page, int pageSize)
+    public async Task<(List<(int Id, string Name)> Applications, Dictionary<string, int> StatusCounts)> InboxSummaryAsync(long userId, int? applicationId)
     {
         var apps = SupervisionQueries.Applications(db, userId);
-        var query = db.ApplicationAccessRequests.AsNoTracking().Where(r => apps.Contains(r.ApplicationId));
+        var list = await db.Applications.AsNoTracking().Where(a => apps.Contains(a.ApplicationId)).OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationName)
+            .Select(a => new { a.ApplicationId, a.ApplicationName }).ToListAsync();
+        var counts = await db.ApplicationAccessRequests.AsNoTracking().Where(r => apps.Contains(r.ApplicationId) && (applicationId == null || r.ApplicationId == applicationId))
+            .GroupBy(r => r.Status).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.Count);
+        return (list.Select(a => (a.ApplicationId, a.ApplicationName)).ToList(), counts);
+    }
+    public async Task<(List<ApplicationAccessRequest> Items, int Total)> InboxAsync(long userId, int page, int pageSize, string? status = null, int? applicationId = null)
+    {
+        var apps = SupervisionQueries.Applications(db, userId);
+        var query = db.ApplicationAccessRequests.AsNoTracking().Where(r => apps.Contains(r.ApplicationId)
+            && (status == null || r.Status == status) && (applicationId == null || r.ApplicationId == applicationId));
         var count = await query.CountAsync();
         return (await query.Include(r => r.User).Include(r => r.Application).OrderBy(r => r.Status != "Pending").ThenByDescending(r => r.ApplicationAccessRequestId)
             .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(), count);

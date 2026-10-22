@@ -18,4 +18,10 @@ internal static class SupervisionQueries
         || (a.IsActive && db.Users.Any(u => u.UserId == userId && u.IsActive) && a.SupervisionGroups.Any(g => g.IsActive
             && g.Members.Any(m => m.UserId == userId || (m.RoleId != null && m.Role!.IsActive && m.Role.UserRoles.Any(ur => ur.UserId == userId))))))
         .Select(a => a.ApplicationId);
+    /// <summary>هشدارهای درون‌برنامه‌ای کاربر، فقط برای سامانه‌هایی که هنوز ناظرشان است.</summary>
+    internal static IQueryable<AccessRequestAlert> Alerts(AppDbContext db, long userId)
+    {
+        var apps = Applications(db, userId);
+        return db.AccessRequestAlerts.Where(a => a.UserId == userId && a.InApp && apps.Contains(a.Request.ApplicationId));
+    }
 }

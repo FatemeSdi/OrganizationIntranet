@@ -33,10 +33,17 @@ public sealed class SupervisionService(ISupervisionRepository repository, IAppli
             a.Request.Application.ApplicationName, $"{a.Request.User.Name} {a.Request.User.LastName}".Trim(), a.CreatedAt, a.IsRead)).ToList(), result.UnreadCount);
     }
     public async Task MarkReadAsync(long userId, long? id) { await repository.MarkReadAsync(userId, id); await repository.SaveAsync(); }
-    public async Task<AccessRequestListDto> InboxAsync(long userId, int page)
+    public async Task<SupervisionSummaryDto> InboxSummaryAsync(long userId, int? applicationId)
+    {
+        var (apps, counts) = await repository.InboxSummaryAsync(userId, applicationId);
+        return new(apps.Select(a => new SupervisedApplicationDto(a.Id, a.Name)).ToList(), counts);
+    }
+    /// <summary>کارتابل فقط‌خواندنی ناظر؛ فیلتر سامانه به سامانه‌های تحت نظارت محدود است (سامانه‌ی دیگر = فهرست خالی).</summary>
+    public async Task<AccessRequestListDto> InboxAsync(long userId, int page, string? status = null, int? applicationId = null)
     {
         ValidatePage(page);
-        var result = await repository.InboxAsync(userId, page, 20);
+        if (status is not null && !AccessRequestStatuses.IsValid(status)) throw new ArgumentException("وضعیت درخواست معتبر نیست");
+        var result = await repository.InboxAsync(userId, page, 20, status, applicationId);
         return new(result.Items.Select(r => new AccessRequestDto(r.ApplicationAccessRequestId, r.ApplicationId, r.Application.ApplicationName,
             r.UserId, r.User.Username, $"{r.User.Name} {r.User.LastName}".Trim(), r.Reason, r.Status, r.CreatedAt, r.ResolvedAt,
             null, r.ReviewNote, r.Revision)).ToList(), result.Total, page, 20);

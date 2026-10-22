@@ -61,7 +61,7 @@
         </nav>
         @if (!Model.Visible.Any())
         {
-            <div class="pp-empty"><b>@(Model.AccessRequests.Total == 0 ? "هنوز درخواستی ثبت نکرده‌اید" : "درخواستی با این وضعیت در این صفحه نیست")</b></div>
+            <div class="pp-empty"><b>@(Model.Status is null ? "هنوز درخواستی ثبت نکرده‌اید" : "درخواستی با این وضعیت ندارید")</b></div>
         }
         <div class="pp-list">
             @foreach (var request in Model.Visible)

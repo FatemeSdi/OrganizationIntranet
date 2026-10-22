@@ -414,7 +414,7 @@ else
               <span>@Model.RoleNames</span>
             </div>
           </div>
-          <ul><partial name="_PortalUserMenuItems" model='(OrganizationIntranet.Authorization.PermissionClaimsExtensions.HasPermission(User, OrganizationIntranet.Contracts.AdminPermissions.IntranetAdmin), (string?)null)' /></ul>
+          <ul><partial name="_PortalUserMenuItems" model='(OrganizationIntranet.Authorization.PermissionClaimsExtensions.HasPermission(User, OrganizationIntranet.Contracts.AdminPermissions.IntranetAdmin), Model.Supervision.IsSupervisor, (string?)null)' /></ul>
         </div>
       </div>
 }
@@ -576,7 +576,7 @@ else
 @if (Model.IsAuthenticated)
 {
   <partial name="_AccessRequests" model="Model" />
-  <partial name="_SupervisionInbox" model="Model" />
+  <partial name="_SupervisionSummary" model="Model.Supervision" />
 }
   @{
     // فهرست‌ها فعلاً ثابت‌اند؛ با اتصال به API فرم‌ها/اسناد (فاز ۳) فقط منبع این آرایه عوض می‌شود.

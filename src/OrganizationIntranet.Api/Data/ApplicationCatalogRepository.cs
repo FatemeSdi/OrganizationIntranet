@@ -19,12 +19,7 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
         .OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();
     public Task<List<AppEntity>> PublicAsync() => db.Applications.AsNoTracking().Where(a => a.IsActive && a.IsPublic)
         .OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();
-    private IQueryable<UserNotification> VisibleNotifications(long userId)
-    {
-        var ids = Available(userId).Where(a => a.Services.Any(s => s.IsActive && s.ServiceCode == ApplicationCatalogOptions.NotificationsService))
-            .Select(a => a.ApplicationId);
-        return db.UserNotifications.Where(n => n.UserId == userId && ids.Contains(n.Notification.ApplicationId));
-    }
+    private IQueryable<UserNotification> VisibleNotifications(long userId) => NotificationQueries.Visible(db, userId);
     public Task<UserNotification?> FindNotificationAsync(long userId, long id) => VisibleNotifications(userId)
         .Include(n => n.Notification).ThenInclude(n => n.Application).SingleOrDefaultAsync(n => n.UserNotificationId == id);
     public Task<Dictionary<int, int>> UnreadCountsAsync(long userId) => VisibleNotifications(userId).Where(n => !n.IsRead)
