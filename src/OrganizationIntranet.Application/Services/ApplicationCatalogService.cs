@@ -6,7 +6,7 @@ using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
 namespace OrganizationIntranet.Application.Services;
 
-public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository)
+public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository, ISsoClients sso)
 {
     private static ApplicationDto Map(AppEntity a) => new(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl,
         a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels);
@@ -91,7 +91,7 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         return apps.Select(a => new PortalApplicationDto(a.ApplicationId, a.ApplicationName, a.Description,
             SafeUrl(a.BaseUrl) ? a.BaseUrl : null, ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps",
             a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, counts.GetValueOrDefault(a.ApplicationId),
-            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList())).ToList();
+            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList(), sso.LandingUrl(a.ApplicationCode) is not null)).ToList();
     }
     public async Task<List<PortalNotificationDto>> NotificationsAsync(long userId) => (await repository.NotificationsAsync(userId, false, 50))
         .Select(n => new PortalNotificationDto(n.UserNotificationId, n.Notification.Application.ApplicationName, n.Notification.Title, n.CreatedAt, !n.IsRead,

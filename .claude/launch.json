@@ -21,6 +21,20 @@
       "runtimeArgs": ["run", "--project", "src/OrganizationIntranet.Admin", "--launch-profile", "https"],
       "port": 7231,
       "url": "https://localhost:7231"
+    },
+    {
+      "name": "tasktrack",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "C:/Users/ASUS/source/repos/TaskTrackerManagementSystem/TaskTrackerManagementSystem/TaskTrackerManagementSystem.csproj", "--launch-profile", "https"],
+      "port": 7275,
+      "url": "https://localhost:7275"
+    },
+    {
+      "name": "its",
+      "runtimeExecutable": "C:/Program Files/IIS Express/iisexpress.exe",
+      "runtimeArgs": ["/path:C:\\Users\\ASUS\\source\\repos\\ITServiceDesk\\ITServiceDesk.WebUI", "/port:62100", "/clr:v4.0"],
+      "port": 62100,
+      "url": "http://localhost:62100"
     }
   ]
 }

@@ -174,6 +174,8 @@ public sealed partial class PortalSmokeTests
 
         var home = WebUtility.HtmlDecode(await browser.GetStringAsync("/Portal"));
         Assert.Contains("id=\"supervision-title\">کارتابل نظارت", home);
+        Assert.True(home.IndexOf("id=\"supervision-title\"", StringComparison.Ordinal) < home.IndexOf("id=\"news-title\"", StringComparison.Ordinal),
+            "کارتابل نظارت باید بالای بخش اخبار و اطلاعیه‌ها باشد");
         Assert.Contains("href=\"/Supervision?status=Pending\"", home);
         Assert.DoesNotContain("دلیل Pending", home);                                           // فهرست کامل دیگر در صفحه‌ی اصلی نیست
 

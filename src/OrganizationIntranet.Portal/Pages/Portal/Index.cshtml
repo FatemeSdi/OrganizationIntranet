@@ -471,6 +471,9 @@ else
   </section>
   <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 C 240 60 480 0 720 20 C 960 40 1200 60 1440 20 L1440 60 L0 60 Z" fill="#EFEBE0"/></svg>
 
+  @* کارتابل نظارت (فقط برای ناظر/بررسی‌کننده) بالای اخبار و اطلاعیه‌ها *@
+  @if (Model.IsAuthenticated) { <partial name="_SupervisionSummary" model="Model.Supervision" /> }
+
   @* اخبار و اطلاعیه‌ها بالاتر از سامانه‌ها: کاربر اول اخبار سازمان را می‌بیند. اسلایدر خودکار با فوکوس روی یک کارت (wwwroot/js/news-carousel.js). *@
   <section id="news" class="news-section" aria-labelledby="news-title">
     <div class="container">
@@ -551,7 +554,7 @@ else
             </div>
             <h3>@app.Name</h3><p>@app.Description</p>
             <small>@(app.IsInternetAccessible ? "قابل دسترسی از اینترنت" : "فقط اینترانت") · @(app.IsPublic ? "عمومی" : "اختصاص‌یافته")</small>
-            <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : app.RequiresLogin ? "ورود با لاگین" : "ورود بدون نیاز به لاگین")</span>
+            <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : app.SingleSignOn ? "ورود با یک کلیک" : app.RequiresLogin ? "ورود با لاگین" : "ورود بدون نیاز به لاگین")</span>
           </a>
         }
 @if (Model.IsAuthenticated)
@@ -576,7 +579,6 @@ else
 @if (Model.IsAuthenticated)
 {
   <partial name="_AccessRequests" model="Model" />
-  <partial name="_SupervisionSummary" model="Model.Supervision" />
 }
   @{
     // فهرست‌ها فعلاً ثابت‌اند؛ با اتصال به API فرم‌ها/اسناد (فاز ۳) فقط منبع این آرایه عوض می‌شود.

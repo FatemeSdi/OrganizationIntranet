@@ -27,6 +27,7 @@ public partial class AppDbContext : DbContext
         ConfigureApplicationCatalog(modelBuilder);
         ConfigureAccessRequests(modelBuilder);
         ConfigureSupervision(modelBuilder);
+        ConfigureSso(modelBuilder);
         modelBuilder.Entity<AuthenticationSettings>(e =>
         {
             e.ToTable("AuthenticationSettings", "Sec");

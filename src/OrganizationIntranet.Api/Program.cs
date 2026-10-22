@@ -55,6 +55,9 @@ builder.Services.AddScoped<ISupervisionRepository, SupervisionRepository>();
 builder.Services.AddScoped<SupervisionService>();
 builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepository>();
 builder.Services.AddScoped<NotificationCenterService>();
+builder.Services.AddScoped<ISsoRepository, SsoRepository>();
+builder.Services.AddSingleton<ISsoClients, OrganizationIntranet.Api.Security.ConfigurationSsoClients>();
+builder.Services.AddScoped<SsoService>();
 OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
@@ -97,7 +100,7 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("ApplicationIntegration", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Application-Key",
-        Description = "Dedicated credential for the source application. Grants notification ingestion only."
+        Description = "Dedicated per-application credential: PushKey for notification ingestion, SsoKey for SSO ticket redemption."
     });
     options.OperationFilter<ApiSecurityOperationFilter>();
 });

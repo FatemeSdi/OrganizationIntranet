@@ -72,7 +72,9 @@ public class IndexModel(ApiClient api) : PageModel
         }
         var p = await api.GetAsync<ProfileDto>("api/account/me");
         DisplayName = p.DisplayName; RoleNames = p.RoleNames; Initials = p.Initials;
-        Applications = await api.GetAsync<List<PortalApplicationDto>>("api/portal/applications");
+        // کارت سامانه‌ی دارای SSO به /Sso/Open می‌رود تا کاربر بدون ورود دوباره وارد شود
+        Applications = (await api.GetAsync<List<PortalApplicationDto>>("api/portal/applications"))
+            .Select(a => a.SingleSignOn ? a with { Url = "/Sso/Open?app=" + a.ApplicationId } : a).ToList();
         Notifications = await api.GetAsync<List<PortalNotificationDto>>("api/portal/notifications");
         SupervisionAlerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
         Supervision = await api.GetAsync<SupervisionSummaryDto>("api/portal/supervision/inbox/summary");

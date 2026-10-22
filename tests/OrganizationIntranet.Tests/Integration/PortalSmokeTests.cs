@@ -28,6 +28,8 @@ namespace OrganizationIntranet.Tests;
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     public const string IntegrationKey = "source-application-test-key-00000000000000000";
+    public const string SsoKey = "sso-application-test-key-000000000000000000000";
+    public const string OtherSsoKey = "sso-other-application-test-key-0000000000000";
     public RecordingRequestSmsSender SmsSender { get; } = new();
     public Func<HttpRequestMessage, HttpResponseMessage> PullResponse { get; set; } = _ => new(HttpStatusCode.ServiceUnavailable);
     public const string AdminClientKey = "integration-admin-only-key-0000000000000000";
@@ -46,6 +48,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ApplicationIntegrations:TEST:PushKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullUrl", "https://source.example/api/notifications");
+        // SSO فقط برای دو سامانه‌ی آزمایشی SsoTests پیکربندی می‌شود؛ سامانه‌ی TEST بدون SSO می‌ماند.
+        builder.UseSetting("ApplicationIntegrations:SSOAPP:SsoKey", SsoKey);
+        builder.UseSetting("ApplicationIntegrations:SSOAPP:SsoUrl", "https://tasktrack.example/sso?lang=fa");
+        builder.UseSetting("ApplicationIntegrations:OTHERAPP:SsoKey", OtherSsoKey);
+        builder.UseSetting("ApplicationIntegrations:OTHERAPP:SsoUrl", "https://its.example/Account/Sso");
         builder.UseSetting("ConnectionStrings:DefaultConnection", "unused-in-tests");
         // آزمون‌ها هرگز نباید به درگاه پیامک واقعی برسند (حتی روی شبکه‌ی داخلی)؛ درگاه فقط در آزمون‌های اختصاصی loopback فعال می‌شود.
         builder.UseSetting("Sms:BaseUrl", "");

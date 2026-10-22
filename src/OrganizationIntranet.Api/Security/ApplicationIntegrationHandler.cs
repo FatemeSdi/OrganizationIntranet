@@ -16,7 +16,8 @@ public sealed class ApplicationIntegrationHandler(IOptionsMonitor<Authentication
     {
         var code = Context.Request.RouteValues["applicationCode"]?.ToString()?.ToUpperInvariant();
         if (code is null || code.Length > 50 || !Regex.IsMatch(code, "^[A-Z0-9_-]+$")) return Task.FromResult(AuthenticateResult.Fail("Invalid application"));
-        var expected = configuration[$"ApplicationIntegrations:{code}:PushKey"];
+        var keyName = Context.GetEndpoint()?.Metadata.GetMetadata<ApplicationIntegrationAttribute>()?.KeyName ?? "PushKey";
+        var expected = configuration[$"ApplicationIntegrations:{code}:{keyName}"];
         var supplied = Request.Headers["X-Application-Key"].ToString();
         if (string.IsNullOrWhiteSpace(expected) || expected.Length < 32 || supplied.Length > 500
             || expected == configuration["Api:ClientKey"] || expected == configuration["Api:AdminClientKey"]

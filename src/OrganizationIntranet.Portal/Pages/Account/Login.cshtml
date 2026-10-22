@@ -132,7 +132,6 @@
     <section class="pl-form">
         <div class="pl-card">
             <h2>ورود به حساب کاربری</h2>
-            <p class="pl-sub">روش ورود را انتخاب کنید؛ فقط فیلدهای همین کادر تغییر می‌کند.</p>
             @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
 
             <form id="loginForm" method="post" autocomplete="off" asp-page="/Account/Login">

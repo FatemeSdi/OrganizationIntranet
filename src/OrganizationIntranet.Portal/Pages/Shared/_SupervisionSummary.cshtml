@@ -6,7 +6,8 @@
     var pending = Model.Count(AccessRequestStatuses.Pending);
     <section id="supervision" class="supervision-strip-section" aria-labelledby="supervision-title">
         <style>
-            .supervision-strip-section { padding: 8px 0 34px; }
+            /* بین موج سربرگ و بخش اخبار قرار دارد؛ هم‌رنگ هر دو تا پیوستگی صفحه حفظ شود */
+            .supervision-strip-section { background: var(--sand-100); padding: 26px 0 0; }
             .supervision-strip { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 18px 22px; border-radius: var(--radius);
                 background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
             .supervision-strip__icon { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0;

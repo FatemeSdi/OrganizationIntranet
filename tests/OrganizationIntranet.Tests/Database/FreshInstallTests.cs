@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace OrganizationIntranet.Tests;
@@ -111,8 +112,25 @@ public sealed class FreshInstallTests
                 Assert.True(reference.SequenceEqual(installed), "Fresh install differs from the reference database:" + Environment.NewLine + Report(reference, installed));
             }
 
+            // مصرف هم‌زمان یک بلیت SSO با اتصال‌های جدا روی SQL Server: دقیقاً یکی موفق می‌شود (UPDATE ... WHERE RedeemedAt IS NULL)
+            var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.ASCII.GetBytes("concurrency-ticket")));
+            await QueryAsync(scratch, $"""
+                INSERT App.Application(ApplicationName,ApplicationCode,IsPublic) VALUES(N'آزمون SSO','SSOFRESH',1);
+                INSERT Sec.SsoTicket(TicketHash,UserId,ApplicationId,CreatedAt,ExpiresAt)
+                SELECT 0x{hash},u.UserId,a.ApplicationId,SYSUTCDATETIME(),DATEADD(SECOND,60,SYSUTCDATETIME()) FROM Sec.[User] u CROSS JOIN App.Application a
+                WHERE u.Username=N'fresh.install.admin' AND a.ApplicationCode='SSOFRESH';
+                SELECT N'ok'
+                """);
+            var redeemed = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
+            {
+                await using var db = new OrganizationIntranet.Api.Data.AppDbContext(new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<OrganizationIntranet.Api.Data.AppDbContext>()
+                    .UseSqlServer(scratch).Options);
+                return await new OrganizationIntranet.Api.Data.SsoRepository(db).RedeemAsync(Convert.FromHexString(hash), "SSOFRESH", DateTime.UtcNow);
+            }));
+            Assert.Single(redeemed, u => u is not null);
+
             // بازگشت 008 تا 003 دقیقاً به خط پایه و نصب دوباره به همان ساختار می‌رسد
-            await QueryAsync(scratch, "DELETE Sec.UserRole; DELETE Sec.[User]; SELECT N'ok'");
+            await QueryAsync(scratch, "DELETE Sec.SsoTicket; DELETE App.Application WHERE ApplicationCode='SSOFRESH'; DELETE Sec.UserRole; DELETE Sec.[User]; SELECT N'ok'");
             foreach (var id in chain.Reverse()) await RunFileAsync(scratch, id + ".down.sql");
             var rolledBack = await QueryAsync(scratch, FingerprintSql);
             Assert.True(baseline.SequenceEqual(rolledBack), "Rollback to 002 differs from the baseline:" + Environment.NewLine + Report(baseline, rolledBack));

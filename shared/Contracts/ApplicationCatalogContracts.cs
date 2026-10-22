@@ -11,6 +11,6 @@ public record ApplicationConfigurationRequest(ApplicationRequest Application, Li
 public record ApplicationConfigurationDto(ApplicationDto Application, List<long> UserIds, List<int> RoleIds, List<ApplicationServiceRequest> Services, List<ApplicationServiceSyncDto>? SyncStatuses = null);
 public record ApplicationServiceSyncDto(string ServiceCode, DateTime? LastSyncedAt, string? LastSyncError);
 public record PortalApplicationDto(int ApplicationId, string Name, string? Description, string? Url, string Icon,
-    bool RequiresLogin, bool IsInternetAccessible, bool IsPublic, int UnreadCount, List<string> Services);
+    bool RequiresLogin, bool IsInternetAccessible, bool IsPublic, int UnreadCount, List<string> Services, bool SingleSignOn = false);
 public record PortalNotificationDto(long Id, string System, string Title, DateTime CreatedAt, bool Unread, string? TargetUrl = null);
 public record NotificationDestinationDto(string Url);
