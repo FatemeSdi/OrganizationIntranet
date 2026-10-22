@@ -90,7 +90,7 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 | `Sec.Role` | ✅ پیاده‌سازی شده | |
 | `Sec.UserRole` | ✅ پیاده‌سازی شده | |
 | `Sec.Permission` | ✅ پیاده‌سازی شده | وابسته به `Application` |
-| `Sec.RolePermission` | ✅ جدول + Entity + EF Config + صفحه‌ی مدیریت (`Admin/Permissions`) + زیرساخت Authorization (`Authorization/*`) + Permission Claims در Login | از طریق `Admin/Permissions` می‌شود Permission ساخت و به Roleها اختصاص داد و زیرساخت چک‌کردن آن هم آماده است؛ **ولی هنوز هیچ صفحه‌ای واقعاً از `[Authorize(Policy="Permission:...")]` استفاده نمی‌کند** — `[Authorize(Roles=...)]` عمداً فعلاً دست‌نخورده مانده تا بعد از Seed کردن داده و یک Logout/Login سوییچ شود (نگاه کن به بخش Authorization) |
+| `Sec.RolePermission` | ✅ جدول + Entity + EF Config + صفحه‌ی مدیریت (`Admin/Permissions`) + زیرساخت Authorization (`Authorization/*`) + Permission Claims در Login | همه‌ی صفحه‌ها و endpointهای پنل مدیریت با `[Authorize(Policy="Permission:...")]` کنترل می‌شوند؛ مجوزهای پایه با migration 008 ثبت شده‌اند (نگاه کن به بخش Authorization) |
 | `Sec.UserPermission` | ✅ در دیتابیس هست، ولی **در هیچ‌جای کد استفاده نمی‌شود** (فقط در Models/AppDbContext تعریف شده) | طبق سند: قبل از حذف باید وابستگی‌ها بررسی و مزایا/معایب نگه‌داشتن توضیح داده شود — هنوز این بررسی/تصمیم نهایی انجام نشده |
 | `App.Application` | ✅ پیاده‌سازی شده | |
 | `Notify.Notification` | ✅ پیاده‌سازی شده | ستون `TargetUrl` (nvarchar(500), nullable) اضافه شد؛ هنوز هیچ Notification ای واقعی آن را پر نمی‌کند چون صفحه/سرویس Notification هنوز ساخته نشده |
@@ -98,18 +98,15 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 
 ## Authorization — وضعیت فعلی
 
-جدول/Entity مربوط به `Sec.RolePermission` ساخته شده و صفحه‌ی `Admin/Permissions` (`Index` برای ساخت/فعال‌سازی Permission، `Assign` برای اختصاص آن به Roleها) هم اضافه شده — یعنی از طریق UI می‌شود داده‌ی Role→Permission را واقعاً ساخت.
+مجوزدهی پنل مدیریت **Permission-based است** (P4-09، ۲۰۲۶-۱۰-۲۱). مرجع کامل (ماتریس مجوز/صفحه/endpoint، سازوکار و migration): [docs/admin-permissions.md](docs/admin-permissions.md).
 
-زیرساخت Permission-based Authorization هم ساخته شده:
-- `Authorization/PermissionRequirement.cs`, `PermissionAuthorizationHandler.cs`, `PermissionPolicyProvider.cs` — یک `IAuthorizationPolicyProvider` سفارشی که به هر `[Authorize(Policy = "Permission:USER_VIEW")]` اجازه می‌دهد بدون نیاز به ثبت دستی هر Policy در `Program.cs` کار کند (به هر Policy با پیشوند `Permission:` یک `PermissionRequirement` می‌سازد).
-- در `Program.cs` این Provider/Handler ثبت شده‌اند.
-- **تصمیم گرفته شد که Permission Codeهای کاربر، مثل Role Codeها، در لحظه‌ی Login در Cookie/Claims بارگذاری شوند** (نه هر بار Query از دیتابیس) — چون این دقیقاً همان الگویی است که همین الان برای Role هم استفاده می‌شود (`Pages/Account/Login.cshtml.cs`)، از نظر کارایی بهتر است، و تنها هزینه‌اش این است که تغییر Permissionهای یک Role تا Logout/Login بعدی کاربر اعمال نمی‌شود — دقیقاً همان محدودیتی که همین الان برای تغییر Role کاربر هم صادق است.
-- `Pages/Account/Login.cshtml.cs` به‌روزرسانی شد: علاوه بر Role Claimها، Permission Codeهای مربوط به Roleهای فعال کاربر (`User → UserRole → Role → RolePermission → Permission` با فیلتر `Permission.IsActive`) هم به‌عنوان Claim از نوع `permission` اضافه می‌شوند.
-
-**هنوز عمداً انجام نشده (نیاز به تأیید قبل از این مرحله دارد، چون می‌تواند دسترسی پنل ادمین را قطع کند):**
-- هیچ‌کدام از صفحات فعلی هنوز از `[Authorize(Roles = "ADMIN")]` به `[Authorize(Policy = "Permission:...")]` تغییر نکرده‌اند. تا وقتی Permissionهای پایه Seed نشوند و کاربر ادمین دوباره Login نکند (تا Claimهای جدید در Cookie او بنشیند)، سوییچ‌کردن صفحات به Policy جدید می‌تواند همه را از پنل ادمین بیرون بیندازد.
-- یک اسکریپت SQL Seed آماده شده (خارج از ریپازیتوری، چون یک اسکریپت یک‌بارمصرف عملیاتی است نه بخشی از سورس‌کد) که Permissionهای پایه (`INTRANET_ADMIN`, `USER_VIEW`, `USER_EDIT`, `ROLE_VIEW`, `APPLICATION_VIEW`, `PERMISSION_VIEW`) را می‌سازد و به نقش ADMIN اختصاص می‌دهد.
-- ترتیب امن برای تکمیل این مرحله: ۱) اسکریپت Seed اجرا شود، ۲) کاربر ادمین یک‌بار Logout/Login کند، ۳) صفحات Admin/* یکی‌یکی از Role-based به Permission-based سوییچ شوند و تست شوند.
+- کدها در `shared/Contracts/AdminPermissions.cs` (`INTRANET_ADMIN`, `USER_VIEW/EDIT`, `ROLE_VIEW/EDIT`, `PERMISSION_VIEW/EDIT`, `APPLICATION_VIEW/EDIT`, `ACCESS_REQUEST_REVIEW`, `PUBLICATION_EDIT`, `AUTH_SETTINGS_EDIT`). صفحه‌ها و کنترلرها `[Authorize(Policy = AdminPermissions.XPolicy)]` دارند؛ برای مجوزدهی پنل از `Roles = "ADMIN"` استفاده نمی‌شود. POST صفحه‌ها با `PostRequiresPermission` مجوز ویرایش می‌خواهد.
+- زیرساخت Policy (`PermissionPolicyProvider`, `PermissionRequirement`, Claims handler) در `shared/Authorization` و مشترک میان API، Admin و Portal است.
+- **API مجوز را زنده از بانک می‌خواند** (`Api/Security/LivePermissions`) و `AdminClientMiddleware` شرط `INTRANET_ADMIN` زنده را دارد؛ پس گرفتن مجوز فوراً اثر دارد.
+- **UI مجوزها را در Claim کوکی نگه می‌دارد و هر ۵ دقیقه از `api/account/me` تازه می‌کند** (`UiHost`/`AccountSignIn`، Claim `claims_synced`). تصمیم قبلی «بارگذاری فقط هنگام Login» کنار گذاشته شد؛ بعد از تغییر مجوز یا نقش، Logout/Login لازم نیست. نمایش منو/دکمه‌ها با `User.HasPermission(...)` فقط برای راحتی است.
+- **جلوگیری از قفل‌شدن (در `IntranetService`):** نقش ADMIN و مجوزهای سیستمی غیرفعال نمی‌شوند، مجوز سیستمی از ADMIN گرفته نمی‌شود و آخرین مدیر فعال نقش ADMIN را از دست نمی‌دهد.
+- migration `008_AdminPermissions` مجوزها را ثبت و به ADMIN می‌دهد؛ روی بانک توسعه اعمال و verify شد (backup `OrganizationIntranet_before_008_20261021_1628.bak`). هر مجوز سیستمی تازه باید هم به `AdminPermissions.All` و هم با migration به بانک اضافه شود.
+- هشدار درخواست دسترسی به دارندگان `ACCESS_REQUEST_REVIEW` می‌رسد (`SupervisionQueries`)، نه لزوماً نقش ADMIN.
 
 ## قوانین معماری — الزامی در همه تغییرات آینده
 

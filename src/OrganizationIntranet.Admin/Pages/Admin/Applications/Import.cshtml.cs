@@ -6,7 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Applications;
 
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.ApplicationViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit)]
 public class ImportModel(ApiClient api) : PageModel
 {
     public CatalogImportPreviewDto? Preview { get; set; }

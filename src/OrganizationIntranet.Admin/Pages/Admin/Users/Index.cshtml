@@ -6,9 +6,10 @@
     ViewData["Icon"] = "ti ti-users";
     ViewData["Subtitle"] = "حساب‌های کاربری، نقش‌ها و وضعیت ورود";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserEdit);
 }
 @section PageActions {
-    <a href="/Admin/Users/Edit" class="btn btn-primary btn-wave"><i class="ti ti-user-plus me-1"></i>افزودن کاربر</a>
+    @if (canEdit) { <a href="/Admin/Users/Edit" class="btn btn-primary btn-wave"><i class="ti ti-user-plus me-1"></i>افزودن کاربر</a> }
 }
 
 <partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string)' />

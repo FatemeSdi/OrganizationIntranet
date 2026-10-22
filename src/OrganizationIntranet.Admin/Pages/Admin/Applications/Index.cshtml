@@ -6,9 +6,10 @@
     ViewData["Icon"] = "ti ti-apps";
     ViewData["Subtitle"] = "سامانه‌هایی که در پورتال نمایش داده می‌شوند و دسترسی به آن‌ها";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit);
 }
 @section PageActions {
-    <a asp-page="Import" class="btn btn-primary-light"><i class="ti ti-file-import me-1"></i>ثبت فهرست سامانه‌های سازمان</a>
+    @if (canEdit) { <a asp-page="Import" class="btn btn-primary-light"><i class="ti ti-file-import me-1"></i>ثبت فهرست سامانه‌های سازمان</a> }
 }
 
 <partial name="_ToastMessages" model='new ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
@@ -60,7 +61,7 @@
                                         <form method="post" asp-page-handler="Toggle" asp-route-applicationId="@app.ApplicationId" class="m-0">
                                             @Html.AntiForgeryToken()
                                             <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
-                                                <input class="form-check-input" type="checkbox" role="switch" id="app-toggle-@app.ApplicationId" checked="@app.IsActive" data-autosubmit
+                                                <input class="form-check-input" type="checkbox" role="switch" id="app-toggle-@app.ApplicationId" checked="@app.IsActive" data-autosubmit disabled="@(!canEdit)"
                                                        data-confirm-off="@($"سامانه «{app.ApplicationName}» از پورتال همه‌ی کاربران پنهان شود؟")" />
                                                 <label class="form-check-label" for="app-toggle-@app.ApplicationId"><span class="status-pill @(app.IsActive ? "status-pill--success" : "status-pill--muted")">@(app.IsActive ? "فعال" : "غیرفعال")</span></label>
                                             </div>
@@ -80,6 +81,8 @@
         </div>
     </div>
 
+    @if (canEdit)
+    {
     <div class="col-xl-4">
         <div class="card custom-card">
             <div class="card-header"><div class="card-title"><i class="ti ti-square-rounded-plus text-primary me-1"></i>افزودن سامانه</div></div>
@@ -108,4 +111,5 @@
             </form>
         </div>
     </div>
+    }
 </div>

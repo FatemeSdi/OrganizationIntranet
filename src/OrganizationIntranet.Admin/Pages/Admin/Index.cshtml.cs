@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
+using OrganizationIntranet.Authorization;
 
 namespace OrganizationIntranet.Pages.Admin;
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)]
@@ -28,7 +29,9 @@ public class IndexModel(ApiClient api) : PageModel
     {
         AdminDisplayName = $"{User.FindFirstValue(ClaimTypes.GivenName)} {User.FindFirstValue(ClaimTypes.Surname)}".Trim();
         TodayPersian = DateTime.Now.ToPersianDate();
-        PendingRequests = await api.GetAsync<AccessRequestListDto>("api/admin/access-requests?status=Pending");
+        // هر بخش فقط با مجوز خودش بارگذاری می‌شود
+        if (User.HasPermission(AdminPermissions.AccessRequestReview))
+            PendingRequests = await api.GetAsync<AccessRequestListDto>("api/admin/access-requests?status=Pending");
         var data = await api.GetAsync<DashboardDto>("api/admin/dashboard");
         TotalUsers = data.TotalUsers; ActiveUsers = data.ActiveUsers; TotalRoles = data.TotalRoles; TotalApplications = data.TotalApplications; RecentUsers = data.RecentUsers;
     }

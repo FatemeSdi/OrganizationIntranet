@@ -17,16 +17,16 @@ public sealed class SupervisionController(SupervisionService service) : Controll
     [HttpPost("alerts/{id:long}/read")] public async Task<OperationResult> Read(long id) { await service.MarkReadAsync(UserId, id); return new(true); }
 }
 
-[ApiController, Route("api/admin/supervision"), Authorize(Roles = "ADMIN"), AdminClient]
+[ApiController, Route("api/admin/supervision"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy), AdminClient]
 public sealed class SupervisionAdminController(SupervisionService service, ILogger<SupervisionAdminController> logger) : ControllerBase
 {
     private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    [HttpGet("applications/{id:int}/groups")] public Task<List<SupervisionGroupDto>> Groups(int id) => service.GroupsAsync(id);
-    [HttpPost("applications/{id:int}/groups")] public async Task<OperationResult> SaveGroup(int id, SupervisionGroupRequest input)
+    [HttpGet("applications/{id:int}/groups"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.ApplicationViewPolicy)] public Task<List<SupervisionGroupDto>> Groups(int id) => service.GroupsAsync(id);
+    [HttpPost("applications/{id:int}/groups"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.ApplicationEditPolicy)] public async Task<OperationResult> SaveGroup(int id, SupervisionGroupRequest input)
     { await service.SaveGroupAsync(id, input); logger.LogInformation("Supervision group {GroupId} saved for application {ApplicationId} by {UserId}", input.Id, id, UserId); return new(true, "گروه نظارت ذخیره شد."); }
     [HttpGet("alerts")] public Task<AccessRequestAlertsDto> Alerts() => service.AlertsAsync(UserId);
     [HttpPost("alerts/{id:long}/read")] public async Task<OperationResult> Read(long id) { await service.MarkReadAsync(UserId, id); return new(true); }
-    [HttpGet("sms")] public Task<AccessRequestSmsListDto> Sms(int page = 1) => service.SmsAsync(page);
-    [HttpPost("sms/{id:long}/retry")] public async Task<OperationResult> Retry(long id)
+    [HttpGet("sms"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)] public Task<AccessRequestSmsListDto> Sms(int page = 1) => service.SmsAsync(page);
+    [HttpPost("sms/{id:long}/retry"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)] public async Task<OperationResult> Retry(long id)
     { await service.RetrySmsAsync(id); logger.LogInformation("Access request SMS {AlertId} requeued by {UserId}", id, UserId); return new(true, "پیامک برای تلاش مجدد در صف قرار گرفت."); }
 }

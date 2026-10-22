@@ -7,7 +7,7 @@ using OrganizationIntranet.Contracts;
 namespace OrganizationIntranet.Api.Controllers;
 
 [OrganizationIntranet.Api.Security.AdminClient]
-[ApiController, Route("api/admin/authentication"), Authorize(Roles = "ADMIN")]
+[ApiController, Route("api/admin/authentication"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEditPolicy)]
 public sealed class AuthenticationSettingsController(AuthenticationService authentication) : ControllerBase
 {
     [HttpGet]

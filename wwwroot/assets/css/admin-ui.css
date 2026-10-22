@@ -249,3 +249,6 @@ a.stat-tile:hover { transform: translateY(-2px); border-color: rgba(var(--primar
     .admin-toolbar__count { width: 100%; margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } .stat-tile, .item-card, .quick-action { transition: none; } a.stat-tile:hover { transform: none; } }
+
+/* کارت آماری بدون مجوز صفحه‌ی مقصد، پیوند نیست */
+a.stat-tile:not([href]):hover { transform: none; border-color: var(--default-border); box-shadow: none; cursor: default; }

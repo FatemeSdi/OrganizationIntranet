@@ -49,6 +49,7 @@ public sealed class AuthenticationTests : IDisposable
             if (name == "admin") u.UserRoles.Add(new UserRole { Role = role });
             db.Users.Add(u);
         }
+        TestSeed.GrantAdminPanel(db, role, new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "اینترانت", ApplicationCode = AdminPermissions.ApplicationCode, IsActive = true });
         db.SaveChanges();
     }
     private sealed record Tokens(string AccessToken, string RefreshToken);

@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "پروفایل";
     ViewData["HidePageHead"] = true; // سربرگ و مسیر اختصاصی خودش را دارد
-    Layout = User.IsInRole("ADMIN") ? "_LayoutAdmin" : "_LayoutApp";
+    Layout = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.IntranetAdmin) ? "_LayoutAdmin" : "_LayoutApp";
 }
 @section Styles {
     <link href="~/assets/libs/bootstrap/css/bootstrap.rtl.min.css" rel="stylesheet" />

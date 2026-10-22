@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model IndexModel
 @using OrganizationIntranet.Helper
 @{
@@ -19,7 +19,7 @@
 
 <div class="row g-3 mb-4">
     <div class="col-xl-3 col-sm-6">
-        <a class="stat-tile" href="/Admin/Users">
+        <a class="stat-tile" href="@(User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView) ? "/Admin/Users" : null)">
             <span class="stat-tile__icon bg-primary-transparent"><i class="ti ti-users"></i></span>
             <div class="flex-fill">
                 <div class="stat-tile__value">@Model.TotalUsers.ToString("N0")</div>
@@ -28,7 +28,7 @@
         </a>
     </div>
     <div class="col-xl-3 col-sm-6">
-        <a class="stat-tile" href="/Admin/Users">
+        <a class="stat-tile" href="@(User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView) ? "/Admin/Users" : null)">
             <span class="stat-tile__icon bg-success-transparent"><i class="ti ti-user-check"></i></span>
             <div class="flex-fill">
                 <div class="stat-tile__value">@Model.ActiveUsers.ToString("N0")</div>
@@ -38,7 +38,7 @@
         </a>
     </div>
     <div class="col-xl-3 col-sm-6">
-        <a class="stat-tile" href="/Admin/Roles">
+        <a class="stat-tile" href="@(User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleView) ? "/Admin/Roles" : null)">
             <span class="stat-tile__icon bg-warning-transparent"><i class="ti ti-user-shield"></i></span>
             <div class="flex-fill">
                 <div class="stat-tile__value">@Model.TotalRoles.ToString("N0")</div>
@@ -47,7 +47,7 @@
         </a>
     </div>
     <div class="col-xl-3 col-sm-6">
-        <a class="stat-tile" href="/Admin/Applications">
+        <a class="stat-tile" href="@(User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationView) ? "/Admin/Applications" : null)">
             <span class="stat-tile__icon bg-info-transparent"><i class="ti ti-apps"></i></span>
             <div class="flex-fill">
                 <div class="stat-tile__value">@Model.TotalApplications.ToString("N0")</div>
@@ -58,6 +58,8 @@
 </div>
 
 <div class="row g-4">
+    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview))
+    {
     <div class="col-xl-7">
         <div class="card custom-card h-100">
             <div class="card-header justify-content-between">
@@ -91,22 +93,25 @@
             </div>
         </div>
     </div>
+    }
     <div class="col-xl-5">
         <div class="card custom-card h-100">
             <div class="card-header"><div class="card-title">دسترسی سریع</div></div>
             <div class="card-body">
                 <nav class="quick-actions" aria-label="دسترسی سریع">
-                    <a class="quick-action" href="/Admin/Users/Edit"><i class="ti ti-user-plus"></i>افزودن کاربر</a>
-                    <a class="quick-action" href="/Admin/Publications/Edit"><i class="ti ti-speakerphone"></i>انتشار اطلاعیه</a>
-                    <a class="quick-action" href="/Admin/Applications"><i class="ti ti-apps"></i>مدیریت سامانه‌ها</a>
-                    <a class="quick-action" href="/Admin/Permissions"><i class="ti ti-lock-access"></i>مجوزها</a>
-                    <a class="quick-action" href="/Admin/AccessRequests/Notifications"><i class="ti ti-message-2"></i>وضعیت پیامک‌ها</a>
-                    <a class="quick-action" href="/Admin/Authentication"><i class="ti ti-fingerprint"></i>ورود و امنیت</a>
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserEdit)) { <a class="quick-action" href="/Admin/Users/Edit"><i class="ti ti-user-plus"></i>افزودن کاربر</a> }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PublicationEdit)) { <a class="quick-action" href="/Admin/Publications/Edit"><i class="ti ti-speakerphone"></i>انتشار اطلاعیه</a> }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationView)) { <a class="quick-action" href="/Admin/Applications"><i class="ti ti-apps"></i>مدیریت سامانه‌ها</a> }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionView)) { <a class="quick-action" href="/Admin/Permissions"><i class="ti ti-lock-access"></i>مجوزها</a> }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview)) { <a class="quick-action" href="/Admin/AccessRequests/Notifications"><i class="ti ti-message-2"></i>وضعیت پیامک‌ها</a> }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEdit)) { <a class="quick-action" href="/Admin/Authentication"><i class="ti ti-fingerprint"></i>ورود و امنیت</a> }
                 </nav>
             </div>
         </div>
     </div>
 
+    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView))
+    {
     <div class="col-12">
         <div class="card custom-card">
             <div class="card-header justify-content-between">
@@ -146,6 +151,7 @@
             </div>
         </div>
     </div>
+    }
 </div>
 
 @section Scripts {

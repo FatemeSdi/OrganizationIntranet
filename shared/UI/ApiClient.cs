@@ -25,7 +25,7 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
         if (path.StartsWith("api/admin/", StringComparison.OrdinalIgnoreCase) || path.Equals("api/admin", StringComparison.OrdinalIgnoreCase))
         {
             var context = accessor.HttpContext;
-            if (configuration["Ui:Name"] != "Admin" || context is null || !context.Request.Path.StartsWithSegments("/Admin") || !context.User.IsInRole("ADMIN"))
+            if (configuration["Ui:Name"] != "Admin" || context is null || !context.Request.Path.StartsWithSegments("/Admin") || !OrganizationIntranet.Authorization.PermissionClaimsExtensions.HasPermission(context.User, AdminPermissions.IntranetAdmin))
                 throw new ApiException(HttpStatusCode.Forbidden, "مدیریت فقط از پنل مدیریت مجاز است");
             request.Headers.Add("X-Intranet-Admin", configuration["Api:AdminClientKey"]);
         }

@@ -29,7 +29,7 @@ internal static class PublicationImages
 }
 
 [OrganizationIntranet.Api.Security.AdminClient]
-[ApiController, Route("api/admin/publications"), Authorize(Roles = "ADMIN")]
+[ApiController, Route("api/admin/publications"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public sealed class PublicationAdminController(PublicationService service, ILogger<PublicationAdminController> logger) : ControllerBase
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

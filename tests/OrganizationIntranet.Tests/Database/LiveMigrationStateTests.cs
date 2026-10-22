@@ -20,6 +20,7 @@ public sealed class LiveMigrationStateTests
         "005_PublicPublications",
         "006_NationalIdLogin",
         "007_PublicationImages",
+        "008_AdminPermissions",
     ];
 
     [LiveSchemaFact]
@@ -34,5 +35,27 @@ public sealed class LiveMigrationStateTests
 
         var missing = ExpectedMigrations.Where(id => !applied.Contains(id)).ToArray();
         Assert.True(missing.Length == 0, "Migrations not applied to the live database: " + string.Join(", ", missing));
+    }
+
+    /// <summary>فهرست کد (AdminPermissions) و migration 008 یکی‌اند: نقش فعال ADMIN همه‌ی مجوزهای فعال پنل را دارد و کسی از پنل قفل نیست.</summary>
+    [LiveSchemaFact]
+    public async Task Admin_role_holds_every_admin_panel_permission_in_the_live_database()
+    {
+        await using var connection = new SqlConnection(Environment.GetEnvironmentVariable("INTRANET_SCHEMA_TEST_CONNECTION")!);
+        await connection.OpenAsync();
+        await using var command = new SqlCommand("""
+            SELECT p.PermissionCode FROM Sec.Permission p JOIN Sec.RolePermission rp ON rp.PermissionId=p.PermissionId
+            JOIN Sec.Role r ON r.RoleId=rp.RoleId WHERE r.RoleCode='ADMIN' AND r.IsActive=1 AND p.IsActive=1;
+            SELECT COUNT(DISTINCT u.UserId) FROM Sec.[User] u JOIN Sec.UserRole ur ON ur.UserId=u.UserId JOIN Sec.Role r ON r.RoleId=ur.RoleId AND r.IsActive=1
+            WHERE u.IsActive=1 AND r.RoleCode='ADMIN';
+            """, connection);
+        var codes = new HashSet<string>(StringComparer.Ordinal);
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) codes.Add(reader.GetString(0));
+        await reader.NextResultAsync(); await reader.ReadAsync();
+        var admins = reader.GetInt32(0);
+        var missing = OrganizationIntranet.Contracts.AdminPermissions.All.Select(p => p.Code).Where(c => !codes.Contains(c)).ToArray();
+        Assert.True(missing.Length == 0, "ADMIN lacks: " + string.Join(", ", missing));
+        Assert.True(admins > 0, "No active user holds the ADMIN role.");
     }
 }

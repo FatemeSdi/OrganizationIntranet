@@ -45,6 +45,7 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         var ids = request.SelectedRoleIds.Distinct().ToList();
         await ValidateRoles(ids);
         bool isNew = request.Id is null or 0;
+        await EnsureAnotherAdminRemainsAsync(isNew ? null : request.Id, request.IsActive, ids);
         var user = isNew ? new User { CreatedAt = DateTime.UtcNow } : await repository.FindUserAsync(request.Id!.Value) ?? throw new KeyNotFoundException();
         if (isNew) { Required(request.NewPassword, 1024, "رمز عبور"); repository.AddUser(user); }
         user.Name = request.Name; user.LastName = request.LastName; user.Username = request.Username;
@@ -69,6 +70,8 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
     public async Task ToggleRoleAsync(int id)
     {
         var entity = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
+        if (entity.IsActive && entity.RoleCode == AdminPermissions.AdminRoleCode)
+            throw new ArgumentException("نقش مدیر (ADMIN) غیرفعال نمی‌شود؛ بدون آن هیچ‌کس به پنل مدیریت دسترسی ندارد");
         entity.IsActive = !entity.IsActive; await repository.SaveAsync();
     }
     private static PermissionDto Map(Permission p) => new(p.PermissionId, p.PermissionName, p.PermissionCode, p.Description, p.Application.ApplicationName, p.IsActive, p.RolePermissions.Count, p.RolePermissions.Select(r => r.RoleId).ToList());
@@ -86,13 +89,27 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
     }
     public async Task TogglePermissionAsync(int id)
     {
-        var p = await repository.FindPermissionAsync(id) ?? throw new KeyNotFoundException(); p.IsActive = !p.IsActive; await repository.SaveAsync();
+        var p = await repository.FindPermissionAsync(id) ?? throw new KeyNotFoundException();
+        if (p.IsActive && AdminPermissions.IsSystem(p.PermissionCode)) throw new ArgumentException("مجوزهای سیستمی پنل مدیریت غیرفعال نمی‌شوند");
+        p.IsActive = !p.IsActive; await repository.SaveAsync();
     }
     public async Task AssignPermissionAsync(int id, RolesRequest request)
     {
         var p = await repository.FindPermissionAsync(id) ?? throw new KeyNotFoundException();
         var ids = request.SelectedRoleIds.Distinct().ToList(); await ValidateRoles(ids);
+        if (AdminPermissions.IsSystem(p.PermissionCode) && (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleCode == AdminPermissions.AdminRoleCode) is { } admin && !ids.Contains(admin.RoleId))
+            throw new ArgumentException("این مجوز سیستمی است و از نقش مدیر (ADMIN) گرفته نمی‌شود");
         repository.SetPermissionRoles(p, ids); await repository.SaveAsync();
+    }
+    /// <summary>پس از ذخیره‌ی کاربر باید دست‌کم یک کاربر فعال با نقش فعال ADMIN بماند تا کسی از پنل مدیریت قفل نشود.</summary>
+    private async Task EnsureAnotherAdminRemainsAsync(long? userId, bool willBeActive, List<int> roleIds)
+    {
+        var admin = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleCode == AdminPermissions.AdminRoleCode && r.IsActive);
+        if (admin is null || userId is null || (willBeActive && roleIds.Contains(admin.RoleId))) return;
+        bool IsAdmin(User u) => u.IsActive && u.UserRoles.Any(r => r.RoleId == admin.RoleId);
+        var users = await repository.GetUsersAsync();
+        if (users.Any(u => u.UserId == userId && IsAdmin(u)) && !users.Any(u => u.UserId != userId && IsAdmin(u)))
+            throw new ArgumentException("دست‌کم یک کاربر فعال باید نقش مدیر (ADMIN) داشته باشد؛ ابتدا نقش مدیر را به کاربر دیگری بدهید");
     }
     private async Task ValidateRoles(List<int> ids)
     {

@@ -7,5 +7,6 @@
  </ItemGroup>
 <ItemGroup><Compile Include="../../shared/Contracts/**/*.cs" Link="Contracts/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup> <!-- Local development keys stay on the developer machine: never part of a publish/deployment. -->
  <ItemGroup><Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" /></ItemGroup>
+<ItemGroup><Compile Include="../../shared/Authorization/**/*.cs" Link="Authorization/%(RecursiveDir)%(Filename)%(Extension)" /></ItemGroup>
 </Project>
 

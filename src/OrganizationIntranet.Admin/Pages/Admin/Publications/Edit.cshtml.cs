@@ -5,7 +5,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public class EditModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)] public long? Id { get; set; }

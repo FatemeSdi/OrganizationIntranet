@@ -6,7 +6,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 namespace OrganizationIntranet.Pages.Admin.Users;
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.UserViewPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {
     public List<UserDto> UserRows { get; set; } = new();

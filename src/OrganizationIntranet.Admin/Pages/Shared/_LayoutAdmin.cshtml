@@ -141,57 +141,87 @@
                             <span class="side-menu__label">داشبورد</span>
                         </a>
                     </li>
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PublicationEdit))
+                    {
                     <li class="slide__category">
                         <span class="category-name">سامانه‌ها و محتوا</span>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationView))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Applications")" href="/Admin/Applications">
                             <i class="ti ti-apps side-menu__icon"></i>
                             <span class="side-menu__label">سامانه‌ها</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PublicationEdit))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Publications")" href="/Admin/Publications">
                             <i class="ti ti-speakerphone side-menu__icon"></i>
                             <span class="side-menu__label">اطلاع‌رسانی سازمانی</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview))
+                    {
                     <li class="slide__category">
                         <span class="category-name">کاربران و دسترسی</span>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Users")" href="/Admin/Users">
                             <i class="ti ti-users side-menu__icon"></i>
                             <span class="side-menu__label">کاربران</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleView))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Roles")" href="/Admin/Roles">
                             <i class="ti ti-user-shield side-menu__icon"></i>
                             <span class="side-menu__label">نقش‌ها</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionView))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Permissions")" href="/Admin/Permissions">
                             <i class="ti ti-lock-access side-menu__icon"></i>
                             <span class="side-menu__label">مجوزها (Permission)</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/AccessRequests")" href="/Admin/AccessRequests">
                             <i class="ti ti-clipboard-check side-menu__icon"></i>
                             <span class="side-menu__label">درخواست‌های دسترسی</span>
                         </a>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEdit))
+                    {
                     <li class="slide__category">
                         <span class="category-name">تنظیمات</span>
                     </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEdit))
+                    {
                     <li class="slide">
                         <a class="@NavClass("/Admin/Authentication")" href="/Admin/Authentication">
                             <i class="ti ti-fingerprint side-menu__icon"></i>
                             <span class="side-menu__label">ورود و امنیت</span>
                         </a>
                     </li>
+                    }
                     <li class="slide__category">
                         <span class="category-name">پورتال</span>
                     </li>

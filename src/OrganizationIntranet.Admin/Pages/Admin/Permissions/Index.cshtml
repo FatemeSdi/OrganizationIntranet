@@ -5,6 +5,7 @@
     ViewData["Icon"] = "ti ti-lock-access";
     ViewData["Subtitle"] = "سطح دقیق دسترسی به هر سامانه؛ هر مجوز به یک یا چند نقش اختصاص داده می‌شود";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionEdit);
 }
 
 <partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
@@ -46,7 +47,7 @@
                                         <form method="post" asp-page-handler="Toggle" asp-route-permissionId="@permission.PermissionId" class="m-0">
                                             @Html.AntiForgeryToken()
                                             <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
-                                                <input class="form-check-input" type="checkbox" role="switch" id="perm-toggle-@permission.PermissionId" checked="@permission.IsActive" data-autosubmit
+                                                <input class="form-check-input" type="checkbox" role="switch" id="perm-toggle-@permission.PermissionId" checked="@permission.IsActive" data-autosubmit disabled="@(!canEdit || (permission.IsActive && OrganizationIntranet.Contracts.AdminPermissions.IsSystem(permission.PermissionCode)))" title="@(OrganizationIntranet.Contracts.AdminPermissions.IsSystem(permission.PermissionCode) ? "مجوز سیستمی پنل مدیریت" : null)"
                                                        data-confirm-off="@($"مجوز «{permission.PermissionName}» غیرفعال شود؟")" />
                                                 <label class="form-check-label" for="perm-toggle-@permission.PermissionId"><span class="status-pill @(permission.IsActive ? "status-pill--success" : "status-pill--muted")">@(permission.IsActive ? "فعال" : "غیرفعال")</span></label>
                                             </div>
@@ -66,6 +67,8 @@
         </div>
     </div>
 
+    @if (canEdit)
+    {
     <div class="col-xl-4">
         <div class="card custom-card">
             <div class="card-header"><div class="card-title"><i class="ti ti-square-rounded-plus text-primary me-1"></i>افزودن مجوز</div></div>
@@ -94,4 +97,5 @@
             </form>
         </div>
     </div>
+    }
 </div>

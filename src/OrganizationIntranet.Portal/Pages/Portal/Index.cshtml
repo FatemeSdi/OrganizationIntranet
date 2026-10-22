@@ -414,7 +414,7 @@ else
               <span>@Model.RoleNames</span>
             </div>
           </div>
-          <ul><partial name="_PortalUserMenuItems" model='(User.IsInRole("ADMIN"), (string?)null)' /></ul>
+          <ul><partial name="_PortalUserMenuItems" model='(OrganizationIntranet.Authorization.PermissionClaimsExtensions.HasPermission(User, OrganizationIntranet.Contracts.AdminPermissions.IntranetAdmin), (string?)null)' /></ul>
         </div>
       </div>
 }

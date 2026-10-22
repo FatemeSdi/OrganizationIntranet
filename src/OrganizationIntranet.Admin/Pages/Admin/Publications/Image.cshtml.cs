@@ -5,7 +5,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
 // پیش‌نمایش تصویر شاخص در پنل مدیریت (شامل پیش‌نویس‌ها).
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public class ImageModel(ApiClient api) : PageModel
 {
     public Task<IActionResult> OnGetAsync(long id) => PublicationImageResult.FromApiAsync(api, $"api/admin/publications/{id}/image", Response);

@@ -108,7 +108,10 @@ builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
 });
 builder.Services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+// مجوزها زنده از بانک بررسی می‌شوند (LivePermissions)؛ Policyها با پیشوند Permission: ساخته می‌شوند.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<OrganizationIntranet.Api.Security.LivePermissions>();
+builder.Services.AddScoped<IAuthorizationHandler, OrganizationIntranet.Api.Security.LivePermissionAuthorizationHandler>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

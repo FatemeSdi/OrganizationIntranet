@@ -8,6 +8,7 @@
     ViewData["ParentTitle"] = "سامانه‌ها";
     ViewData["ParentUrl"] = "/Admin/Applications";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit);
 }
 @section PageActions {
     <a asp-page="Edit" asp-route-id="@Model.Id" class="btn btn-primary-light"><i class="ti ti-arrow-right me-1"></i>تنظیمات سامانه</a>
@@ -62,7 +63,7 @@
                 <div class="switch-row"><label class="switch-row__label" for="IsActive">گروه فعال باشد</label><input asp-for="IsActive" class="form-check-input" role="switch" /></div>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره گروه نظارت</button>
+                @if (canEdit) { <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره گروه نظارت</button> }
             </div>
         </form>
     </div>

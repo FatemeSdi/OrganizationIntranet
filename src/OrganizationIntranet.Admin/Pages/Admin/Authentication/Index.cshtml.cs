@@ -8,7 +8,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Authentication;
 
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEditPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {
     [BindProperty] public AuthenticationSettingsDto Input { get; set; } = new();

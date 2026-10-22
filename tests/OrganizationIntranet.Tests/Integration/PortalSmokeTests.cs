@@ -73,7 +73,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             user.PasswordHash = hasher.Hash(user, "test-password");
             user.UserRoles.Add(new UserRole { Role = role }); db.Users.Add(user);
         }
-        db.Applications.Add(new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "سامانه", ApplicationCode = "TEST", IsActive = true });
+        var app = new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "سامانه", ApplicationCode = "TEST", IsActive = true };
+        db.Applications.Add(app);
+        TestSeed.GrantAdminPanel(db, admin, app); // مثل migration 008: نقش ADMIN همه‌ی مجوزهای پنل را دارد
         db.SaveChanges();
     }
     protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) connection.Dispose(); }
@@ -161,7 +163,7 @@ public sealed partial class PortalSmokeTests : IDisposable
         var applications = (await client.GetFromJsonAsync<List<ApplicationDto>>("/api/admin/applications"))!;
         var appId = applications.Single(a => a.ApplicationCode == "NEW").ApplicationId;
         (await client.PostAsJsonAsync("/api/admin/permissions", new PermissionRequest("مجوز", "VIEW", appId, null))).EnsureSuccessStatusCode();
-        var permission = (await client.GetFromJsonAsync<List<PermissionDto>>("/api/admin/permissions"))!.Single();
+        var permission = (await client.GetFromJsonAsync<List<PermissionDto>>("/api/admin/permissions"))!.Single(p => p.PermissionCode == "VIEW"); // جز مجوزهای سیستمی پنل
         (await client.PostAsJsonAsync($"/api/admin/permissions/{permission.PermissionId}/roles", new RolesRequest([id, id]))).EnsureSuccessStatusCode();
         Assert.Single((await client.GetFromJsonAsync<PermissionDto>($"/api/admin/permissions/{permission.PermissionId}"))!.SelectedRoleIds);
         (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Name = "جدید", LastName = "آزمایش", Username = "new", NewPassword = "initial-password", SelectedRoleIds = [id, id] })).EnsureSuccessStatusCode();
@@ -297,7 +299,12 @@ public sealed partial class PortalSmokeTests : IDisposable
     {
         var options = services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>().Get(CookieAuthenticationDefaults.AuthenticationScheme);
         var claims = new List<Claim> { new("api_token", token), new(ClaimTypes.NameIdentifier, admin ? "1" : "2"), new(ClaimTypes.GivenName, "نام"), new(ClaimTypes.Surname, "آزمایشی") };
-        if (admin) claims.Add(new Claim(ClaimTypes.Role, "ADMIN"));
+        if (admin)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, "ADMIN"));
+            claims.AddRange(OrganizationIntranet.Contracts.AdminPermissions.All.Select(p => new Claim("permission", p.Code)));
+        }
+        claims.Add(new Claim("claims_synced", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())); // همگام‌سازی دوباره‌ی مجوزها با API فقط پس از چند دقیقه
         if (refresh is not null) claims.Add(new Claim("api_refresh", refresh));
         var ticket = new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)), new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow.AddDays(refresh is null ? 0 : -8), ExpiresUtc = DateTimeOffset.UtcNow.AddDays(refresh is null ? 14 : 6), AllowRefresh = true }, CookieAuthenticationDefaults.AuthenticationScheme);
         return options.Cookie.Name + "=" + options.TicketDataFormat.Protect(ticket);

@@ -7,7 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Permissions;
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PermissionViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionEdit)]
 public class AssignModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)]

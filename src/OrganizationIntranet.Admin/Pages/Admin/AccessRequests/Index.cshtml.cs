@@ -6,7 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.AccessRequests;
 
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)] public string? Status { get; set; } = AccessRequestStatuses.Pending;

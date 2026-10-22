@@ -7,7 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Roles;
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.RoleViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleEdit)]
 public class IndexModel(ApiClient api) : PageModel
 {
     [BindProperty]

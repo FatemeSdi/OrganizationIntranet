@@ -17,7 +17,7 @@ public class PortalHeaderViewComponent(ApiClient api) : ViewComponent
         var profile = await api.GetAsync<ProfileDto>("api/account/me");
         var notifications = await api.GetAsync<List<PortalNotificationDto>>("api/portal/notifications");
         var alerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
-        return View(new PortalHeaderModel(true, profile.DisplayName, profile.Initials, profile.RoleNames, UserClaimsPrincipal.IsInRole("ADMIN"),
+        return View(new PortalHeaderModel(true, profile.DisplayName, profile.Initials, profile.RoleNames, OrganizationIntranet.Authorization.PermissionClaimsExtensions.HasPermission(UserClaimsPrincipal, AdminPermissions.IntranetAdmin),
             notifications.Count(n => n.Unread) + alerts.UnreadCount, active, returnUrl));
     }
 }

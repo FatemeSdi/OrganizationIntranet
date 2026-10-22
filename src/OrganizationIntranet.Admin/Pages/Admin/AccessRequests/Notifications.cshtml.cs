@@ -6,7 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.AccessRequests;
 
-[Authorize(Roles = "ADMIN")]
+[Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)]
 public class NotificationsModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;

@@ -49,7 +49,8 @@ public static class UiHost
         if (apiUrl.Scheme != "https") throw new InvalidOperationException("Api:BaseUrl must use HTTPS.");
         builder.Services.AddRazorPages(options =>
         {
-            if (name == "Admin") options.Conventions.AuthorizeFolder("/Admin", "Admin");
+            // ورود به هر صفحه‌ی پنل مجوز INTRANET_ADMIN را می‌خواهد؛ هر صفحه مجوز دقیق خودش را هم دارد.
+            if (name == "Admin") options.Conventions.AuthorizeFolder("/Admin", AdminPermissions.IntranetAdminPolicy);
             options.Conventions.AuthorizeFolder("/Portal");
             // صفحه‌ی اصلی پرتال برای بازدیدکننده‌ی ناشناس باز است و فقط داده‌ی عمومی نشان می‌دهد؛ دسترسی داده در API کنترل می‌شود، نه در UI.
             if (name == "Portal") options.Conventions.AllowAnonymousToPage("/Portal/Index");
@@ -81,7 +82,12 @@ public static class UiHost
             options.Events.OnValidatePrincipal = async context =>
             {
                 var now = DateTimeOffset.UtcNow;
-                if (context.Properties.IssuedUtc is not { } issued || context.Properties.ExpiresUtc is not { } expires || now - issued <= expires - now) return;
+                if (context.Properties.IssuedUtc is not { } issued || context.Properties.ExpiresUtc is not { } expires || now - issued <= expires - now)
+                {
+                    // نقش و مجوزها هر چند دقیقه از API دوباره خوانده می‌شوند تا تغییر دسترسی بدون خروج و ورود دوباره اعمال شود.
+                    if (AccountSignIn.ClaimsAreStale(context.Principal, now)) await AccountSignIn.RefreshClaimsAsync(context, now);
+                    return;
+                }
                 var refreshToken = context.Principal?.FindFirst("api_refresh")?.Value;
                 if (string.IsNullOrEmpty(refreshToken))
                 {
@@ -100,6 +106,7 @@ public static class UiHost
                     context.Properties.IssuedUtc = now;
                     context.Properties.ExpiresUtc = now.AddSeconds(token.ExpiresIn);
                     context.ShouldRenew = true;
+                    await AccountSignIn.RefreshClaimsAsync(context, now);
                 }
                 catch (ApiException)
                 {
@@ -109,7 +116,9 @@ public static class UiHost
                 }
             };
         });
-        builder.Services.AddAuthorization(options => options.AddPolicy("Admin", policy => policy.RequireRole("ADMIN")));
+        builder.Services.AddAuthorization();
+        builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, OrganizationIntranet.Authorization.PermissionPolicyProvider>();
+        builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, OrganizationIntranet.Authorization.ClaimsPermissionAuthorizationHandler>();
         builder.Services.AddDNTCaptcha(options => options.UseCookieStorageProvider().ShowThousandsSeparators(false).WithEncryptionKey(builder.Configuration["DNTCaptcha:EncryptionKey"] ?? key));
         var app = builder.Build();
         if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Error"); app.UseHsts(); }

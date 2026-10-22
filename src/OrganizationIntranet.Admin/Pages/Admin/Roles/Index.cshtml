@@ -6,6 +6,7 @@
     ViewData["Icon"] = "ti ti-user-shield";
     ViewData["Subtitle"] = "نقش سطح کلی دسترسی است؛ مجوزهای دقیق هر سامانه به نقش‌ها داده می‌شود";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleEdit);
 }
 @section PageActions {
     <a href="/Admin/Permissions" class="btn btn-primary-light"><i class="ti ti-lock-access me-1"></i>مجوزها</a>
@@ -45,7 +46,7 @@
                                         <form method="post" asp-page-handler="Toggle" asp-route-roleId="@role.RoleId" class="m-0">
                                             @Html.AntiForgeryToken()
                                             <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
-                                                <input class="form-check-input" type="checkbox" role="switch" id="role-toggle-@role.RoleId" checked="@role.IsActive" data-autosubmit
+                                                <input class="form-check-input" type="checkbox" role="switch" id="role-toggle-@role.RoleId" checked="@role.IsActive" data-autosubmit disabled="@(!canEdit || (role.IsActive && role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode))" title="@(role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode ? "نقش مدیر غیرفعال نمی‌شود" : null)"
                                                        data-confirm-off="@($"نقش «{role.RoleName}» غیرفعال شود؟ کاربران این نقش پس از ورود بعدی دسترسی‌های آن را از دست می‌دهند.")" />
                                                 <label class="form-check-label" for="role-toggle-@role.RoleId"><span class="status-pill @(role.IsActive ? "status-pill--success" : "status-pill--muted")">@(role.IsActive ? "فعال" : "غیرفعال")</span></label>
                                             </div>
@@ -62,6 +63,8 @@
         </div>
     </div>
 
+    @if (canEdit)
+    {
     <div class="col-xl-4">
         <div class="card custom-card">
             <div class="card-header"><div class="card-title"><i class="ti ti-square-rounded-plus text-primary me-1"></i>افزودن نقش</div></div>
@@ -80,4 +83,5 @@
             </form>
         </div>
     </div>
+    }
 </div>

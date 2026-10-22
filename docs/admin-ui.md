@@ -46,3 +46,7 @@ ViewData["ParentUrl"] = "/Admin/Applications";
 - ستون عملیات جدول‌ها عنوان «عملیات» دارد.
 - جستجوی پیشرفته‌ی کاربران: فیلدهای جدا با `data-filter-mode="contains"` و برچسب فیلترهای فعال (`data-filter-label`، `[data-filter-chips]`).
 - نمای بندر داشبورد (`_PortIllustration`) درون‌خطی است؛ در تم تیره خورشید به ماه و ستاره تبدیل می‌شود.
+
+## مجوزها
+
+هر صفحه و endpoint پنل مجوز خودش را دارد و منو و دکمه‌ها بر اساس مجوز نمایش داده می‌شوند: [admin-permissions.md](admin-permissions.md).

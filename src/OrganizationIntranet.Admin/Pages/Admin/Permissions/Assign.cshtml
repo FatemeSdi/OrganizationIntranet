@@ -7,6 +7,7 @@
     ViewData["ParentTitle"] = "مجوزها";
     ViewData["ParentUrl"] = "/Admin/Permissions";
     Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionEdit);
 }
 
 <partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, Model.ErrorMessage)' />
@@ -42,7 +43,16 @@
                 <div class="col-md-6">
                     <div class="switch-row mb-0">
                         <label class="switch-row__label" for="role-@role.RoleId">@role.RoleName <span class="code-chip ms-1">@role.RoleCode</span></label>
-                        <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" />
+                        @if (OrganizationIntranet.Contracts.AdminPermissions.IsSystem(Model.Permission.PermissionCode) && role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode)
+                        {
+                            @* مجوز سیستمی همیشه برای نقش مدیر می‌ماند؛ کنترل غیرفعال است و مقدار با فیلد پنهان ارسال می‌شود *@
+                            <input type="hidden" name="SelectedRoleIds" value="@role.RoleId" />
+                            <input type="checkbox" class="form-check-input" role="switch" id="role-@role.RoleId" checked disabled title="مجوز سیستمی از نقش مدیر گرفته نمی‌شود" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" disabled="@(!canEdit)" />
+                        }
                     </div>
                 </div>
             }
@@ -54,7 +64,7 @@
     </section>
 
     <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+        @if (canEdit) { <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button> }
         <a href="/Admin/Permissions" class="btn btn-primary-light">انصراف</a>
     </div>
 </form>

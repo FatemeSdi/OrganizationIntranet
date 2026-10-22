@@ -27,7 +27,7 @@ public sealed class AccessRequestsController(AccessRequestService service, ILogg
     }
 }
 
-[ApiController, Route("api/admin/access-requests"), Authorize(Roles = "ADMIN"), AdminClient]
+[ApiController, Route("api/admin/access-requests"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy), AdminClient]
 public sealed class AccessRequestAdminController(AccessRequestService service, ILogger<AccessRequestAdminController> logger) : ControllerBase
 {
     [HttpGet] public Task<AccessRequestListDto> List(string? status = null, int page = 1) => service.ListAsync(null, status, page);
