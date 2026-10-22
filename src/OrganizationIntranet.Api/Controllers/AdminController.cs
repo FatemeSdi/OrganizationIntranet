@@ -28,7 +28,30 @@ public sealed class AdminController(IntranetService service, ApplicationCatalogS
         return new(true, "کاربر با موفقیت ذخیره شد");
     }
     [HttpGet("roles")] public Task<List<RoleDto>> Roles() => service.RolesAsync();
-    [HttpPost("roles"), Authorize(Policy = P.RoleEditPolicy)] public async Task<OperationResult> CreateRole(RoleRequest request) { await service.CreateRoleAsync(request); return new(true, "نقش جدید ایجاد شد"); }
+    // جزئیات نقش با مجوز مشاهده‌ی نقش‌ها؛ فهرست اعضا فقط برای دارنده‌ی USER_VIEW (مثل داشبورد).
+    [HttpGet("roles/{id:int}"), Authorize(Policy = P.RoleViewPolicy)] public async Task<IActionResult> RoleById(int id)
+    {
+        var role = await service.RoleAsync(id, (await permissions.ForAsync(User)).Contains(P.UserView));
+        return role is null ? NotFound() : Ok(role);
+    }
+    [HttpPost("roles"), Authorize(Policy = P.RoleEditPolicy)] public async Task<OperationResult> CreateRole(RoleRequest request)
+    {
+        await service.CreateRoleAsync(request);
+        logger.LogInformation("Role {RoleCode} created by {ActorId}", request.RoleCode, Actor);
+        return new(true, "نقش جدید ایجاد شد");
+    }
+    [HttpPost("roles/{id:int}"), Authorize(Policy = P.RoleEditPolicy)] public async Task<OperationResult> UpdateRole(int id, RoleRequest request)
+    {
+        await service.UpdateRoleAsync(id, request);
+        logger.LogInformation("Role {RoleId} updated by {ActorId}", id, Actor);
+        return new(true, "نقش ذخیره شد");
+    }
+    [HttpPost("roles/{id:int}/delete"), Authorize(Policy = P.RoleEditPolicy)] public async Task<OperationResult> DeleteRole(int id)
+    {
+        await service.DeleteRoleAsync(id);
+        logger.LogInformation("Role {RoleId} deleted by {ActorId}", id, Actor);
+        return new(true, "نقش حذف شد");
+    }
     [HttpPost("roles/{id:int}/toggle"), Authorize(Policy = P.RoleEditPolicy)] public async Task<OperationResult> ToggleRole(int id)
     {
         await service.ToggleRoleAsync(id);

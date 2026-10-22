@@ -11,8 +11,8 @@
 | `INTRANET_ADMIN` | ورود به پنل مدیریت | ورود به Admin، داشبورد، پروفایل | شرط همه‌ی `api/admin/*` (در `AdminClientMiddleware` و Policy کلاس کنترلرها) |
 | `USER_VIEW` | مشاهده‌ی کاربران | `Users/Index`، `Users/Edit` (GET)؛ همچنین `Applications/Edit` و `Applications/Supervision` چون فهرست کاربران را نشان می‌دهند | GET کاربران؛ «آخرین کاربران» داشبورد |
 | `USER_EDIT` | ویرایش کاربران | POST در `Users/Edit` | POST کاربران |
-| `ROLE_VIEW` | مشاهده‌ی نقش‌ها | `Roles/Index` | — (فهرست نقش‌ها برای فرم‌ها فقط `INTRANET_ADMIN` می‌خواهد) |
-| `ROLE_EDIT` | ویرایش نقش‌ها | POST در `Roles/Index` | ساخت و toggle نقش |
+| `ROLE_VIEW` | مشاهده‌ی نقش‌ها | `Roles/Index`، `Roles/Edit` (GET؛ فهرست اعضا فقط با `USER_VIEW`) | `GET roles/{id}` (فهرست نقش‌ها برای فرم‌ها فقط `INTRANET_ADMIN` می‌خواهد) |
+| `ROLE_EDIT` | ویرایش نقش‌ها | POST در `Roles/Index` و `Roles/Edit` | ساخت، ویرایش نام/کد، toggle و حذف نقش |
 | `PERMISSION_VIEW` | مشاهده‌ی مجوزها | `Permissions/Index`، `Permissions/Assign` | GET مجوزها |
 | `PERMISSION_EDIT` | ویرایش و اختصاص مجوزها | POST در همان دو صفحه | ساخت، toggle و اختصاص مجوز به نقش |
 | `APPLICATION_VIEW` | مشاهده‌ی سامانه‌ها | `Applications/Index`، `Edit`، `Import`، `Supervision` | GET یک سامانه، پیش‌نمایش import، گروه نظارت (GET) |
@@ -38,6 +38,7 @@
 `IntranetService` این کارها را رد می‌کند:
 
 - غیرفعال‌کردن نقش `ADMIN`؛
+- تغییر کد یا حذف نقش‌های سیستمی `ADMIN` و `EXPERT` (برنامه آن‌ها را با کد پیدا می‌کند؛ `AdminPermissions.IsSystemRole`)؛
 - غیرفعال‌کردن یکی از مجوزهای سیستمی بالا؛
 - گرفتن یک مجوز سیستمی از نقش `ADMIN` (در صفحه‌ی اختصاص، این گزینه قفل است)؛
 - ذخیره‌ی کاربری که آخرین مدیر فعال است، اگر نقش ADMIN را از دست بدهد یا غیرفعال شود.
@@ -61,3 +62,10 @@ verify بررسی می‌کند که همه‌ی کدها فعال‌اند، AD
 
 - `Integration/AdminPermissionTests.cs`: محدوده‌ی هر مجوز در API، اثر فوری پس گرفتن مجوز، قواعد جلوگیری از قفل‌شدن، صفحه‌ها و منو، رد POST بدون مجوز ویرایش، تازه‌شدن Claimها.
 - `Database/LiveMigrationStateTests.cs` (اختیاری، فقط‌خواندنی): 008 اعمال شده و ADMIN همه‌ی کدهای `AdminPermissions` را دارد.
+
+## مدیریت نقش‌ها
+
+- فهرست نقش‌ها شمار کاربران و مجوزهای هر نقش را نشان می‌دهد. صفحه‌ی `Roles/Edit` جزئیات نقش را دارد: نام و کد، اعضا با پیوند به کاربر، و مجوزها با پیوند به اختصاص.
+- کد نقش یکتا است و فقط حروف بزرگ انگلیسی، رقم و `_` دارد. ورودی کوچک به بزرگ تبدیل می‌شود. کد تکراری با پیام روشن رد می‌شود (۴۰۰).
+- حذف فقط برای نقشی ممکن است که سیستمی نباشد و نه کاربر داشته باشد، نه مجوز، نه دسترسی مستقیم سامانه یا عضویت در گروه نظارت. قید FK بانک (NO ACTION) هم در همزمانی جلوی حذف را می‌گیرد. برای قطع دسترسی نقشی که در حال استفاده است، آن را غیرفعال کنید.
+- آزمون‌ها: `Integration/RoleManagementTests.cs`.

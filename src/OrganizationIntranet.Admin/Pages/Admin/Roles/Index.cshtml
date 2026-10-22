@@ -29,7 +29,7 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table table-admin text-nowrap">
-                        <thead><tr><th>نقش</th><th>کد</th><th>تاریخ ایجاد</th><th>وضعیت</th></tr></thead>
+                        <thead><tr><th>نقش</th><th>کد</th><th>کاربران</th><th>مجوزها</th><th>تاریخ ایجاد</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr></thead>
                         <tbody>
                             @foreach (var role in Model.AllRoles)
                             {
@@ -41,16 +41,24 @@
                                         </div>
                                     </td>
                                     <td><span class="code-chip">@role.RoleCode</span></td>
+                                    <td><span class="fw-semibold">@role.UserCount</span> <span class="text-muted fs-12">کاربر</span></td>
+                                    <td>
+                                        @if (role.PermissionCount == 0) { <span class="status-pill status-pill--warning" title="هیچ مجوزی به این نقش داده نشده است">بدون مجوز</span> }
+                                        else { <span class="fw-semibold">@role.PermissionCount</span> <span class="text-muted fs-12">مجوز</span> }
+                                    </td>
                                     <td>@role.CreatedAt.ToPersianDate()</td>
                                     <td>
                                         <form method="post" asp-page-handler="Toggle" asp-route-roleId="@role.RoleId" class="m-0">
                                             @Html.AntiForgeryToken()
                                             <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
                                                 <input class="form-check-input" type="checkbox" role="switch" id="role-toggle-@role.RoleId" checked="@role.IsActive" data-autosubmit disabled="@(!canEdit || (role.IsActive && role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode))" title="@(role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode ? "نقش مدیر غیرفعال نمی‌شود" : null)"
-                                                       data-confirm-off="@($"نقش «{role.RoleName}» غیرفعال شود؟ کاربران این نقش پس از ورود بعدی دسترسی‌های آن را از دست می‌دهند.")" />
+                                                       data-confirm-off="@($"نقش «{role.RoleName}» غیرفعال شود؟ {role.UserCount} کاربر این نقش دسترسی‌های آن را از دست می‌دهند.")" />
                                                 <label class="form-check-label" for="role-toggle-@role.RoleId"><span class="status-pill @(role.IsActive ? "status-pill--success" : "status-pill--muted")">@(role.IsActive ? "فعال" : "غیرفعال")</span></label>
                                             </div>
                                         </form>
+                                    </td>
+                                    <td class="col-actions">
+                                        <a href="/Admin/Roles/Edit?id=@role.RoleId" class="btn btn-icon btn-sm btn-primary-light" title="@(canEdit ? "ویرایش" : "جزئیات") @role.RoleName" aria-label="@(canEdit ? "ویرایش" : "جزئیات") @role.RoleName"><i class="ti @(canEdit ? "ti-edit" : "ti-eye")"></i></a>
                                     </td>
                                 </tr>
                             }
@@ -77,7 +85,7 @@
                 <div class="mb-3">
                     <label asp-for="RoleCode" class="form-label">کد نقش</label>
                     <input asp-for="RoleCode" class="form-control" dir="ltr" placeholder="HR_EXPERT" required />
-                    <div class="form-text">کد یکتا و انگلیسی؛ در کد و گزارش‌ها استفاده می‌شود.</div>
+                    <div class="form-text">یکتا؛ حروف انگلیسی، رقم و _ (با حرف شروع شود).</div>
                 </div>
                 <div class="card-actions"><button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-plus me-1"></i>ثبت نقش</button></div>
             </form>

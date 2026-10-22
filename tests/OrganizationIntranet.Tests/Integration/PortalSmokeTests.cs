@@ -175,7 +175,7 @@ public sealed partial class PortalSmokeTests : IDisposable
             (await client.PostAsync($"/api/admin/{path}/toggle", null)).EnsureSuccessStatusCode();
         Assert.False((await client.GetFromJsonAsync<List<RoleDto>>("/api/admin/roles"))!.Single(r => r.RoleId == id).IsActive);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/users", new UserEditRequest { Name = "bad", LastName = "bad", Username = "invalid-role", NewPassword = "test", SelectedRoleIds = [999] })).StatusCode);
-        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/api/admin/roles", new RoleRequest("تکرار", "ADMIN"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/roles", new RoleRequest("تکرار", "ADMIN"))).StatusCode); // کد تکراری با پیام روشن، نه خطای بانک
         (await client.PostAsJsonAsync("/api/account/change-password", new ChangePasswordRequest("test-password", "changed-password", "changed-password"))).EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/account/me")).StatusCode);
         await Login("admin", "changed-password");

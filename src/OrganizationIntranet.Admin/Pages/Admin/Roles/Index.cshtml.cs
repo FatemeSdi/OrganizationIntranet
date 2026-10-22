@@ -34,7 +34,7 @@ public class IndexModel(ApiClient api) : PageModel
     }
     public async Task<IActionResult> OnPostToggleAsync(int roleId)
     {
-        await api.PostAsync<OperationResult>($"api/admin/roles/{roleId}/toggle");
-        return RedirectToPage();
+        try { await api.PostAsync<OperationResult>($"api/admin/roles/{roleId}/toggle"); return RedirectToPage(); }
+        catch (ApiException ex) when ((int)ex.Status is 400 or 404) { ErrorMessage = ex.Message; await LoadAsync(); return Page(); }
     }
 }

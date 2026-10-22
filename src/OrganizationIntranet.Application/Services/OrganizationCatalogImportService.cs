@@ -8,7 +8,7 @@ namespace OrganizationIntranet.Application.Services;
 
 public sealed class OrganizationCatalogImportService(IApplicationCatalogRepository catalog, IIntranetRepository identities)
 {
-    private const string Username = "fatemeh.sadeghi", RoleCode = "EXPERT";
+    private const string Username = "fatemeh.sadeghi", RoleCode = AdminPermissions.CatalogImportRoleCode;
     private async Task<(User User, Role Role)> PrincipalsAsync()
     {
         var user = await identities.FindUserAsync(Username);

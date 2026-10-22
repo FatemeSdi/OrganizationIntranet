@@ -60,11 +60,63 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         repository.SetUserRoles(user, ids);
         await repository.SaveAsync(); // One SaveChanges transaction also covers a new user's role assignments.
     }
-    public async Task<List<RoleDto>> RolesAsync() => (await repository.GetRolesAsync()).OrderBy(r => r.RoleName).Select(r => new RoleDto(r.RoleId, r.RoleName, r.RoleCode, r.IsActive, r.CreatedAt)).ToList();
+    private static RoleDto Map(Role r, RoleUsage? usage) => new(r.RoleId, r.RoleName, r.RoleCode, r.IsActive, r.CreatedAt, usage?.Users ?? 0, usage?.Permissions ?? 0, usage?.Links ?? 0);
+    public async Task<List<RoleDto>> RolesAsync()
+    {
+        var usage = await repository.GetRoleUsageAsync();
+        return (await repository.GetRolesAsync()).OrderBy(r => r.RoleName).Select(r => Map(r, usage.GetValueOrDefault(r.RoleId))).ToList();
+    }
+    /// <summary>جزئیات نقش؛ فهرست کاربران فقط وقتی includeUsers باشد (دارنده‌ی USER_VIEW).</summary>
+    public async Task<RoleDetailsDto?> RoleAsync(int id, bool includeUsers)
+    {
+        var role = await repository.FindRoleAsync(id);
+        if (role is null) return null;
+        var users = includeUsers
+            ? role.UserRoles.Select(r => r.User).OrderByDescending(u => u.IsActive).ThenBy(u => u.LastName).ThenBy(u => u.Name)
+                .Select(u => new RoleMemberDto(u.UserId, $"{u.Name} {u.LastName}".Trim(), u.Username, u.IsActive)).ToList()
+            : [];
+        var permissions = role.RolePermissions.Select(r => r.Permission).OrderBy(p => p.Application.ApplicationName).ThenBy(p => p.PermissionName)
+            .Select(p => new RolePermissionItemDto(p.PermissionId, p.PermissionName, p.PermissionCode, p.Application.ApplicationName, p.IsActive)).ToList();
+        return new(Map(role, (await repository.GetRoleUsageAsync()).GetValueOrDefault(id)), users, permissions, !includeUsers);
+    }
+    /// <summary>نام و کد پاک‌شده؛ کد با حروف بزرگ انگلیسی، رقم و _ و یکتا.</summary>
+    private async Task<(string Name, string Code)> ValidRoleAsync(RoleRequest request, int? exceptId)
+    {
+        var name = request.RoleName?.Trim() ?? ""; var code = request.RoleCode?.Trim().ToUpperInvariant() ?? "";
+        Required(name, 100, "نام نقش"); Required(code, 50, "کد نقش");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Z][A-Z0-9_]*$"))
+            throw new ArgumentException("کد نقش فقط حروف انگلیسی، رقم و _ دارد و با حرف شروع می‌شود (مثل HR_EXPERT)");
+        if ((await repository.GetRolesAsync()).Any(r => r.RoleId != exceptId && string.Equals(r.RoleCode, code, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException($"نقشی با کد {code} از قبل وجود دارد");
+        return (name, code);
+    }
     public async Task CreateRoleAsync(RoleRequest request)
     {
-        Required(request.RoleName, 100, "نام نقش"); Required(request.RoleCode, 50, "کد نقش");
-        repository.AddRole(new Role { RoleName = request.RoleName, RoleCode = request.RoleCode.ToUpperInvariant(), IsActive = true, CreatedAt = DateTime.UtcNow });
+        var (name, code) = await ValidRoleAsync(request, null);
+        repository.AddRole(new Role { RoleName = name, RoleCode = code, IsActive = true, CreatedAt = DateTime.UtcNow });
+        await repository.SaveAsync();
+    }
+    public async Task UpdateRoleAsync(int id, RoleRequest request)
+    {
+        var role = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
+        var (name, code) = await ValidRoleAsync(request, id);
+        if (code != role.RoleCode && AdminPermissions.IsSystemRole(role.RoleCode))
+            throw new ArgumentException($"کد نقش سیستمی {role.RoleCode} در برنامه استفاده می‌شود و تغییر نمی‌کند؛ فقط نام آن قابل ویرایش است");
+        role.RoleName = name; role.RoleCode = code;
+        await repository.SaveAsync();
+    }
+    /// <summary>فقط نقش بدون کاربر، مجوز و اتصال حذف می‌شود؛ قید FK بانک هم در همزمانی جلوی حذف نقش استفاده‌شده را می‌گیرد.</summary>
+    public async Task DeleteRoleAsync(int id)
+    {
+        var role = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
+        if (AdminPermissions.IsSystemRole(role.RoleCode)) throw new ArgumentException($"نقش سیستمی {role.RoleCode} حذف نمی‌شود");
+        var usage = (await repository.GetRoleUsageAsync()).GetValueOrDefault(id) ?? new RoleUsage(0, 0, 0);
+        var uses = new List<string>();
+        if (usage.Users > 0) uses.Add($"{usage.Users} کاربر");
+        if (usage.Permissions > 0) uses.Add($"{usage.Permissions} مجوز");
+        if (usage.Links > 0) uses.Add($"{usage.Links} دسترسی سامانه یا گروه نظارت");
+        if (uses.Count > 0) throw new ArgumentException($"این نقش {string.Join("، ", uses)} دارد و حذف نمی‌شود؛ ابتدا آن‌ها را جدا کنید یا نقش را غیرفعال کنید");
+        repository.RemoveRole(role);
         await repository.SaveAsync();
     }
     public async Task ToggleRoleAsync(int id)

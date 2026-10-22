@@ -8,6 +8,8 @@ public static class AdminPermissions
 {
     public const string ApplicationCode = "INTERANET";
     public const string AdminRoleCode = "ADMIN";
+    /// <summary>نقشی که import کاتالوگ سامانه‌ها (OrganizationCatalogImportService) با کد پیدا می‌کند.</summary>
+    public const string CatalogImportRoleCode = "EXPERT";
 
     public const string IntranetAdmin = "INTRANET_ADMIN";
     public const string UserView = "USER_VIEW", UserEdit = "USER_EDIT";
@@ -43,4 +45,7 @@ public static class AdminPermissions
     ];
 
     public static bool IsSystem(string? code) => code is not null && All.Any(p => p.Code == code);
+
+    /// <summary>نقش‌هایی که کد برنامه با کدشان پیدا می‌کند: کدشان عوض نمی‌شود و حذف نمی‌شوند.</summary>
+    public static bool IsSystemRole(string? code) => code is AdminRoleCode or CatalogImportRoleCode;
 }
