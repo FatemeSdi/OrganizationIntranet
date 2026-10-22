@@ -21,7 +21,13 @@ public sealed class LiveDatabaseSchemaTests
     [LiveSchemaFact]
     public async Task Every_mapped_column_matches_the_live_SQL_Server_schema()
     {
-        var connectionString = Environment.GetEnvironmentVariable("INTRANET_SCHEMA_TEST_CONNECTION")!;
+        var failures = await ModelMismatchesAsync(Environment.GetEnvironmentVariable("INTRANET_SCHEMA_TEST_CONNECTION")!);
+        Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+    }
+
+    /// <summary>ستون‌های مدل EF که در بانک نیستند یا نوع/nullability متفاوت دارند (برای بانک واقعی و نصب تازه).</summary>
+    internal static async Task<List<string>> ModelMismatchesAsync(string connectionString)
+    {
         await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connectionString).Options);
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
@@ -64,6 +70,6 @@ public sealed class LiveDatabaseSchemaTests
                     failures.Add($"{key}: expected {expected}, nullable={property.IsColumnNullable(table)}; actual {column.Type}, nullable={column.Nullable}");
             }
         }
-        Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+        return failures;
     }
 }

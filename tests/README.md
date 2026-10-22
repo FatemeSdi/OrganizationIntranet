@@ -30,6 +30,16 @@ dotnet test tests/OrganizationIntranet.Tests --filter "Category=Database"
 Remove-Item Env:INTRANET_SCHEMA_TEST_CONNECTION
 ```
 
+آزمون نصب تازه (`Database/FreshInstallTests.cs`) هم اختیاری است. یک دیتابیس موقت با نام تصادفی می‌سازد، خط پایه و همه‌ی migrationها را روی آن اجرا می‌کند و در پایان آن را حذف می‌کند. سرور را فقط وقتی بدهید که ساخت و حذف دیتابیس موقت روی آن مجاز است، ترجیحاً LocalDB، نه سرور اصلی:
+
+```powershell
+$env:INTRANET_FRESH_INSTALL_SERVER = "Server=(localdb)\MSSQLLocalDB;Integrated Security=True;TrustServerCertificate=True"
+dotnet test tests/OrganizationIntranet.Tests --filter "FullyQualifiedName~FreshInstallTests"
+Remove-Item Env:INTRANET_FRESH_INSTALL_SERVER
+```
+
+اگر `INTRANET_SCHEMA_TEST_CONNECTION` هم تنظیم باشد، ساختار نصب تازه با دیتابیس مرجع هم مقایسه می‌شود. این مقایسه فقط از دیتابیس مرجع می‌خواند.
+
 ## قواعد نوشتن تست
 
 1. **پوشه و برچسب:** تست را در پوشه‌ی مناسب بگذارید و روی کلاس `[Trait("Category", "Unit|Integration|Database")]` بگذارید.

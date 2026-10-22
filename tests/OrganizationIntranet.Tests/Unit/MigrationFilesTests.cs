@@ -47,6 +47,17 @@ public sealed class MigrationFilesTests
     }
 
     [Fact]
+    public void Fresh_install_baseline_records_only_the_migrations_it_contains_and_is_documented()
+    {
+        var baseline = File.ReadAllText(Path.Combine(MigrationsDir, "000_Baseline.install.sql"));
+        Assert.Contains("('001_DatabaseConsistency'),('002_AuthenticationSchema')", baseline);
+        Assert.DoesNotContain("003_ApplicationCatalog", baseline);                  // 003 به بعد همیشه با فایل خودشان اجرا می‌شوند
+        Assert.Contains("THROW 51000,'The database is not empty.", baseline);
+        Assert.DoesNotMatch(@"(?im)^\s*GO\s*$", baseline);
+        Assert.Contains("000_Baseline.install.sql", File.ReadAllText(Path.Combine(MigrationsDir, "README.md")));
+    }
+
+    [Fact]
     public void Migration_files_are_valid_utf8_and_the_runner_reads_them_as_utf8()
     {
         var strict = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);

@@ -83,8 +83,8 @@ worker به‌طور پیش‌فرض هر ۶۰ ثانیه یک صفحه از ه�
 ## استقرار و بررسی
 
 ```powershell
-pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath tools/sql/003-access-workflow-up.sql
-pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath tools/sql/003-access-workflow-verify.sql
+pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath database/migrations/004_AccessWorkflow.up.sql
+pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath database/migrations/004_AccessWorkflow.verify.sql
 dotnet build OrganizationIntranet.sln
 dotnet test tests/OrganizationIntranet.Tests/OrganizationIntranet.Tests.csproj
 ```
