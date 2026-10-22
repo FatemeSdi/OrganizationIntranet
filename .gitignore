@@ -376,15 +376,14 @@ FodyWeavers.xsd
 /database/*
 !/database/migrations/
 /database/migrations/*
-!/database/migrations/001_DatabaseConsistency.*.sql
-!/database/migrations/002_AuthenticationSchema.*.sql
+# همه‌ی migrationهای شماره‌دار و راهنما؛ فهرست تک‌تک فایل‌ها باعث شد 006 تا 008 commit نشوند.
+!/database/migrations/[0-9][0-9][0-9]_*.sql
+!/database/migrations/README.md
 !/database/architecture-audit.readonly.sql
 !/database/architecture-verify.readonly.sql
 !/database/architecture-migration-test.sql
 !/database/backup.sql
 
-!/database/migrations/003_ApplicationCatalog.*.sql
-!/database/migrations/005_PublicPublications.*.sql
 
 !/tools/Initialize-Development.ps1
 !/tools/Start-Dev.ps1

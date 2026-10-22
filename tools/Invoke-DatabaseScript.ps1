@@ -17,7 +17,8 @@ if (-not $connectionString -and $UseExistingConnection) {
     $connectionString = $settings.ConnectionStrings.DefaultConnection
 }
 if (-not $connectionString) { throw 'Configure the API connection in environment/user secrets or explicitly select -UseExistingConnection.' }
-$sql = Get-Content -Raw -LiteralPath $ScriptPath
+# Migration files are UTF-8 (often without BOM); Windows PowerShell 5.1 would otherwise read them as ANSI and garble N'...' Persian literals.
+$sql = Get-Content -Raw -Encoding UTF8 -LiteralPath $ScriptPath
 if ($sql -match '(?im)^\s*GO\s*$') { throw 'Use a single SQL batch without GO separators.' }
 $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
 try {

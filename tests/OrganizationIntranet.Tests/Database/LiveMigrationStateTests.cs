@@ -11,7 +11,7 @@ namespace OrganizationIntranet.Tests;
 public sealed class LiveMigrationStateTests
 {
     // 003 و 004 باید روی هر بانکی که کد فعلی را اجرا می‌کند اعمال شده باشند (004 به 003 وابسته است).
-    private static readonly string[] ExpectedMigrations =
+    internal static readonly string[] ExpectedMigrations =
     [
         "001_DatabaseConsistency",
         "002_AuthenticationSchema",
@@ -44,18 +44,26 @@ public sealed class LiveMigrationStateTests
         await using var connection = new SqlConnection(Environment.GetEnvironmentVariable("INTRANET_SCHEMA_TEST_CONNECTION")!);
         await connection.OpenAsync();
         await using var command = new SqlCommand("""
-            SELECT p.PermissionCode FROM Sec.Permission p JOIN Sec.RolePermission rp ON rp.PermissionId=p.PermissionId
+            SELECT p.PermissionCode, p.PermissionName, p.Description FROM Sec.Permission p JOIN Sec.RolePermission rp ON rp.PermissionId=p.PermissionId
             JOIN Sec.Role r ON r.RoleId=rp.RoleId WHERE r.RoleCode='ADMIN' AND r.IsActive=1 AND p.IsActive=1;
             SELECT COUNT(DISTINCT u.UserId) FROM Sec.[User] u JOIN Sec.UserRole ur ON ur.UserId=u.UserId JOIN Sec.Role r ON r.RoleId=ur.RoleId AND r.IsActive=1
             WHERE u.IsActive=1 AND r.RoleCode='ADMIN';
             """, connection);
         var codes = new HashSet<string>(StringComparer.Ordinal);
+        var garbled = new List<string>();
         await using var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync()) codes.Add(reader.GetString(0));
+        while (await reader.ReadAsync())
+        {
+            codes.Add(reader.GetString(0));
+            // UTF-8 فارسی که با کدپیج ANSI خوانده شود با Ø/Ù/Ú/Û شروع می‌شود (اتفاقی که برای 008 با PowerShell 5.1 افتاد).
+            var text = reader.GetString(1) + (reader.IsDBNull(2) ? "" : reader.GetString(2));
+            if (text.IndexOfAny(['Ø', 'Ù', 'Ú', 'Û']) >= 0) garbled.Add(reader.GetString(0));
+        }
         await reader.NextResultAsync(); await reader.ReadAsync();
         var admins = reader.GetInt32(0);
         var missing = OrganizationIntranet.Contracts.AdminPermissions.All.Select(p => p.Code).Where(c => !codes.Contains(c)).ToArray();
         Assert.True(missing.Length == 0, "ADMIN lacks: " + string.Join(", ", missing));
         Assert.True(admins > 0, "No active user holds the ADMIN role.");
+        Assert.True(garbled.Count == 0, "Garbled permission text: " + string.Join(", ", garbled));
     }
 }
