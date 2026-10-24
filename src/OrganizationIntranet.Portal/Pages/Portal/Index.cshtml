@@ -343,14 +343,16 @@
     .systems-grid{grid-template-columns:repeat(2,1fr)}
     .ql-grid{grid-template-columns:1fr; gap:26px}
     .ql-col{border-inline-start:none; padding-inline-start:0; padding-bottom:20px; border-bottom:1px solid var(--line)}
-    .dropdown, .profile-menu{left:auto; right:0}
+    /* زنگ و منوی حساب در RTL نزدیک لبه‌ی چپ‌اند؛ پنل absolute به سمت چپ بیرون می‌زد و (حتی پنهان) اسکرول افقی می‌ساخت.
+       در عرض کم پنل‌ها fixed و وسط صفحه‌اند تا نه بیرون بزنند و نه بریده شوند. */
+    .dropdown, .profile-menu{position:fixed; top:84px; left:16px; right:16px; width:auto; max-width:420px; margin-inline:auto}
   }
   @@media (max-width:600px){
     .systems-grid{grid-template-columns:1fr}
     .container{padding:0 18px}
     .header-inner{height:66px}
     .user-chip .info{display:none}
-    .dropdown{width:92vw}
+    .dropdown, .profile-menu{top:76px}
   }
 </style>
 }

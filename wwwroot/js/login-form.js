@@ -23,7 +23,9 @@
     const resend = document.getElementById('resendCode');
     const resendTimer = document.getElementById('resendTimer');
     const changeId = document.getElementById('changeNationalId');
-    const toast = (message, type) => (window.showToast ? window.showToast(message, type) : window.alert(message));
+    // پورتال توست هم‌تم خودش را دارد (portal-toast.js)؛ پنل مدیریت توست تمپلیت yzen (app-toast.js)
+    const toast = (message, type) => (window.portalToast ? window.portalToast(message, type)
+        : window.showToast ? window.showToast(message, type) : window.alert(message));
 
     let step = 'id';
     let timerHandle = null;

@@ -6,6 +6,7 @@
 }
 @section Styles {
 <link href="~/assets/css/vazir-font.css" rel="stylesheet" />
+<link href="~/css/portal-toast.css" rel="stylesheet" asp-append-version="true" />
 <style>
     /* هم‌رنگ صفحه‌ی اصلی پورتال: سرمه‌ای، طلایی و شنی (متفاوت از ورود پنل مدیریت) */
     .pl{
@@ -132,10 +133,15 @@
     <section class="pl-form">
         <div class="pl-card">
             <h2>ورود به حساب کاربری</h2>
-            @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
+            @* پیام‌ها مثل بقیه‌ی پورتال به‌صورت توست هم‌تم (wwwroot/js/portal-toast.js)؛ بدون JavaScript همان کادر قبلی نمایش داده می‌شود *@
+            @{ var success = TempData["AuthenticationMessage"] as string ?? (Model.LoggedOut ? "با موفقیت از سیستم خارج شدید" : null); }
+            <partial name="_PortalToasts" model='(success, Model.Error)' />
+            <noscript>
+                @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
+                @if (success is not null) { <p role="status" class="alert alert-success">@success</p> }
+            </noscript>
 
             <form id="loginForm" method="post" autocomplete="off" asp-page="/Account/Login">
-                @if (TempData["AuthenticationMessage"] is string message) { <p role="status" class="alert alert-success">@message</p> }
                 <input type="hidden" asp-for="ReturnUrl" />
                 @Html.AntiForgeryToken()
                 <label for="loginMethod" class="form-label">روش ورود</label>
@@ -239,6 +245,6 @@
 </div>
 
 @section Scripts {
-    @if (Model.LoggedOut) { <script>document.addEventListener('DOMContentLoaded', function () { showToast('با موفقیت از سیستم خارج شدید', 'success'); });</script> }
+    <script src="~/js/portal-toast.js" asp-append-version="true"></script>
     <script src="~/js/login-form.js" asp-append-version="true"></script>
 }

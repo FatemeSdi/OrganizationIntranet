@@ -54,6 +54,8 @@ public static class UiHost
             options.Conventions.AuthorizeFolder("/Portal");
             // صفحه‌ی اصلی پرتال برای بازدیدکننده‌ی ناشناس باز است و فقط داده‌ی عمومی نشان می‌دهد؛ دسترسی داده در API کنترل می‌شود، نه در UI.
             if (name == "Portal") options.Conventions.AllowAnonymousToPage("/Portal/Index");
+            // مسیر AccessDenied کوکی همان صفحه‌ی خطای هم‌تم است (کد ۴۰۳)
+            options.Conventions.AddPageRoute("/Error", "Account/AccessDenied");
         }).AddMvcOptions(options =>
         {
             options.Filters.Add<ApiPageExceptionFilter>();
@@ -122,6 +124,8 @@ public static class UiHost
         builder.Services.AddDNTCaptcha(options => options.UseCookieStorageProvider().ShowThousandsSeparators(false).WithEncryptionKey(builder.Configuration["DNTCaptcha:EncryptionKey"] ?? key));
         var app = builder.Build();
         if (!app.Environment.IsDevelopment()) { app.UseExceptionHandler("/Error"); app.UseHsts(); }
+        // پاسخ‌های بدون بدنه (۴۰۴ مسیر ناموجود، NotFound() صفحه‌ها، ...) صفحه‌ی خطای هم‌تم هر پرتال را نشان می‌دهند.
+        app.UseStatusCodePagesWithReExecute("/Error/{0}");
         app.UseHttpsRedirection();
         if (name == "Admin") app.UseMiddleware<AdminUiBoundaryMiddleware>();
         app.UseStaticFiles();
@@ -135,7 +139,6 @@ public static class UiHost
         app.UseRouting(); app.UseAuthentication(); app.UseAuthorization();
         // پرتال کارکنان صفحه‌ی اصلی عمومی دارد؛ پنل مدیریت همیشه با ورود شروع می‌شود.
         app.MapGet("/", () => Results.Redirect(name == "Portal" ? "/Portal" : "/Account/Login"));
-        app.MapGet("/Account/AccessDenied", () => Results.Content("دسترسی مجاز نیست", "text/plain; charset=utf-8", statusCode: 403));
         app.MapControllers(); app.MapRazorPages();
         return app;
     }

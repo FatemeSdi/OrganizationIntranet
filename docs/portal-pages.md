@@ -57,3 +57,18 @@ pwsh -File tools/Invoke-DatabaseScript.ps1 -ScriptPath database/migrations/007_P
 - `GET api/portal/supervision/inbox?status=&applicationId=&page=` و `GET api/portal/supervision/inbox/summary?applicationId=` (سامانه‌های تحت نظارت و شمار به تفکیک وضعیت). سامانه‌ای که کاربر ناظرش نیست، فهرست خالی برمی‌گرداند.
 - صفحه‌ی `/AccessRequests` هم فیلتر وضعیت را به API می‌فرستد؛ قبلاً فقط ردیف‌های صفحه‌ی جاری فیلتر می‌شد.
 - آزمون‌ها: `Integration/NotificationCenterTests.cs` و `Database/LiveNotificationCenterTests.cs` (اجرای همان کوئری روی SQL Server، فقط‌خواندنی).
+
+## صفحه‌های خطا
+
+- پورتال و پنل مدیریت هر کدام یک صفحه‌ی `Error` دارند (`/Error/{code}`) برای ۴۰۳، ۴۰۴ و ۵۰۰، با تم همان پرتال: پورتال سرمه‌ای/طلایی، پنل مدیریت تمپلیت yzen. متن هر کد در `shared/UI/ErrorPageContent.cs` است و هیچ جزئیات فنی نشان داده نمی‌شود؛ برای ۵۰۰ شناسه‌ی پیگیری نمایش داده می‌شود.
+- `UiHost` پاسخ‌های بدون بدنه (مسیر ناموجود، `NotFound()` صفحه‌ها) را با `UseStatusCodePagesWithReExecute` به این صفحه می‌برد. مسیر `/Account/AccessDenied` هم همین صفحه با کد ۴۰۳ است (قبلاً متن ساده بود). خطای پردازش‌نشده در محیط غیرتوسعه به `/Error` می‌رود.
+- این صفحه از layout ورود استفاده می‌کند و API را صدا نمی‌زند، تا وقتی API در دسترس نیست هم نمایش داده شود.
+- آزمون‌ها: `Integration/ErrorPagesTests.cs`.
+
+## پیام‌های صفحه‌ی ورود پورتال
+
+خطای ورود، پیام خروج و پیام‌های فرم (`wwwroot/js/login-form.js`) با توست هم‌تم پورتال نمایش داده می‌شوند. اگر `window.portalToast` نباشد (پنل مدیریت)، توست تمپلیت yzen استفاده می‌شود. بدون JavaScript، همان کادر پیام قبلی در `<noscript>` نمایش داده می‌شود.
+
+## موبایل: پنل اعلان و منوی حساب
+
+در عرض کمتر از ۹۶۰ پیکسل، پنل اعلان و منوی حساب صفحه‌ی اصلی `position: fixed` و وسط صفحه‌اند. قبلاً absolute بودند، به سمت چپ از صفحه بیرون می‌زدند و حتی در حالت پنهان صفحه را ۱۲۵ پیکسل به‌صورت افقی اسکرول‌پذیر می‌کردند.

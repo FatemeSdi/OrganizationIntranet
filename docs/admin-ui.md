@@ -50,3 +50,7 @@ ViewData["ParentUrl"] = "/Admin/Applications";
 ## مجوزها
 
 هر صفحه و endpoint پنل مجوز خودش را دارد و منو و دکمه‌ها بر اساس مجوز نمایش داده می‌شوند: [admin-permissions.md](admin-permissions.md).
+
+## صفحه‌ی خطا
+
+`Pages/Error.cshtml` برای ۴۰۳، ۴۰۴ و ۵۰۰ با کارت yzen روی پس‌زمینه‌ی صفحه‌ی ورود؛ بدون منو و زنگ اعلان، پس به API وابسته نیست. کاربر واردشده دکمه‌ی «بازگشت به داشبورد» و در ۴۰۳ «ورود با حساب دیگر» می‌بیند. جزئیات: [portal-pages.md](portal-pages.md#صفحههای-خطا).
