@@ -1,0 +1,80 @@
+@page
+@model OrganizationIntranet.Pages.Library.IndexModel
+@using OrganizationIntranet.Pages.Library
+@{
+    ViewData["Title"] = "قوانین، انتشارات و فرم‌ها";
+    ViewData["PortalNav"] = "library";
+    Layout = "_LayoutPortal";
+    var filtered = Model.Q is not null || Model.Group is not null;
+}
+@section Styles {
+    <style>
+        .pp-lib-groups { display: grid; gap: 26px; margin-top: 6px; }
+        .pp-lib-group h2 { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; color: var(--navy-900); margin: 0 0 12px; }
+        .pp-lib-group h2 svg { width: 20px; height: 20px; color: var(--gold-600); flex-shrink: 0; }
+        .pp-lib-group h2 small { font-size: 12px; font-weight: 600; color: var(--ink-500); }
+        .pp-lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+        .pp-lib-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+        .pp-lib-item .pp-lib-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; background: var(--sand-100); color: var(--navy-800); }
+        .pp-lib-item .pp-lib-icon svg { width: 18px; height: 18px; }
+        .pp-lib-item b { display: block; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+        .pp-lib-item span { font-size: 12px; color: var(--ink-500); }
+        .pp-lib-more { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--blue-600); }
+        .pp-lib-more svg { width: 14px; height: 14px; transform: scaleX(-1); }
+        .pp-lib-more:hover { color: var(--navy-900); }
+    </style>
+}
+
+<section class="pp-card" aria-label="قوانین، انتشارات و فرم‌ها">
+    <div class="pp-pub-toolbar">
+        <nav class="pp-tabs" aria-label="بخش">
+            <a asp-route-q="@Model.Q" class="@(Model.Group is null ? "active" : null)" aria-current="@(Model.Group is null ? "page" : null)">همه <span class="pp-tab-count">@LibraryCatalog.Fa(Model.CountAll)</span></a>
+            @foreach (var g in LibraryCatalog.Groups)
+            {
+                <a asp-route-group="@g.Id" asp-route-q="@Model.Q" class="@(Model.Group == g.Id ? "active" : null)" aria-current="@(Model.Group == g.Id ? "page" : null)">@g.Title <span class="pp-tab-count">@LibraryCatalog.Fa(Model.Count(g))</span></a>
+            }
+        </nav>
+        <form method="get" class="pp-pub-search" role="search">
+            @if (Model.Group is not null) { <input type="hidden" name="group" value="@Model.Group" /> }
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input name="q" value="@Model.Q" type="search" maxlength="100" class="pp-input" placeholder="جست‌وجو در قوانین، انتشارات و فرم‌ها" aria-label="جست‌وجو در قوانین، انتشارات و فرم‌ها" />
+            <button type="submit" class="pp-btn pp-btn-primary pp-btn-sm">جست‌وجو</button>
+        </form>
+    </div>
+
+    <p class="pp-hint pp-pub-count">@LibraryCatalog.Fa(Model.Total) مورد@(filtered ? " یافت شد" : "")@if (filtered) { <text> · <a href="/Library" class="pp-link">پاک‌کردن فیلتر</a></text> }</p>
+
+    @if (Model.Results.Count == 0)
+    {
+        <div class="pp-empty">
+            <div class="pp-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+            <b>موردی مطابق جست‌وجوی شما یافت نشد</b>
+        </div>
+    }
+    <div class="pp-lib-groups">
+        @foreach (var (group, items) in Model.Results)
+        {
+            <section class="pp-lib-group" id="@group.Id" aria-labelledby="@($"lib-{group.Id}")">
+                <h2 id="@($"lib-{group.Id}")"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(group.Icon)</svg>@group.Title <small>(@LibraryCatalog.Fa(items.Count) مورد)</small></h2>
+                <ul class="pp-lib-grid">
+                    @foreach (var item in Model.Visible(items))
+                    {
+                        <li class="pp-lib-item">
+                            <span class="pp-lib-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(group.Icon)</svg></span>
+                            <div>
+                                <b>@item.Title</b>
+                                <span>@(item.Count is null ? "تعداد ثبت نشده" : $"{LibraryCatalog.Fa(item.Count)} مدرک")</span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+                @if (Model.IsPreview && items.Count > IndexModel.PreviewLimit)
+                {
+                    <a asp-route-group="@group.Id" class="pp-lib-more">مشاهده‌ی همه‌ی @LibraryCatalog.Fa(items.Count) مورد «@group.Title»
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                }
+            </section>
+        }
+    </div>
+</section>

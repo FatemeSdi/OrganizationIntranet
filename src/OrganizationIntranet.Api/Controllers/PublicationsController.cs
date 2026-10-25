@@ -33,7 +33,7 @@ internal static class PublicationImages
 public sealed class PublicationAdminController(PublicationService service, ILogger<PublicationAdminController> logger) : ControllerBase
 {
     private long Actor => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    [HttpGet] public Task<PublicationListDto> List(string? kind = null, string? search = null, int page = 1) => service.ListAsync(false, kind, search, page);
+    [HttpGet] public Task<PublicationListDto> List(string? kind = null, string? search = null, int page = 1, string? status = null) => service.ListForAdminAsync(status, kind, search, page);
     [HttpGet("{id:long}")] public Task<PublicationDto> Get(long id) => service.GetAsync(id, false);
     [HttpPost] public Task<PublicationDto> Create(PublicationEditRequest request) => Save(null, request);
     [HttpPost("{id:long}")] public Task<PublicationDto> Update(long id, PublicationEditRequest request) => Save(id, request);

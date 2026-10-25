@@ -9,6 +9,7 @@
             <a href="/Portal">خانه</a>
             <a href="/Publications" class="@(Model.Active == "news" ? "active" : null)" aria-current="@(Model.Active == "news" ? "page" : null)">اخبار و اطلاعیه‌ها</a>
             <a href="/Portal#systems">@(Model.IsAuthenticated ? "سامانه‌های من" : "سامانه‌ها")</a>
+            <a href="/Library" class="@(Model.Active == "library" ? "active" : null)" aria-current="@(Model.Active == "library" ? "page" : null)">مقررات و فرم‌ها</a>
         </nav>
         <div class="pp-actions">
             @if (!Model.IsAuthenticated)

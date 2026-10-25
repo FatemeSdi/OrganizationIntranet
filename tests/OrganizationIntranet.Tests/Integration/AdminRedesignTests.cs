@@ -104,6 +104,11 @@ public sealed partial class PortalSmokeTests
             var css = await browser.GetStringAsync("/assets/css/admin-ui.css");
             Assert.Contains(".form-actions { justify-content: flex-end; }", css); // دکمه‌ی ثبت پایین سمت چپ
             Assert.DoesNotContain("innerHTML", script); // متن کاربر هرگز به‌صورت HTML درج نمی‌شود
+            // جدول‌ها در موبایل کارتی‌اند: برچسب خانه‌ها از سرستون (data-label) و قاعده‌ی کارت زیر ۷۶۸ پیکسل
+            Assert.Contains("is-stacked", script);
+            Assert.Contains("data-label", script);
+            Assert.Contains(".table-admin.is-stacked > tbody > tr > td[data-label]::before { content: attr(data-label);", css);
+            Assert.Contains("@media (max-width: 767.98px) {\n    .table-responsive:has(> .table-admin.is-stacked)", css.Replace("\r\n", "\n"));
             (await browser.GetAsync("/assets/css/admin-ui.css")).EnsureSuccessStatusCode();
         }
     }

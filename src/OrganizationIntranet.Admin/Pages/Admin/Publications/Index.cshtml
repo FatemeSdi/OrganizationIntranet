@@ -7,7 +7,7 @@
     ViewData["Icon"] = "ti ti-speakerphone";
     ViewData["Subtitle"] = "اخبار، اطلاعیه‌ها و بخشنامه‌های پورتال";
     Layout = "_LayoutAdmin";
-    var filtered = !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Kind);
+    var filtered = !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Kind) || Model.Status is not null;
 }
 @section PageActions {
     <a asp-page="Edit" class="btn btn-primary btn-wave"><i class="ti ti-plus me-1"></i>افزودن محتوا</a>
@@ -22,47 +22,63 @@
             <option value="">همه انواع</option>
             @foreach (var kind in new[] { "News", "Announcement", "Circular" }) { <option value="@kind">@PublicationKinds.Label(kind)</option> }
         </select>
+        <select asp-for="Status" class="form-select" aria-label="وضعیت انتشار" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">
+            <option value="">همه وضعیت‌ها</option>
+            @foreach (var (value, label) in OrganizationIntranet.Pages.Admin.Publications.IndexModel.Statuses) { <option value="@value">@label</option> }
+        </select>
         <button class="btn btn-primary" type="submit"><i class="ti ti-search me-1"></i>جست‌وجو</button>
         @if (filtered) { <a asp-page="Index" class="btn btn-primary-light" title="پاک‌کردن فیلترها" aria-label="پاک‌کردن فیلترها"><i class="ti ti-filter-off"></i></a> }
         <span class="admin-toolbar__count">@Model.Result.Total مطلب</span>
     </form>
 
-    <div class="card-body">
-        @if (Model.Result.Items.Count == 0)
-        {
-            if (filtered)
+    @if (Model.Result.Items.Count == 0)
+    {
+        <div class="card-body">
+            @if (filtered)
             {
-                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "مطلبی پیدا نشد", "عبارت جست‌وجو یا نوع محتوا را تغییر دهید.")' />
+                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "مطلبی پیدا نشد", "عبارت جست‌وجو، نوع یا وضعیت را تغییر دهید.")' />
             }
             else
             {
                 <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-speakerphone", "هنوز مطلبی ثبت نشده است", "اولین خبر، اطلاعیه یا بخشنامه را بنویسید.", "افزودن محتوا", "/Admin/Publications/Edit")' />
             }
-        }
-        <div class="item-list">
-            @foreach (var item in Model.Result.Items)
-            {
-                <article class="item-card @(item.IsPublished ? (item.IsPublic ? "item-card--success" : "item-card--primary") : "item-card--muted")">
-                    <div class="d-flex flex-wrap align-items-center gap-1">
-                        <span class="badge bg-primary-transparent">@PublicationKinds.Label(item.Kind)</span>
-                        <span class="status-pill @(item.IsPublished ? "status-pill--success" : "status-pill--muted")">@(item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
-                        @if (item.IsPublic) { <span class="status-pill status-pill--info" title="بازدیدکننده‌ی بدون ورود هم می‌بیند"><i class="ti ti-world"></i> عمومی</span> }
-                        <a asp-page="Edit" asp-route-id="@item.PublicationId" class="btn btn-sm btn-primary-light ms-auto"><i class="ti ti-edit me-1"></i>ویرایش</a>
-                    </div>
-                    <div class="d-flex gap-3 align-items-start">
-                        @if (item.HasImage) { <img class="item-card__thumb mt-2" src="/Admin/Publications/Image?id=@item.PublicationId&v=@item.ImageVersion" alt="" loading="lazy" /> }
-                        <div class="min-w-0">
-                            <h2 class="item-card__title"><a asp-page="Edit" asp-route-id="@item.PublicationId">@item.Title</a></h2>
-                            <p class="item-card__text">@item.Summary</p>
-                        </div>
-                    </div>
-                    <div class="item-card__meta">
-                        <span><i class="ti ti-calendar"></i>@(item.PublishedAt.HasValue ? "انتشار: " + item.PublishedAt.ToPersianDate() : "ایجاد: " + item.CreatedAt.ToPersianDate())</span>
-                    </div>
-                </article>
-            }
         </div>
-    </div>
+    }
+    else
+    {
+        @* جدول فشرده: هر مطلب یک ردیف با خلاصه‌ی کوتاه‌شده، تا فهرست‌های بلند (چند صفحه) مرتب بمانند. *@
+        <div class="table-responsive">
+            <table class="table table-admin publication-table">
+                <thead><tr><th>مطلب</th><th>نوع</th><th>وضعیت</th><th>تاریخ</th><th class="col-actions">عملیات</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Model.Result.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="publication-row">
+                                    @if (item.HasImage) { <img class="publication-row__thumb" src="/Admin/Publications/Image?id=@item.PublicationId&v=@item.ImageVersion" alt="" loading="lazy" /> }
+                                    else { <span class="publication-row__thumb publication-row__thumb--empty" data-kind="@item.Kind" aria-hidden="true"><i class="ti ti-photo"></i></span> }
+                                    <div class="min-w-0">
+                                        <a class="publication-row__title" asp-page="Edit" asp-route-id="@item.PublicationId" title="@item.Title">@item.Title</a>
+                                        <p class="publication-row__summary" title="@item.Summary">@item.Summary</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary-transparent">@PublicationKinds.Label(item.Kind)</span></td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="status-pill @(item.IsPublished ? "status-pill--success" : "status-pill--muted")">@(item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
+                                    @if (item.IsPublic) { <span class="status-pill status-pill--info" title="بازدیدکننده‌ی بدون ورود هم می‌بیند"><i class="ti ti-world"></i> عمومی</span> }
+                                </div>
+                            </td>
+                            <td class="text-nowrap text-muted fs-12">@(item.PublishedAt.HasValue ? "انتشار: " + item.PublishedAt.ToPersianDate() : "ایجاد: " + item.CreatedAt.ToPersianDate())</td>
+                            <td class="col-actions"><a asp-page="Edit" asp-route-id="@item.PublicationId" class="btn btn-sm btn-primary-light"><i class="ti ti-edit me-1"></i>ویرایش</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 
-    <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Result.PageSize, Model.Result.Total, "مطلب", new Dictionary<string, string?> { ["kind"] = Model.Kind, ["search"] = Model.Search })' />
+    <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Result.PageSize, Model.Result.Total, "مطلب", new Dictionary<string, string?> { ["kind"] = Model.Kind, ["search"] = Model.Search, ["status"] = Model.Status })' />
 </div>

@@ -11,6 +11,7 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
     {
         PublicationScope.Published => query.Where(p => p.IsPublished),
         PublicationScope.Public => query.Where(p => p.IsPublished && p.IsPublic),
+        PublicationScope.Draft => query.Where(p => !p.IsPublished),
         _ => query,
     };
     public async Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize)

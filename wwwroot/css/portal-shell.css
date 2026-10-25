@@ -7,6 +7,9 @@
 }
 * { box-sizing: border-box; }
 body.pp-body { margin: 0; font-family: 'Vazirmatn', 'Vazir', Tahoma, sans-serif; background: var(--sand-50); color: var(--ink-900); line-height: 1.7; }
+/* فوتر همیشه پایین صفحه: در صفحه‌های کم‌محتوا main فضای خالی را پر می‌کند (به‌جای اینکه فوتر وسط صفحه بیاید) */
+body.pp-body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+body.pp-body > main { flex: 1 0 auto; }
 :where(.pp-body) a { color: inherit; text-decoration: none; }   /* بدون specificity تا رنگ اجزا (برند، دکمه‌ها) غالب باشد */
 :where(.pp-body) :is(button, input, select, textarea) { font-family: inherit; }
 .pp-container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }

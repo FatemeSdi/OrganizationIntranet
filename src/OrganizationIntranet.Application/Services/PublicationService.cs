@@ -9,6 +9,13 @@ public sealed class PublicationService(IPublicationRepository repository)
     private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0);
     public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page) =>
         ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page);
+    /// <summary>فهرست مدیر با فیلتر وضعیت: published، draft، public یا خالی (همه).</summary>
+    public Task<PublicationListDto> ListForAdminAsync(string? status, string? kind, string? search, int page) =>
+        ListAsync(status switch
+        {
+            null or "" => PublicationScope.All, "published" => PublicationScope.Published, "draft" => PublicationScope.Draft, "public" => PublicationScope.Public,
+            _ => throw new ArgumentException("وضعیت محتوا معتبر نیست"),
+        }, kind, search, page);
     /// <summary>فهرست محتوای منتشرشده‌ی عمومی برای بازدیدکننده‌ی ناشناس.</summary>
     public Task<PublicationListDto> ListPublicAsync(string? kind, string? search, int page) => ListAsync(PublicationScope.Public, kind, search, page);
     private async Task<PublicationListDto> ListAsync(PublicationScope scope, string? kind, string? search, int page)

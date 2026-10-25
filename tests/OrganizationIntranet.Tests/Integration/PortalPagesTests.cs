@@ -111,7 +111,7 @@ public sealed partial class PortalSmokeTests
             Assert.Contains("enctype=\"multipart/form-data\"", editPage);
             Assert.Matches($"src=\"/Admin/Publications/Image\\?id={id}&amp;v=\\d+\"", editPage); // پیش‌نمایش تصویر فعلی
             (await browser.GetAsync($"/Admin/Publications/Image?id={id}")).EnsureSuccessStatusCode();
-            Assert.Contains("item-card__thumb", await browser.GetStringAsync("/Admin/Publications"));
+            Assert.Matches($"class=\"publication-row__thumb\" src=\"/Admin/Publications/Image\\?id={id}&(amp;)?v=\\d+\"", await browser.GetStringAsync("/Admin/Publications")); // بندانگشتی در ردیف جدول
         }
 
         using var portal = Ui<PortalEntry::Program>("Portal");
@@ -308,5 +308,18 @@ public sealed partial class PortalSmokeTests
             Assert.Contains("class=\"admin-page-head\"", security); // صفحه‌ی امنیت در پوسته‌ی پنل مدیریت
             Assert.Contains("security-steps", security);
         }
+    }
+
+    [Fact]
+    public async Task Portal_footer_stays_at_the_bottom_of_short_pages()
+    {
+        using var portal = Ui<PortalEntry::Program>("Portal");
+        using var anonymous = portal.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
+        var css = await anonymous.GetStringAsync("/css/portal-shell.css");
+        Assert.Contains("body.pp-body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }", css);
+        Assert.Contains("body.pp-body > main { flex: 1 0 auto; }", css);   // main فضای خالی را پر می‌کند، نه فوتر وسط صفحه
+
+        var html = await anonymous.GetStringAsync("/Library");
+        Assert.Matches(new Regex("<body class=\"pp-body\">[\\s\\S]*</main>\\s*<footer class=\"pp-site\">"), html);   // فوتر بلافاصله بعد از main و فرزند مستقیم body
     }
 }

@@ -11,6 +11,22 @@
 
     var fa = function (n) { return Number(n).toLocaleString('fa-IR'); };
 
+    // جدول‌های پنل در موبایل کارتی می‌شوند (admin-ui.css): برچسب هر خانه از سرستون همان ستون؛ خانه‌ی اول سربرگ کارت است.
+    document.querySelectorAll('table.table-admin').forEach(function (table) {
+        var headers = Array.prototype.map.call(table.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+        if (headers.length === 0) return;
+        table.classList.add('is-stacked');
+        table.querySelectorAll('tbody > tr').forEach(function (row) {
+            var column = 0;
+            Array.prototype.forEach.call(row.children, function (cell, index) {
+                var label = headers[column];
+                if (index === 0 && !cell.hasAttribute('colspan') && !cell.querySelector('input, select, textarea')) cell.classList.add('is-card-head');
+                else if (label && !cell.hasAttribute('data-label') && !cell.hasAttribute('colspan')) cell.setAttribute('data-label', label);
+                column += parseInt(cell.getAttribute('colspan') || '1', 10);
+            });
+        });
+    });
+
     // نوار صفحه‌بندی سمت کاربر؛ فقط با createElement و textContent ساخته می‌شود.
     function renderPager(pager, page, pages, first, last, total, noun, go) {
         pager.textContent = '';
