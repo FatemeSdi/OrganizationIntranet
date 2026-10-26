@@ -322,4 +322,19 @@ public sealed partial class PortalSmokeTests
         var html = await anonymous.GetStringAsync("/Library");
         Assert.Matches(new Regex("<body class=\"pp-body\">[\\s\\S]*</main>\\s*<footer class=\"pp-site\">"), html);   // فوتر بلافاصله بعد از main و فرزند مستقیم body
     }
+
+    [Fact]
+    public async Task Login_captcha_puts_title_and_image_on_one_row_with_the_input_below_and_a_prominent_home_button()
+    {
+        using var portal = Ui<PortalEntry::Program>("Portal");
+        using var anonymous = portal.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
+        var html = WebUtility.HtmlDecode(await anonymous.GetStringAsync("/Account/Login"));
+        Assert.Contains(".pl-card .dntCaptcha > label{display:contents;", html);            // عنوان و تصویر یک ردیف
+        Assert.Contains(".pl-card .dntCaptcha > img{order:1;", html);
+        Assert.Contains(".pl-card .dntCaptcha .captchaInput{order:3; flex:1 1 100%;", html);   // ورودی زیر آن
+        Assert.Contains("class=\"dntCaptcha\"", html);
+        Assert.Contains("text-align:center}", html[html.IndexOf(".pl-card h2{", StringComparison.Ordinal)..]);   // تیتر وسط
+        Assert.Contains(".pl-home{display:inline-flex; align-items:center; gap:8px; color:var(--navy-950); background:var(--gold-500);", html);   // دکمه‌ی طلایی و پررنگ
+        Assert.Contains("درگاه یکپارچه", html);                                              // متن معرفی کامل‌تر
+    }
 }

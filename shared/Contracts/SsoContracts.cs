@@ -12,5 +12,5 @@ public static class SingleSignOn
 /// <summary>آدرس سامانه همراه بلیت؛ Portal مرورگر را به آن می‌فرستد.</summary>
 public record SsoStartDto(string Url);
 public record SsoRedeemRequest(string Ticket);
-/// <summary>هویتی که سامانه با آن کاربر خودش را پیدا می‌کند؛ کلید تطبیق کد ملی است.</summary>
-public record SsoIdentityDto(string NationalId, string Username, string Name, string LastName);
+/// <summary>هویتی که سامانه با آن کاربر خودش را پیدا می‌کند؛ کلید تطبیق <b>نام کاربری</b> اینترانت است (بدون حساسیت به بزرگی/کوچکی حروف). کد ملی فقط اطلاع‌رسانی است و ممکن است خالی باشد.</summary>
+public record SsoIdentityDto(string Username, string? NationalId, string Name, string LastName);

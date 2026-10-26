@@ -67,7 +67,8 @@ public sealed partial class PortalSmokeTests
         var redeemed = await Redeem(server, "SSOAPP", ticket);
         Assert.Equal(HttpStatusCode.OK, redeemed.StatusCode);
         var identity = (await redeemed.Content.ReadFromJsonAsync<SsoIdentityDto>())!;
-        Assert.Equal(("2222222222", "member"), (identity.NationalId, identity.Username));
+        Assert.Equal("member", identity.Username);                                          // کلید تطبیق: نام کاربری
+        Assert.Equal("2222222222", identity.NationalId);                                         // کد ملی فقط اطلاع‌رسانی است
 
         var again = await Redeem(server, "SSOAPP", ticket);                                     // یک‌بارمصرف
         Assert.Equal(HttpStatusCode.BadRequest, again.StatusCode);
@@ -134,7 +135,7 @@ public sealed partial class PortalSmokeTests
     }
 
     [Fact]
-    public async Task Sso_start_explains_missing_national_id_and_applications_without_sso()
+    public async Task Sso_works_without_a_national_id_and_start_explains_applications_without_sso()
     {
         var (app, _) = SeedSsoApplications();
         using (var scope = api.Services.CreateScope())
@@ -156,11 +157,15 @@ public sealed partial class PortalSmokeTests
             db.Users.Single(u => u.Username == "member").NationalId = null;
             db.SaveChanges();
         }
-        var noNationalId = await client.PostAsync($"/api/portal/applications/{app}/sso", null);
-        Assert.Equal(HttpStatusCode.BadRequest, noNationalId.StatusCode);
-        Assert.Contains("کد ملی", (await noNationalId.Content.ReadFromJsonAsync<OperationResult>())!.Message);
-        using (var scope = api.Services.CreateScope())
-            Assert.Empty(scope.ServiceProvider.GetRequiredService<AppDbContext>().SsoTickets);
+        var start = await client.PostAsync($"/api/portal/applications/{app}/sso", null);        // نبود کد ملی مانع نیست؛ کلید نام کاربری است
+        Assert.Equal(HttpStatusCode.OK, start.StatusCode);
+        var url = (await start.Content.ReadFromJsonAsync<SsoStartDto>())!.Url;
+        using var server = ApplicationServer(ApiFactory.SsoKey);
+        var redeemed = await Redeem(server, "SSOAPP", url[(url.IndexOf("ticket=", StringComparison.Ordinal) + 7)..]);
+        Assert.Equal(HttpStatusCode.OK, redeemed.StatusCode);
+        var identity = (await redeemed.Content.ReadFromJsonAsync<SsoIdentityDto>())!;
+        Assert.Equal("member", identity.Username);
+        Assert.Null(identity.NationalId);
     }
 
     [Fact]

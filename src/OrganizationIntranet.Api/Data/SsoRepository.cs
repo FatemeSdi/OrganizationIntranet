@@ -11,8 +11,7 @@ public sealed class SsoRepository(AppDbContext db) : ISsoRepository
         var app = await ApplicationAccessQueries.Available(db, userId).AsNoTracking()
             .Where(a => a.ApplicationId == applicationId).Select(a => new { a.ApplicationId, a.ApplicationCode }).SingleOrDefaultAsync();
         if (app is null) return null;
-        var nationalId = await db.Users.AsNoTracking().Where(u => u.UserId == userId).Select(u => u.NationalId).SingleAsync();
-        return new(app.ApplicationId, app.ApplicationCode, userId, nationalId);
+        return new(app.ApplicationId, app.ApplicationCode, userId);
     }
     public void AddTicket(SsoTicket ticket) => db.SsoTickets.Add(ticket);
     public async Task<User?> RedeemAsync(byte[] ticketHash, string applicationCode, DateTime now)

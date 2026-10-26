@@ -3,7 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 namespace OrganizationIntranet.Application.Abstractions;
 
 /// <summary>سامانه‌ای که کاربر الان به آن دسترسی دارد، با کد ملی کاربر.</summary>
-public sealed record SsoTarget(int ApplicationId, string ApplicationCode, long UserId, string? NationalId);
+public sealed record SsoTarget(int ApplicationId, string ApplicationCode, long UserId);
 
 public interface ISsoRepository
 {

@@ -28,8 +28,10 @@
     .pl-org img{height:54px; width:auto; filter:brightness(0) invert(1)}
     .pl-org b{display:block; font-size:16px; font-weight:800; line-height:1.5}
     .pl-org span{font-size:12.5px; color:#C6D5E1}
-    .pl-home{display:inline-flex; align-items:center; gap:6px; color:#E8EEF3; font-size:13px; font-weight:700; padding:8px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.22); text-decoration:none; transition:background .15s}
-    .pl-home:hover{background:rgba(255,255,255,.10); color:#fff}
+    .pl-home{display:inline-flex; align-items:center; gap:8px; color:var(--navy-950); background:var(--gold-500); font-size:14px; font-weight:800; padding:10px 20px; border-radius:999px; border:1px solid var(--gold-500); text-decoration:none; box-shadow:0 8px 22px -10px rgba(214,162,76,.8); transition:background .15s, transform .15s}
+    .pl-home i{font-size:18px}
+    .pl-home:hover{background:#E5B968; color:var(--navy-950); transform:translateY(-1px)}
+    .pl-home:focus-visible{outline:3px solid #fff; outline-offset:2px}
     .pl-hero{margin:auto 0; position:relative; max-width:460px; padding:40px 0}
     .pl-eyebrow{display:inline-flex; align-items:center; gap:8px; color:var(--gold-500); font-size:13px; font-weight:700; letter-spacing:.2px}
     .pl-eyebrow::before{content:""; width:28px; height:2px; background:var(--gold-500); border-radius:2px}
@@ -45,11 +47,19 @@
     /* ستون فرم (شنی) */
     .pl-form{display:flex; align-items:center; justify-content:center; padding:40px 24px}
     .pl-card{width:100%; max-width:430px; background:#fff; border:1px solid var(--line); border-radius:22px; padding:34px 32px; box-shadow:0 24px 60px -30px rgba(10,32,54,.35)}
-    .pl-card h2{font-size:22px; font-weight:900; margin:0 0 6px; color:var(--navy-900)}
+    .pl-card h2{font-size:22px; font-weight:900; margin:0 0 20px; color:var(--navy-900); text-align:center}
     .pl-card .pl-sub{color:var(--ink-500); font-size:13.5px; margin:0 0 24px}
     .pl-card .form-label{font-size:13px; font-weight:700; color:var(--navy-900)}
     /* فقط background-color: shorthand ‌background فلش dropdown بوت‌استرپ را پاک می‌کرد */
     .pl-card .form-select,.pl-card .form-control,.pl-card .captchaInput{height:48px!important; border-radius:12px!important; border:1px solid var(--line)!important; background-color:#FBFAF6!important; font-family:inherit}
+    /* کد امنیتی: عنوان و تصویر (با دکمه‌ی بازنشانی) در یک ردیف، ورودی زیر آن؛ order روی خروجی DNTCaptcha اعمال می‌شود تا با جایگزینی ajax هم بماند */
+    .pl-card .dntCaptcha{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 10px}
+    .pl-card .dntCaptcha > label{display:contents; font-size:13px; font-weight:700; color:var(--navy-900)}
+    .pl-card .dntCaptcha > img{order:1; margin:0!important; margin-inline-start:auto!important; border-radius:10px}
+    .pl-card .dntCaptcha > .captcha-refresh{order:2; padding:4px 6px}
+    .pl-card .dntCaptcha .captchaInput{order:3; flex:1 1 100%; width:100%}
+    .pl-card .dntCaptcha > .text-danger{order:4; flex:1 1 100%}
+    .pl-card .dntCaptcha > .text-danger:empty{display:none}
     .pl-card .input-group .form-control{border-radius:12px 0 0 12px!important}
     .pl-card .input-group-text{border-radius:0 12px 12px 0!important; border:1px solid var(--line)!important; background:var(--sand-100)!important; color:var(--navy-800)}
     .pl-card .form-select:focus,.pl-card .form-control:focus{border-color:var(--gold-500)!important; box-shadow:0 0 0 3px rgba(214,162,76,.18)!important; background-color:#fff!important}
@@ -120,7 +130,8 @@
         <div class="pl-hero">
             <span class="pl-eyebrow">یک ورود، همه سامانه‌ها</span>
             <h1>به <em>پورتال داخلی</em> سازمان خوش آمدید</h1>
-            <p>با ورود به حساب کاربری، سامانه‌هایی که به شما تخصیص داده شده، اعلان‌ها و کارتابل درخواست‌ها را یک‌جا ببینید.</p>
+            <p>پورتال داخلی، درگاه یکپارچه‌ی کارکنان اداره کل برای دسترسی به سامانه‌های سازمانی است. به‌جای یادگرفتن نشانی و حساب جداگانه برای هر سامانه، پس از یک بار ورود، همه‌ی سامانه‌هایی را که مدیر برای شما فعال کرده است در یک صفحه می‌بینید و با یک کلیک وارد آن‌ها می‌شوید.</p>
+            <p>اخبار و اطلاعیه‌های سازمان، بخشنامه‌ها، قوانین و فرم‌های اداری نیز همین‌جا در دسترس است. اگر به سامانه‌ای نیاز دارید که در فهرست شما نیست، می‌توانید از همین پورتال درخواست دسترسی ثبت کنید و پیگیری نتیجه آن را از بخش اعلان‌ها ببینید.</p>
             <ul class="pl-features">
                 <li><i class="ti ti-apps" aria-hidden="true"></i>سامانه‌های اختصاصی من</li>
                 <li><i class="ti ti-bell" aria-hidden="true"></i>اعلان‌ها و کارتابل درخواست دسترسی</li>
