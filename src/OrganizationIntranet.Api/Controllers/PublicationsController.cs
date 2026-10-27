@@ -43,6 +43,20 @@ public sealed class PublicationAdminController(PublicationService service, ILogg
         logger.LogInformation("Publication {PublicationId} saved by {UserId}; published: {Published}", result.PublicationId, Actor, result.IsPublished);
         return result;
     }
+    [HttpPost("{id:long}/archive")]
+    public async Task<PublicationDto> Archive(long id)
+    {
+        var result = await service.ArchiveAsync(id, Actor);
+        logger.LogInformation("Publication {PublicationId} archived by {UserId}", id, Actor);
+        return result;
+    }
+    [HttpPost("{id:long}/restore")]
+    public async Task<PublicationDto> Restore(long id)
+    {
+        var result = await service.RestoreAsync(id, Actor);
+        logger.LogInformation("Publication {PublicationId} restored from the archive by {UserId}", id, Actor);
+        return result;
+    }
     /// <summary>تصویر پیش‌نویس‌ها هم برای مدیر قابل مشاهده است.</summary>
     [HttpGet("{id:long}/image")] public async Task<IActionResult> Image(long id) => PublicationImages.File(this, await service.GetImageAsync(id, PublicationScope.All));
     // سقف بدنه: ۲ مگابایت تصویر به‌صورت base64 (حدود ۲٫۷ مگابایت) به‌اضافه‌ی حاشیه.

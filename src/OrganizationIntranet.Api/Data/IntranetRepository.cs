@@ -26,7 +26,8 @@ public sealed class IntranetRepository(AppDbContext db) : IIntranetRepository
             access.GetValueOrDefault(id) + supervisors.GetValueOrDefault(id)));
     }
     public Task<List<AppEntity>> GetApplicationsAsync() => db.Applications.ToListAsync();
-    public Task<List<Permission>> GetPermissionsAsync() => Permissions.ToListAsync();
+    /// <summary>فهرست فقط‌خواندنی (بدون ردیابی EF)؛ شمار نقش‌ها و نقش‌های هر مجوز از همان ردیف‌های بارگذاری‌شده می‌آید.</summary>
+    public Task<List<Permission>> GetPermissionsAsync() => Permissions.AsNoTracking().ToListAsync();
     public Task<Permission?> FindPermissionAsync(int id) => Permissions.FirstOrDefaultAsync(p => p.PermissionId == id);
     public void AddUser(User user) => db.Users.Add(user);
     public void AddRole(Role role) => db.Roles.Add(role);

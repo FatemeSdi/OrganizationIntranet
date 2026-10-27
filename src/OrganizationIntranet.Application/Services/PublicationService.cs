@@ -6,14 +6,14 @@ namespace OrganizationIntranet.Application.Services;
 
 public sealed class PublicationService(IPublicationRepository repository)
 {
-    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0);
+    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0, p.IsArchived);
     public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page) =>
         ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page);
-    /// <summary>فهرست مدیر با فیلتر وضعیت: published، draft، public یا خالی (همه).</summary>
+    /// <summary>فهرست مدیر با فیلتر وضعیت: published، draft، public، archived یا خالی (همه‌ی بایگانی‌نشده‌ها).</summary>
     public Task<PublicationListDto> ListForAdminAsync(string? status, string? kind, string? search, int page) =>
         ListAsync(status switch
         {
-            null or "" => PublicationScope.All, "published" => PublicationScope.Published, "draft" => PublicationScope.Draft, "public" => PublicationScope.Public,
+            null or "" => PublicationScope.NotArchived, "published" => PublicationScope.Published, "draft" => PublicationScope.Draft, "public" => PublicationScope.Public, "archived" => PublicationScope.Archived,
             _ => throw new ArgumentException("وضعیت محتوا معتبر نیست"),
         }, kind, search, page);
     /// <summary>فهرست محتوای منتشرشده‌ی عمومی برای بازدیدکننده‌ی ناشناس.</summary>
@@ -38,12 +38,36 @@ public sealed class PublicationService(IPublicationRepository repository)
         if (request.IsPublic && !request.IsPublished) throw new ArgumentException("نمایش عمومی فقط برای محتوای منتشرشده ممکن است");
         var now = DateTime.UtcNow;
         var p = id.HasValue ? await repository.FindAsync(id.Value, PublicationScope.All) ?? throw new KeyNotFoundException() : new Publication { CreatedAt = now, CreatedBy = actor };
+        if (p.IsArchived) throw new ArgumentException("مطلب بایگانی‌شده را نمی‌توان ویرایش کرد؛ ابتدا آن را بازگردانی کنید");
         if (id.HasValue && request.Revision != p.Revision) throw new PublicationConflictException();
         p.Title = request.Title.Trim(); p.Summary = request.Summary.Trim(); p.Body = request.Body.Trim(); p.Kind = request.Kind;
         p.PublishedAt = request.IsPublished ? p.PublishedAt ?? now : null;
         p.IsPublished = request.IsPublished; p.IsPublic = request.IsPublic; p.UpdatedAt = now; p.UpdatedBy = actor;
         p.Revision = checked(p.Revision + 1);
         if (!id.HasValue) repository.Add(p);
+        await repository.SaveAsync();
+        return Map(p);
+    }
+
+    /// <summary>بایگانی (حذف نرم): مطلب از انتشار درمی‌آید و از پرتال و فهرست پیش‌فرض مدیر پنهان می‌شود؛ تکرار آن بی‌اثر است. بازگردانی آن را به پیش‌نویس برمی‌گرداند (انتشار دوباره با ویرایش).</summary>
+    public async Task<PublicationDto> ArchiveAsync(long id, long actor)
+    {
+        if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
+        var p = await repository.FindAsync(id, PublicationScope.All) ?? throw new KeyNotFoundException();
+        if (p.IsArchived) return Map(p);
+        var now = DateTime.UtcNow;
+        p.IsArchived = true; p.ArchivedAt = now; p.IsPublished = false; p.IsPublic = false; p.PublishedAt = null;
+        p.UpdatedAt = now; p.UpdatedBy = actor; p.Revision = checked(p.Revision + 1);
+        await repository.SaveAsync();
+        return Map(p);
+    }
+    public async Task<PublicationDto> RestoreAsync(long id, long actor)
+    {
+        if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
+        var p = await repository.FindAsync(id, PublicationScope.All) ?? throw new KeyNotFoundException();
+        if (!p.IsArchived) return Map(p);
+        p.IsArchived = false; p.ArchivedAt = null;
+        p.UpdatedAt = DateTime.UtcNow; p.UpdatedBy = actor; p.Revision = checked(p.Revision + 1);
         await repository.SaveAsync();
         return Map(p);
     }

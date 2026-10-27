@@ -28,6 +28,8 @@
 | `007_PublicationImages` | همین پوشه | جدول تصویر شاخص مطالب (اسلایدر اخبار) |
 | `008_AdminPermissions` | همین پوشه | ثبت ۱۲ مجوز پنل مدیریت و دادن همه به نقش ADMIN ([docs/admin-permissions.md](../../docs/admin-permissions.md)) |
 | `009_SsoTickets` | همین پوشه | جدول بلیت‌های یک‌بارمصرف ورود یکپارچه (SSO)؛ کلید و آدرس SSO هر سامانه در تنظیمات امن API است ([docs/sso.md](../../docs/sso.md)) |
+| `010_PublicationArchive` | همین پوشه | بایگانی (حذف نرم) مطالب: ستون‌های `IsArchived` و `ArchivedAt`؛ مطلب بایگانی‌شده از پرتال و فهرست پیش‌فرض مدیر پنهان است و قابل بازگردانی می‌ماند |
+| `011_UserApplicationAccounts` | همین پوشه | نگاشت کاربر اینترانت به نام کاربری او در هر سامانه برای ورود یکپارچه، وقتی دو نام فرق دارند؛ سامانه‌ها تغییری نمی‌کنند ([docs/sso.md](../../docs/sso.md)) |
 
 فایل‌های 003 در ۲۰۲۶-۱۰-۲۲ از روی دیتابیس مرجع بازسازی شدند (فایل‌های اصلی هیچ‌وقت commit نشده بودند). 004 قبلاً با نام `tools/sql/003-access-workflow-*` بود و به همین پوشه منتقل شد. `tools/sql/001-publications-*` و `002-publications-integrity-*` اسکریپت‌های قدیمی‌تر جدول مطالب‌اند، در `SchemaMigration` ثبت نمی‌شوند و در خط پایه‌ی نصب تازه آمده‌اند.
 
@@ -68,7 +70,7 @@ $env:ConnectionStrings__DefaultConnection = "Server=<سرور>;Database=Organiza
 ```powershell
 $run = { param($f) powershell -NoProfile -ExecutionPolicy Bypass -File tools/Invoke-DatabaseScript.ps1 -ScriptPath $f; if ($LASTEXITCODE) { throw "failed: $f" } }
 & $run database/backup.sql
-foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets') {
+foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts') {
     & $run "database/migrations/$m.up.sql"
     & $run "database/migrations/$m.verify.sql"
 }

@@ -14,3 +14,9 @@ public record SsoStartDto(string Url);
 public record SsoRedeemRequest(string Ticket);
 /// <summary>هویتی که سامانه با آن کاربر خودش را پیدا می‌کند؛ کلید تطبیق <b>نام کاربری</b> اینترانت است (بدون حساسیت به بزرگی/کوچکی حروف). کد ملی فقط اطلاع‌رسانی است و ممکن است خالی باشد.</summary>
 public record SsoIdentityDto(string Username, string? NationalId, string Name, string LastName);
+
+/// <summary>حساب یک کاربر اینترانت در یک سامانه‌ی فعال. ExternalUsername خالی یعنی همان نام کاربری اینترانت استفاده می‌شود.</summary>
+public record SsoAccountDto(int ApplicationId, string ApplicationCode, string ApplicationName, bool SingleSignOn, bool HasAccess, string? ExternalUsername);
+public record SsoAccountsDto(long UserId, string Username, string FullName, List<SsoAccountDto> Accounts);
+/// <summary>نام کاربری کاربر در سامانه؛ خالی = حذف نگاشت و بازگشت به نام کاربری اینترانت.</summary>
+public record SsoAccountRequest(string? ExternalUsername);

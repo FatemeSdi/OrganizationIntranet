@@ -9,9 +9,11 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
     // Public implies published at the database level too (CK_Publication_PublicRequiresPublished); both are filtered for defence in depth.
     private static IQueryable<Publication> Scoped(IQueryable<Publication> query, PublicationScope scope) => scope switch
     {
-        PublicationScope.Published => query.Where(p => p.IsPublished),
-        PublicationScope.Public => query.Where(p => p.IsPublished && p.IsPublic),
-        PublicationScope.Draft => query.Where(p => !p.IsPublished),
+        PublicationScope.Published => query.Where(p => p.IsPublished && !p.IsArchived),
+        PublicationScope.Public => query.Where(p => p.IsPublished && p.IsPublic && !p.IsArchived),
+        PublicationScope.Draft => query.Where(p => !p.IsPublished && !p.IsArchived),
+        PublicationScope.Archived => query.Where(p => p.IsArchived),
+        PublicationScope.NotArchived => query.Where(p => !p.IsArchived),
         _ => query,
     };
     public async Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize)
@@ -22,7 +24,7 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
         var count = await query.CountAsync();
         var items = await query.OrderByDescending(p => p.PublishedAt ?? p.CreatedAt).ThenByDescending(p => p.PublicationId)
             .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision, ImageUpdatedAt = p.ImageUpdatedAt }).ToListAsync();
+            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision, ImageUpdatedAt = p.ImageUpdatedAt, IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt }).ToListAsync();
         return (items, count);
     }
     public Task<Publication?> FindAsync(long id, PublicationScope scope) => Scoped(db.Publications, scope).FirstOrDefaultAsync(p => p.PublicationId == id);

@@ -91,6 +91,7 @@
                             <td><span class="status-pill @(u.IsActive ? "status-pill--success" : "status-pill--danger")">@(u.IsActive ? "فعال" : "غیرفعال")</span></td>
                             <td class="col-actions">
                                 <a href="/Admin/Users/Edit?id=@u.UserId" class="btn btn-sm btn-primary-light" aria-label="ویرایش @u.Name @u.LastName"><i class="ti ti-edit me-1"></i>ویرایش</a>
+                                <a href="/Admin/Users/Accounts?id=@u.UserId" class="btn btn-sm btn-outline-primary" title="نام کاربری این کاربر در سامانه‌های دارای ورود یکپارچه" aria-label="حساب‌های سامانه‌ای @u.Name @u.LastName"><i class="ti ti-plug-connected me-1"></i>حساب‌ها</a>
                             </td>
                         </tr>
                     }

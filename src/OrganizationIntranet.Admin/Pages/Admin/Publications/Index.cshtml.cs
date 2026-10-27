@@ -13,7 +13,7 @@ public class IndexModel(ApiClient api) : PageModel
     /// <summary>published، draft یا public؛ مقدار نامعتبر نادیده گرفته می‌شود.</summary>
     [BindProperty(SupportsGet = true)] public string? Status { get; set; }
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
-    public static readonly (string Value, string Label)[] Statuses = [("published", "منتشرشده"), ("draft", "پیش‌نویس"), ("public", "عمومی")];
+    public static readonly (string Value, string Label)[] Statuses = [("published", "منتشرشده"), ("draft", "پیش‌نویس"), ("public", "عمومی"), ("archived", "بایگانی‌شده")];
     public PublicationListDto Result { get; set; } = new([], 0, 1, 20);
     public async Task OnGetAsync()
     {

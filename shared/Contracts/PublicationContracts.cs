@@ -19,7 +19,7 @@ public sealed class PublicationEditRequest
     [Range(0, long.MaxValue)] public long? Revision { get; set; }
 }
 /// <param name="ImageVersion">نسخه‌ی تصویر شاخص (برای نشانی تصویر و کش)؛ 0 یعنی مطلب تصویر ندارد.</param>
-public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt, long Revision = 0, bool IsPublic = false, long ImageVersion = 0)
+public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt, long Revision = 0, bool IsPublic = false, long ImageVersion = 0, bool IsArchived = false)
 {
     public bool HasImage => ImageVersion != 0;
 }

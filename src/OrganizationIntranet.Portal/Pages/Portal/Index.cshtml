@@ -529,7 +529,7 @@ else
       <div class="systems-grid" id="systemsGrid">
         @foreach (var app in Model.Applications)
         {
-          <a class="sys-card" href="@app.Url" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+          <a class="sys-card" href="@app.Url" target="@(app.Url is null ? null : "_blank")" rel="@(app.Url is null ? null : "noopener")" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
             <div class="sys-top">
               <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
               @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }

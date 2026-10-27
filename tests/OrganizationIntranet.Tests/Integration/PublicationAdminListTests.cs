@@ -70,7 +70,7 @@ public sealed partial class PortalSmokeTests
     public async Task Admin_publication_api_rejects_an_unknown_status_filter()
     {
         await Login();
-        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/admin/publications?status=archived")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/admin/publications?status=bogus")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/admin/publications?status=draft")).StatusCode);
     }
 

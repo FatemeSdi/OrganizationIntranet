@@ -18,4 +18,7 @@ public sealed class Publication
     public long Revision { get; set; }
     /// <summary>زمان آخرین تغییر تصویر شاخص (PublicationImage)؛ null یعنی مطلب تصویر ندارد. برای نسخه‌گذاری نشانی تصویر هم استفاده می‌شود.</summary>
     public DateTime? ImageUpdatedAt { get; set; }
+    /// <summary>بایگانی (حذف نرم): مطلب از پرتال و فهرست پیش‌فرض مدیر پنهان است ولی در بانک می‌ماند و قابل بازگردانی است. بایگانی همیشه مطلب را از انتشار درمی‌آورد (قید CK_Publication_ArchivedNotPublished).</summary>
+    public bool IsArchived { get; set; }
+    public DateTime? ArchivedAt { get; set; }
 }

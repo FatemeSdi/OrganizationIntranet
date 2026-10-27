@@ -22,6 +22,8 @@ public sealed class LiveMigrationStateTests
         "007_PublicationImages",
         "008_AdminPermissions",
         "009_SsoTickets",
+        "010_PublicationArchive",
+        "011_UserApplicationAccounts",
     ];
 
     [LiveSchemaFact]

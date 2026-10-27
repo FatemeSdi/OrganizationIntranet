@@ -10,7 +10,7 @@ namespace OrganizationIntranet.Api.Controllers;
 // فهرست نقش‌ها و سامانه‌ها برای فرم‌های دیگر (کاربر، مجوز) لازم است و فقط ورود به پنل را می‌خواهد.
 [OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin"), Authorize(Policy = P.IntranetAdminPolicy)]
-public sealed class AdminController(IntranetService service, ApplicationCatalogService catalog, OrganizationIntranet.Api.Security.LivePermissions permissions, ILogger<AdminController> logger) : ControllerBase
+public sealed class AdminController(IntranetService service, ApplicationCatalogService catalog, SsoService sso, OrganizationIntranet.Api.Security.LivePermissions permissions, ILogger<AdminController> logger) : ControllerBase
 {
     private long Actor => long.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
     // آمار کلی برای همه‌ی واردان پنل؛ فهرست آخرین کاربران فقط با مجوز مشاهده‌ی کاربران.
@@ -26,6 +26,15 @@ public sealed class AdminController(IntranetService service, ApplicationCatalogS
         await service.SaveUserAsync(request);
         logger.LogInformation("User {UserId} saved by {ActorId}", request.Id, Actor);
         return new(true, "کاربر با موفقیت ذخیره شد");
+    }
+    // نام کاربری هر کاربر در سامانه‌های دارای SSO، وقتی با نام کاربری اینترانت فرق دارد (docs/sso.md).
+    [HttpGet("users/{id:long}/sso-accounts"), Authorize(Policy = P.UserViewPolicy)] public Task<SsoAccountsDto> SsoAccounts(long id) => sso.AccountsAsync(id);
+    [HttpPost("users/{id:long}/sso-accounts/{applicationId:int}"), Authorize(Policy = P.UserEditPolicy)]
+    public async Task<SsoAccountsDto> SaveSsoAccount(long id, int applicationId, SsoAccountRequest request)
+    {
+        var result = await sso.SetAccountAsync(id, applicationId, request.ExternalUsername, Actor);
+        logger.LogInformation("SSO account name of user {UserId} for application {ApplicationId} changed by {ActorId}", id, applicationId, Actor);
+        return result;
     }
     [HttpGet("roles")] public Task<List<RoleDto>> Roles() => service.RolesAsync();
     // جزئیات نقش با مجوز مشاهده‌ی نقش‌ها؛ فهرست اعضا فقط برای دارنده‌ی USER_VIEW (مثل داشبورد).

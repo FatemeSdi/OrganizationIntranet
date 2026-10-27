@@ -14,6 +14,7 @@ public class EditModel(ApiClient api) : PageModel
     [BindProperty] public IFormFile? ImageFile { get; set; }
     [BindProperty] public bool RemoveImage { get; set; }
     public long ImageVersion { get; set; }
+    public bool IsArchived { get; set; }
     public async Task OnGetAsync()
     {
         if (Id.HasValue)
@@ -21,10 +22,17 @@ public class EditModel(ApiClient api) : PageModel
             var p = await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}");
             Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, Revision = p.Revision };
             ImageVersion = p.ImageVersion;
+            IsArchived = p.IsArchived;
         }
     }
     public async Task<IActionResult> OnPostAsync()
     {
+        if (Id.HasValue && (await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}")).IsArchived)
+        {
+            ModelState.AddModelError("", "مطلب بایگانی‌شده را نمی‌توان ویرایش کرد؛ ابتدا آن را بازگردانی کنید");
+            await LoadImageVersionAsync();
+            return Page();
+        }
         if (ImageFile is { Length: > PublicationImageRules.MaxBytes }) ModelState.AddModelError(nameof(ImageFile), "حجم تصویر باید حداکثر ۲ مگابایت باشد");
         if (!ModelState.IsValid) { await LoadImageVersionAsync(); return Page(); }
         PublicationDto saved;
@@ -59,8 +67,23 @@ public class EditModel(ApiClient api) : PageModel
         }
         return RedirectToPage("Index");
     }
+    /// <summary>بایگانی (حذف نرم): مطلب از پرتال برداشته می‌شود ولی در بانک می‌ماند و با «بازگردانی» به پیش‌نویس برمی‌گردد.</summary>
+    public async Task<IActionResult> OnPostArchiveAsync()
+    {
+        await api.PostAsync<PublicationDto>($"api/admin/publications/{Id}/archive");
+        TempData["SuccessMessage"] = "مطلب بایگانی شد و در پورتال نمایش داده نمی‌شود. از فیلتر «بایگانی‌شده» می‌توانید آن را بازگردانی کنید.";
+        return RedirectToPage("Index");
+    }
+    public async Task<IActionResult> OnPostRestoreAsync()
+    {
+        await api.PostAsync<PublicationDto>($"api/admin/publications/{Id}/restore");
+        TempData["SuccessMessage"] = "مطلب بازگردانی شد و به صورت پیش‌نویس است؛ برای نمایش در پورتال آن را منتشر کنید.";
+        return RedirectToPage("Edit", new { id = Id });
+    }
     private async Task LoadImageVersionAsync()
     {
-        if (Id.HasValue) ImageVersion = (await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}")).ImageVersion;
+        if (!Id.HasValue) return;
+        var current = await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}");
+        ImageVersion = current.ImageVersion; IsArchived = current.IsArchived;
     }
 }

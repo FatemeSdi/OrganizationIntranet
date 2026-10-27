@@ -67,12 +67,20 @@
                             <td><span class="badge bg-primary-transparent">@PublicationKinds.Label(item.Kind)</span></td>
                             <td>
                                 <div class="d-flex flex-wrap gap-1">
-                                    <span class="status-pill @(item.IsPublished ? "status-pill--success" : "status-pill--muted")">@(item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
+                                    <span class="status-pill @(item.IsPublished ? "status-pill--success" : "status-pill--muted")">@(item.IsArchived ? "بایگانی‌شده" : item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
                                     @if (item.IsPublic) { <span class="status-pill status-pill--info" title="بازدیدکننده‌ی بدون ورود هم می‌بیند"><i class="ti ti-world"></i> عمومی</span> }
                                 </div>
                             </td>
                             <td class="text-nowrap text-muted fs-12">@(item.PublishedAt.HasValue ? "انتشار: " + item.PublishedAt.ToPersianDate() : "ایجاد: " + item.CreatedAt.ToPersianDate())</td>
-                            <td class="col-actions"><a asp-page="Edit" asp-route-id="@item.PublicationId" class="btn btn-sm btn-primary-light"><i class="ti ti-edit me-1"></i>ویرایش</a></td>
+                            <td class="col-actions">
+                                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                    <a asp-page="Edit" asp-route-id="@item.PublicationId" class="btn btn-sm btn-primary-light"><i class="ti ti-edit me-1"></i>@(item.IsArchived ? "مشاهده" : "ویرایش")</a>
+                                    @if (item.IsArchived)
+                                    {
+                                        <form method="post" asp-page="Edit" asp-page-handler="Restore" asp-route-id="@item.PublicationId" class="m-0" data-busy>@Html.AntiForgeryToken()<button type="submit" class="btn btn-sm btn-success-light"><i class="ti ti-arrow-back-up me-1"></i>بازگردانی</button></form>
+                                    }
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>

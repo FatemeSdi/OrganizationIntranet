@@ -1,0 +1,66 @@
+@page
+@model AccountsModel
+@{
+    var data = Model.Data!;
+    ViewData["Title"] = "حساب‌های سامانه‌ای";
+    ViewData["Icon"] = "ti ti-plug-connected";
+    ViewData["Subtitle"] = data.FullName.Length > 0 ? data.FullName : data.Username;
+    ViewData["ParentTitle"] = "کاربران";
+    ViewData["ParentUrl"] = "/Admin/Users";
+    Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserEdit);
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="admin-callout mb-4">
+    <i class="ti ti-info-circle" aria-hidden="true"></i>
+    <div>
+        هنگام ورود یکپارچه، اینترانت <b>نام کاربری کاربر در همان سامانه</b> را به آن می‌دهد و سامانه با همین نام او را پیدا می‌کند؛ به همین دلیل در خود سامانه‌ها چیزی تغییر نمی‌کند.
+        اگر نام کاربری این کاربر (<span class="code-chip" dir="ltr">@data.Username</span>) در یک سامانه همین است، چیزی وارد نکنید. فقط وقتی نام در آن سامانه فرق دارد، نام آن حساب را بنویسید.
+        هر حساب سامانه فقط به یک کاربر اینترانت تعلق می‌گیرد. دسترسی به سامانه همچنان از «سامانه‌ها» یا نقش‌ها تعیین می‌شود و این صفحه دسترسی نمی‌دهد.
+    </div>
+</div>
+
+<div class="card custom-card">
+    @if (data.Accounts.Count == 0)
+    {
+        <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-plug-connected-x", "سامانه‌ای با ورود یکپارچه تنظیم نشده است", "پس از تنظیم آدرس و کلید ورود یکپارچه برای یک سامانه، اینجا نمایش داده می‌شود.")' />
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-admin">
+                <thead><tr><th>سامانه</th><th>وضعیت</th><th>نام کاربری در سامانه</th><th class="col-actions">عملیات</th></tr></thead>
+                <tbody>
+                    @foreach (var account in data.Accounts)
+                    {
+                        <tr>
+                            <td><div class="entity__name">@account.ApplicationName</div><span class="code-chip">@account.ApplicationCode</span></td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="status-pill @(account.HasAccess ? "status-pill--success" : "status-pill--muted")">@(account.HasAccess ? "دسترسی دارد" : "بدون دسترسی")</span>
+                                    @if (!account.SingleSignOn) { <span class="status-pill status-pill--warning" title="آدرس یا کلید ورود یکپارچه این سامانه تنظیم نشده است">SSO تنظیم نشده</span> }
+                                </div>
+                            </td>
+                            <td>
+                                <form id="acc-@account.ApplicationId" method="post" class="m-0" data-busy>
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="Id" value="@data.UserId" />
+                                    <input type="hidden" name="ApplicationId" value="@account.ApplicationId" />
+                                    <input name="ExternalUsername" value="@account.ExternalUsername" dir="ltr" maxlength="100" class="form-control" style="min-width:220px" placeholder="@data.Username (پیش‌فرض)" aria-label="نام کاربری در @account.ApplicationName" disabled="@(!canEdit)" />
+                                </form>
+                            </td>
+                            <td class="col-actions">
+                                @if (canEdit)
+                                {
+                                    <button type="submit" form="acc-@account.ApplicationId" class="btn btn-sm btn-primary-light"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
