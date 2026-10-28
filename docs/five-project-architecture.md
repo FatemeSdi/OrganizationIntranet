@@ -44,7 +44,7 @@ dotnet run --project src/OrganizationIntranet.Admin --launch-profile https
 powershell -File tools/Start-Dev.ps1
 ```
 
-**کلیدهای توسعه روی این سیستم** در فایل محلی `src/<پروژه>/appsettings.Development.json` هستند (در `.gitignore`؛ هرگز commit نمی‌شوند). Api و Admin هر دو کلید را دارند و Portal فقط `Api:ClientKey`. هر سه باید یک `ClientKey` داشته باشند. User Secrets هم همچنان پشتیبانی می‌شود و در صورت وجود بر این فایل مقدم است.
+**کلیدهای توسعه** از ۲۰۲۶-۱۰-۲۸ در `appsettings.json` هر پروژه‌اند (`Api:ClientKey` در هر سه، `Api:AdminClientKey` در Api و Admin، و کلیدهای SSO سامانه‌ها در Api)؛ پس اجرای پروژه روی هر سیستم نیازی به اسکریپت یا User Secrets ندارد. فایل‌های `appsettings.Development.json` و User Secrets اختیاری‌اند و **اگر وجود داشته باشند بر مقدار `appsettings.json` مقدم‌اند**؛ برای جلوگیری از ناهماهنگی کلیدها آن‌ها را حذف کنید. کلیدهای قدیمی در فایل محلی `src/<پروژه>/appsettings.Development.json` هستند (در `.gitignore`؛ هرگز commit نمی‌شوند). Api و Admin هر دو کلید را دارند و Portal فقط `Api:ClientKey`. هر سه باید یک `ClientKey` داشته باشند. User Secrets هم همچنان پشتیبانی می‌شود و در صورت وجود بر این فایل مقدم است.
 
 **User Secrets و `appsettings.Development.json` فقط وقتی `ASPNETCORE_ENVIRONMENT=Development` باشد خوانده می‌شوند** و فقط پروفایل `https` در `launchSettings.json` این مقدار را می‌گذارد. اگر برنامه با محیط دیگری (مثلاً Production) اجرا شود، خطای «Configure … Api:AdminClientKey» می‌آید و پیام خطا نام محیط فعال را هم می‌گوید.
 

@@ -15,7 +15,7 @@ public sealed class StartupConfigurationTests
     [Fact]
     public void Outside_development_the_error_names_the_environment_but_reveals_no_machine_details()
     {
-        var error = Assert.Throws<InvalidOperationException>(() => AdminEntry::OrganizationIntranet.UI.UiHost.Create(Args("Admin", "Production", $"--Api:ClientKey={Strong}"), "OrganizationIntranet.Admin"));
+        var error = Assert.Throws<InvalidOperationException>(() => AdminEntry::OrganizationIntranet.UI.UiHost.Create(Args("Admin", "Production", $"--Api:ClientKey={Strong}", "--Api:AdminClientKey="), "OrganizationIntranet.Admin")); // کلید مدیریتی داخل appsettings.json هست؛ برای آزمون عمداً خالی می‌شود
         Assert.Contains("Api:AdminClientKey", error.Message);
         Assert.Contains("Environment: Production", error.Message);
         Assert.Contains("ASPNETCORE_ENVIRONMENT=Development", error.Message);
