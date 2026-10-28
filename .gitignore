@@ -386,7 +386,6 @@ FodyWeavers.xsd
 
 
 !/tools/Initialize-Development.ps1
-!/tools/Initialize-SsoDevelopment.ps1
 !/tools/Start-Dev.ps1
 # Local development keys (Api:ClientKey, Api:AdminClientKey) — machine-specific secrets, never commit.
 /src/*/appsettings.Development.json
