@@ -192,7 +192,9 @@ public sealed partial class PortalSmokeTests
 
         var home = WebUtility.HtmlDecode(await browser.GetStringAsync("/Portal"));
         Assert.Contains($"href=\"/Sso/Open?app={app}\"", home);
-        Assert.Contains("ورود با یک کلیک", home);
+        Assert.Contains("ورود به سامانه", home);
+        foreach (var technical in new[] { "فقط اینترانت", "قابل دسترسی از اینترنت", "اختصاص‌یافته", "ورود با یک کلیک", "ورود با لاگین", "ورود بدون نیاز به لاگین" })
+            Assert.DoesNotContain(technical, home);                                                          // جزئیات فنی روی کارت نمی‌آید
         Assert.DoesNotContain("href=\"https://tasktrack.example/\"", home);
 
         var open = await browser.GetAsync($"/Sso/Open?app={app}");
