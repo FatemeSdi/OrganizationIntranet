@@ -22,15 +22,15 @@
     <section class="form-section">
         <div>
             <h2 class="form-section__title"><i class="ti ti-apps"></i>مشخصات سامانه</h2>
-            <p class="form-section__help">نام، آیکن و خلاصه در کارت سامانه در پورتال نمایش داده می‌شوند. عدد کمتر در «ترتیب نمایش»، سامانه را جلوتر نشان می‌دهد.</p>
+            <p class="form-section__help">نام، آیکن و خلاصه در کارت سامانه نمایش داده می‌شوند. اگر ترتیب نمایش خالی باشد، سامانه آخرین ردیف می‌شود.</p>
         </div>
         <div class="row g-3">
             <div class="col-md-6"><label asp-for="Input.ApplicationName" class="form-label">نام <span class="text-danger">*</span></label><input asp-for="Input.ApplicationName" class="form-control" required maxlength="150" /></div>
             <div class="col-md-6"><label asp-for="Input.ApplicationCode" class="form-label">کد <span class="text-danger">*</span></label><input asp-for="Input.ApplicationCode" class="form-control" dir="ltr" required maxlength="50" /></div>
-            <div class="col-md-8"><label asp-for="Input.BaseUrl" class="form-label">نشانی ورود سامانه</label><input asp-for="Input.BaseUrl" class="form-control" dir="ltr" maxlength="500" placeholder="https://..." /></div>
-            <div class="col-md-4"><label asp-for="Input.DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="Input.DisplayOrder" class="form-control" /></div>
+            <div class="col-md-8"><label asp-for="Input.BaseUrl" class="form-label">نشانی ورود سامانه</label><input asp-for="Input.BaseUrl" class="form-control" dir="ltr" maxlength="500" placeholder="https://..." required type="url" /></div>
+            <div class="col-md-4"><label asp-for="Input.DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="Input.DisplayOrder" type="number" min="0" class="form-control" placeholder="خالی = آخرین ردیف" /></div>
             <div class="col-md-8"><label asp-for="Input.Description" class="form-label">خلاصه کارکرد</label><textarea asp-for="Input.Description" class="form-control" rows="2" maxlength="500" data-counter></textarea></div>
-            <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select">
+            <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select" data-icon-picker>
                 @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@AdminLabels.Icon(icon)</option> }
             </select></div>
         </div>
@@ -39,19 +39,19 @@
     <section class="form-section">
         <div>
             <h2 class="form-section__title"><i class="ti ti-world"></i>نحوه‌ی دسترسی</h2>
-            <p class="form-section__help">این ویژگی‌ها نوع نمایش سامانه را در پورتال مشخص می‌کنند.</p>
+            <p class="form-section__help">مشخص می‌کند چه کسی سامانه را ببیند و کاربر چه چیزی بداند.</p>
         </div>
         <div>
             <div class="switch-row">
-                <div><label class="switch-row__label" for="Input_RequiresLogin">نیازمند ورود در سامانه</label><p class="switch-row__help">کاربر برای استفاده از سامانه باید وارد شده باشد.</p></div>
+                <div><label class="switch-row__label" for="Input_RequiresLogin">نیازمند ورود در سامانه</label><p class="switch-row__help">کاربر بعد از باز کردن سامانه، در خود سامانه هم باید وارد شود.</p></div>
                 <input asp-for="Input.RequiresLogin" class="form-check-input" role="switch" />
             </div>
             <div class="switch-row">
-                <div><label class="switch-row__label" for="Input_IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">فقط برای اطلاع کاربر نمایش داده می‌شود؛ دسترسی شبکه را تغییر نمی‌دهد.</p></div>
+                <div><label class="switch-row__label" for="Input_IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">سامانه از بیرون شبکه‌ی سازمان هم قابل استفاده است. فقط برای اطلاع کاربر.</p></div>
                 <input asp-for="Input.IsInternetAccessible" class="form-check-input" role="switch" />
             </div>
             <div class="switch-row">
-                <div><label class="switch-row__label" for="Input_IsPublic">عمومی</label><p class="switch-row__help">برای همه‌ی کاربران فعال پورتال، بدون تخصیص دسترسی نمایش داده می‌شود.</p></div>
+                <div><label class="switch-row__label" for="Input_IsPublic">عمومی</label><p class="switch-row__help">کارت سامانه را همه می‌بینند و نیازی به تخصیص دسترسی نیست.</p></div>
                 <input asp-for="Input.IsPublic" class="form-check-input" role="switch" />
             </div>
         </div>
@@ -60,11 +60,11 @@
     <section class="form-section">
         <div>
             <h2 class="form-section__title"><i class="ti ti-users"></i>دسترسی کاربران و نقش‌ها</h2>
-            <p class="form-section__help">دسترسی مستقیم یا عضویت در یکی از نقش‌های انتخاب‌شده کافی است. کاربران و نقش‌های غیرفعال دسترسی ایجاد نمی‌کنند.</p>
+            <p class="form-section__help">کاربر یا نقش را انتخاب کنید؛ همان لحظه ثبت می‌شود و نیازی به ذخیره نیست.</p>
         </div>
         <div class="row g-3">
-            <div class="col-lg-6"><partial name="_PickList" model='PickList.ForUsers("Input.UserIds", "کاربران", Model.Users, Model.Input.UserIds)' /></div>
-            <div class="col-lg-6"><partial name="_PickList" model='PickList.ForRoles("Input.RoleIds", "نقش‌ها", Model.Roles, Model.Input.RoleIds)' /></div>
+            <div class="col-lg-6"><partial name="_EntityPicker" model='PickList.ForUsers("Input.UserIds", "کاربران", Model.Users, Model.Input.UserIds, Url.Page("Edit", "Access", new { id = Model.Id }))' /></div>
+            <div class="col-lg-6"><partial name="_EntityPicker" model='PickList.ForRoles("Input.RoleIds", "نقش‌ها", Model.Roles, Model.Input.RoleIds, Url.Page("Edit", "Access", new { id = Model.Id }))' /></div>
         </div>
     </section>
 

@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>گروه نظارت یک سامانه: ناظران درخواست‌های دسترسی آن (کاربران و نقش‌ها). Revision جلوی ویرایش هم‌زمان را می‌گیرد.</summary>
 public class ApplicationSupervisionGroup
 {
     public int ApplicationSupervisionGroupId { get; set; }
@@ -10,6 +11,7 @@ public class ApplicationSupervisionGroup
     public Application Application { get; set; } = null!;
     public ICollection<ApplicationSupervisor> Members { get; set; } = new List<ApplicationSupervisor>();
 }
+/// <summary>عضو یک گروه نظارت؛ هر ردیف یا یک کاربر است یا یک نقش.</summary>
 public class ApplicationSupervisor
 {
     public long ApplicationSupervisorId { get; set; }

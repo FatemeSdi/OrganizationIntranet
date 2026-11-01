@@ -6,9 +6,10 @@ using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی کاتالوگ سامانه‌ها و اعلان‌های کاربر.</summary>
 public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplicationCatalogRepository
 {
-    // Query live assignments, not the role claims cached at login. Public means no application grant is required.
+    /// <summary>دسترسی‌ها همیشه زنده از بانک خوانده می‌شوند، نه از Claimهای زمان ورود. «عمومی» یعنی تخصیص دسترسی لازم نیست.</summary>
     private IQueryable<AppEntity> Available(long userId) => ApplicationAccessQueries.Available(db, userId);
 
     public Task<List<AppEntity>> ListAsync() => db.Applications.OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();
@@ -36,6 +37,7 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
         await db.Users.CountAsync(u => userIds.Contains(u.UserId)) == userIds.Count
         && await db.Roles.CountAsync(r => roleIds.Contains(r.RoleId)) == roleIds.Count;
     public void Add(AppEntity application) => db.Applications.Add(application);
+    /// <summary>دسترسی سامانه را با مجموعه‌ی داده‌شده یکی می‌کند: ردیف‌های اضافه حذف و ردیف‌های ناموجود اضافه می‌شوند (کاربر و نقش جدا).</summary>
     public void SetAccess(AppEntity application, IReadOnlyCollection<long> userIds, IReadOnlyCollection<int> roleIds)
     {
         db.ApplicationAccessGrants.RemoveRange(application.AccessGrants.Where(g =>
@@ -45,6 +47,7 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
         foreach (var id in roleIds.Where(id => !application.AccessGrants.Any(g => g.RoleId == id)))
             application.AccessGrants.Add(new ApplicationAccess { RoleId = id, CreatedAt = DateTime.UtcNow });
     }
+    /// <summary>سرویس‌های سامانه را با فهرست داده‌شده یکی می‌کند؛ با تغییر نشانی سرویس، نشانگر و خطای همگام‌سازی پاک می‌شود تا از اول همگام شود.</summary>
     public void SetServices(AppEntity application, IReadOnlyCollection<ApplicationServiceRegistration> services)
     {
         db.ApplicationServices.RemoveRange(application.Services.Where(s => !services.Any(n => n.ServiceCode == s.ServiceCode)).ToList());

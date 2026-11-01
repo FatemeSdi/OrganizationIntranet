@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>بخش نظارت از DbContext: گروه‌های نظارت، اعضا و هشدارهای درخواست.</summary>
 public partial class AppDbContext
 {
     public DbSet<ApplicationSupervisionGroup> ApplicationSupervisionGroups => Set<ApplicationSupervisionGroup>();

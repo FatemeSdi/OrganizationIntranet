@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 // User Secrets are read only in Development; say which environment is active so a wrong launch profile is obvious.
+// گزارش تشخیصی برای خطای «کلید پیدا نشد»: فقط نام کلیدها و طول مقدارها، هرگز خود مقدار.
 static string SecretsDiagnostics(IConfiguration configuration)
 {
     // Where this process looked for User Secrets and what it effectively sees: names and lengths only, never values.
@@ -34,6 +35,7 @@ static string SecretsDiagnostics(IConfiguration configuration)
     return $" Secrets: windowsUser={Environment.UserName}, id={id ?? "<none>"}, file={file ?? "<none>"}, exists={exists}, keysInFile=[{keys}]; effective ClientKey len={client?.Length ?? 0}, AdminClientKey len={admin?.Length ?? 0}, equal={(client is not null && client == admin)}.";
 }
 var environmentHint = $" (Environment: {builder.Environment.EnvironmentName}. User Secrets are read only when ASPNETCORE_ENVIRONMENT=Development; start with the 'https' launch profile or tools/Start-Dev.ps1.{(builder.Environment.IsDevelopment() ? SecretsDiagnostics(builder.Configuration) : "")})"; // paths/user details only on a developer machine
+// کلید UI (Api:ClientKey) و کلید مدیریتی (Api:AdminClientKey) برای شروع برنامه الزامی‌اند، دست‌کم ۳۲ نویسه و متفاوت از هم.
 var clientKey = builder.Configuration["Api:ClientKey"];
 if (string.IsNullOrWhiteSpace(clientKey) || clientKey.Length < 32)
     throw new InvalidOperationException("Configure Api:ClientKey (at least 32 characters) in user secrets or the deployment secret store." + environmentHint);
@@ -43,6 +45,7 @@ if (string.IsNullOrWhiteSpace(adminClientKey) || adminClientKey.Length < 32 || a
 var connection = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API." + environmentHint);
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connection));
+// ثبت سرویس‌ها: هر Repository با Service همان بخش (کاربران، کاتالوگ، درخواست دسترسی، نظارت، اعلان، SSO، ورود و مطالب).
 builder.Services.AddScoped<IIntranetRepository, IntranetRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IntranetService>();
@@ -73,6 +76,7 @@ builder.Services.AddScoped<IAuthenticationProviders, AuthenticationProviders>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddHttpClient("authentication-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+// کلیدهای Data Protection (رمزگذاری رازهای ورود) روی دیسک می‌مانند تا با راه‌اندازی دوباره‌ی سرور رازها خوانا بمانند؛ روی ویندوز با DPAPI محافظت می‌شوند.
 var authKeysPath = builder.Configuration["Authentication:DataProtectionKeysPath"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OrganizationIntranet", "ApiKeys");
 var authProtection = builder.Services.AddDataProtection().SetApplicationName("OrganizationIntranet.Api").PersistKeysToFileSystem(new DirectoryInfo(authKeysPath));
 if (OperatingSystem.IsWindows()) authProtection.ProtectKeysWithDpapi();
@@ -111,12 +115,14 @@ builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
     options.BearerTokenExpiration = TimeSpan.FromDays(14);
     options.RefreshTokenExpiration = TimeSpan.FromDays(14);
 });
+// هر مسیر پیش‌فرض نیاز به ورود دارد (FallbackPolicy)؛ مسیرهای ناشناس باید صریحاً [AllowAnonymous] بگیرند.
 builder.Services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 // مجوزها زنده از بانک بررسی می‌شوند (LivePermissions)؛ Policyها با پیشوند Permission: ساخته می‌شوند.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<OrganizationIntranet.Api.Security.LivePermissions>();
 builder.Services.AddScoped<IAuthorizationHandler, OrganizationIntranet.Api.Security.LivePermissionAuthorizationHandler>();
+// محدودیت نرخ درخواست برای گروه‌های حساس (ورود، سامانه‌ها، عمومی).
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -181,6 +187,7 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsJsonAsync(new OperationResult(false, "خطا در ارتباط با سرویس؛ دوباره تلاش کنید"));
     }
 });
+// ترتیب مهم است: احراز هویت، بررسی نشست (مهر امنیتی)، مجوزدهی، کلید مدیریتی و در پایان محدودیت نرخ.
 app.UseAuthentication();
 app.UseMiddleware<AuthenticationSessionMiddleware>();
 app.UseAuthorization();
@@ -189,4 +196,5 @@ app.UseRateLimiter();
 app.MapControllers();
 app.Run();
 
+/// <summary>برای آزمون‌های یکپارچه (WebApplicationFactory) نمایان است.</summary>
 public partial class Program { }

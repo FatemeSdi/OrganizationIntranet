@@ -7,6 +7,7 @@ namespace OrganizationIntranet.Api.Data;
 /// <summary>اعلان سامانه‌ها و هشدار درخواست دسترسی با UNION ALL در بانک صفحه‌بندی می‌شوند؛ دید هر منبع همان کوئری فهرست جداگانه‌ی آن است.</summary>
 public sealed class NotificationCenterRepository(AppDbContext db) : INotificationCenterRepository
 {
+    /// <summary>یک صفحه از مرکز اعلان: دو منبع با UNION ALL یکی و در خود بانک فیلتر، شمارش و صفحه‌بندی می‌شوند؛ شمار همه و خوانده‌نشده برای تب‌ها بدون فیلتر وضعیت است.</summary>
     public async Task<(List<NotificationCenterRow> Items, int Total, int All, int Unread)> PageAsync(long userId, NotificationCenterQuery query)
     {
         IQueryable<NotificationCenterRow>? rows = null;

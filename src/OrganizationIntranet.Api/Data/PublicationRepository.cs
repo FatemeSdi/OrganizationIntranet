@@ -4,9 +4,11 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی مطالب و تصویر شاخص؛ محدوده‌ی دید (مدیر، کاربر، عمومی) در Scoped اعمال می‌شود.</summary>
 public sealed class PublicationRepository(AppDbContext db) : IPublicationRepository
 {
     // Public implies published at the database level too (CK_Publication_PublicRequiresPublished); both are filtered for defence in depth.
+    /// <summary>فیلتر دامنه‌ی دید روی مطالب. منتشرشده و عمومی بایگانی‌شده را شامل نمی‌شوند؛ «همه» (All) برای یافتن مطلب با شناسه است.</summary>
     private static IQueryable<Publication> Scoped(IQueryable<Publication> query, PublicationScope scope) => scope switch
     {
         PublicationScope.Published => query.Where(p => p.IsPublished && !p.IsArchived),
@@ -16,6 +18,7 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
         PublicationScope.NotArchived => query.Where(p => !p.IsArchived),
         _ => query,
     };
+    /// <summary>فهرست از جدیدترین (تاریخ انتشار یا ایجاد) با فیلتر نوع و جست‌وجو در عنوان و خلاصه؛ فقط ستون‌های لازم خوانده می‌شود (بدون متن کامل).</summary>
     public async Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize)
     {
         var query = Scoped(db.Publications.AsNoTracking(), scope);

@@ -6,6 +6,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Integrations;
 
+/// <summary>سرویس پس‌زمینه‌ی ارسال پیامک درخواست‌های دسترسی: هر ۳۰ ثانیه حداکثر ۲۰ پیامکِ آماده را می‌فرستد؛ تلاش دوباره با فاصله‌ی نمایی، حداکثر ۵ بار و سپس «ناموفق» (قابل ارسال مجدد از پنل).</summary>
 public sealed class AccessRequestSmsWorker(IServiceScopeFactory scopes, ILogger<AccessRequestSmsWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,6 +23,7 @@ public sealed class AccessRequestSmsWorker(IServiceScopeFactory scopes, ILogger<
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
     }
+    /// <summary>یک دور ارسال: هر پیامک با Revision رزرو می‌شود (جلوی ارسال هم‌زمان دو نمونه)، اگر درخواست دیگر در انتظار یا گیرنده دیگر ناظر نیست لغو می‌شود و کلید Idempotency ثابت است.</summary>
     public async Task DispatchAsync(CancellationToken cancellationToken)
     {
         List<long> ids;

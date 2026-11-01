@@ -23,7 +23,7 @@ public class IndexModel(ApiClient api) : PageModel
     public string? Description { get; set; }
 
     [BindProperty]
-    public int DisplayOrder { get; set; }
+    public int? DisplayOrder { get; set; }
 
     [BindProperty] public string Icon { get; set; } = "apps";
     [BindProperty] public bool RequiresLogin { get; set; } = true;

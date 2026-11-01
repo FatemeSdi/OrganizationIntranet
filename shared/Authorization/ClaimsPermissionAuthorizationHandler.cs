@@ -16,8 +16,10 @@ public sealed class ClaimsPermissionAuthorizationHandler : AuthorizationHandler<
     }
 }
 
+/// <summary>کمک‌متد بررسی مجوز روی کاربر واردشده؛ برای نمایش یا پنهان‌کردن منو و دکمه‌ها (نمایش فقط برای راحتی است و همیشه سرور هم بررسی می‌کند).</summary>
 public static class PermissionClaimsExtensions
 {
+    /// <summary>آیا کاربر واردشده Claimِ مجوزِ code را دارد.</summary>
     public static bool HasPermission(this ClaimsPrincipal? user, string code) =>
         user?.Identity?.IsAuthenticated == true && user.HasClaim(PermissionClaimTypes.Permission, code);
 }

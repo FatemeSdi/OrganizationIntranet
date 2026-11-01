@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>تحویل یک اعلان به یک کاربر و وضعیت خوانده‌شدن آن.</summary>
 public class UserNotification
 {
     public long UserNotificationId { get; set; }

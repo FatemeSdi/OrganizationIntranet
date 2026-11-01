@@ -43,16 +43,16 @@ public class CommittedKeysTests
     }
 
     [Fact]
-    public void Committed_sso_keys_are_valid_distinct_and_have_an_absolute_landing_url()
+    public void Committed_sso_keys_are_valid_distinct_and_have_a_relative_landing_path()
     {
         var api = Load("Api");
         var all = new List<string> { Str(api, "Api", "ClientKey")!, Str(api, "Api", "AdminClientKey")! };
-        foreach (var code in new[] { "TASKS", "ITSERVICEDESK", "ACCESSREPORT" })
+        foreach (var code in new[] { "TTMS", "ITSERVICEDESK", "ACCESSREPORT" })
         {
             var key = Str(api, "ApplicationIntegrations", code, "SsoKey");
-            var url = Str(api, "ApplicationIntegrations", code, "SsoUrl");
+            var path = Str(api, "ApplicationIntegrations", code, "SsoPath");
+            Assert.True(!string.IsNullOrEmpty(path) && !path.Contains("//") && !path.Contains(":"), $"{code}: SsoPath must be a relative path");   // آدرس کامل از BaseUrl پنل می‌آید
             Assert.True(key is { Length: >= 32 }, $"{code}: SsoKey is missing or shorter than 32 characters");
-            Assert.True(Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" && string.IsNullOrEmpty(uri.UserInfo) && uri.Fragment.Length == 0, $"{code}: SsoUrl is not a valid absolute URL");
             all.Add(key!);
         }
         Assert.Equal(all.Count, all.Distinct(StringComparer.Ordinal).Count());   // هیچ دو کلیدی یکی نیست

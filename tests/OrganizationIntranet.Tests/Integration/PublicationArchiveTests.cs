@@ -97,11 +97,14 @@ public sealed partial class PortalSmokeTests
             Assert.Contains("handler=Restore", archivedEdit);
             Assert.DoesNotContain("ti-device-floppy", archivedEdit);                                           // ذخیره پنهان است
 
-            var list = WebUtility.HtmlDecode(await browser.GetStringAsync("/Admin/Publications?status=archived"));
+            var list = WebUtility.HtmlDecode(await browser.GetStringAsync("/Admin/Publications/Archive"));       // صفحه‌ی جدای بایگانی‌شده‌ها
             Assert.Contains("صفحه‌ی بایگانی", list);
-            Assert.Contains("بازگردانی", list);
-            Assert.Contains("<option value=\"archived\" selected=\"selected\">بایگانی‌شده</option>", list);
-            Assert.DoesNotContain("صفحه‌ی بایگانی", WebUtility.HtmlDecode(await browser.GetStringAsync("/Admin/Publications")));   // فهرست پیش‌فرض
+            Assert.Contains("handler=Restore", list);
+            Assert.Contains("مطالب بایگانی‌شده", list);
+            var main = WebUtility.HtmlDecode(await browser.GetStringAsync("/Admin/Publications"));
+            Assert.DoesNotContain("صفحه‌ی بایگانی", main);                                                   // فهرست پیش‌فرض
+            Assert.Contains("href=\"/Admin/Publications/Archive\"", main);                                  // پیوند صفحه‌ی بایگانی
+            Assert.DoesNotContain("<option value=\"archived\"", main);
         }
     }
 }

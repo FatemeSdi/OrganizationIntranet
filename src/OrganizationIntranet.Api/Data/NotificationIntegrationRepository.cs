@@ -5,6 +5,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی ورود اعلان‌های سامانه‌های دیگر.</summary>
 public sealed class NotificationIntegrationRepository(AppDbContext db) : INotificationIntegrationRepository
 {
     public Task<ApplicationServiceRegistration?> RegistrationAsync(string applicationCode) => db.ApplicationServices.Include(s => s.Application)

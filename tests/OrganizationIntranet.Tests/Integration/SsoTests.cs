@@ -226,4 +226,37 @@ public sealed partial class PortalSmokeTests
         var clients = new ConfigurationSsoClients(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
         Assert.Equal(expected, clients.LandingUrl("app"));
     }
+
+    [Theory]
+    [InlineData("Security/Account/Sso", "https://host:5671/", "https://host:5671/Security/Account/Sso")]
+    [InlineData("/Security/Account/Sso", "https://host:5671", "https://host:5671/Security/Account/Sso")]        // اسلش اول و آخر مهم نیست
+    [InlineData("Account/Sso", "http://localhost:62100/", "http://localhost:62100/Account/Sso")]
+    [InlineData("Account/Sso", "https://host/app/", "https://host/app/Account/Sso")]                       // سامانه‌ای که زیر یک مسیر میزبانی شده
+    [InlineData("Account/Sso", "https://host/?x=1", "https://host/Account/Sso")]                           // query نشانی ورود به آدرس SSO نمی‌چسبد
+    [InlineData("Account/Sso", null, null)]                                                              // بدون نشانی ورود در پنل آدرس ساخته نمی‌شود
+    [InlineData("Account/Sso", "not a url", null)]
+    [InlineData("Account/Sso", "ftp://host/", null)]
+    [InlineData("//evil.example/x", "https://host/", null)]                                                  // مسیر نمی‌تواند میزبان را عوض کند
+    [InlineData("https://evil.example/x", "https://host/", null)]
+    [InlineData("../../admin", "https://host/app/", null)]
+    [InlineData("a\\b", "https://host/", null)]
+    [InlineData("a#b", "https://host/", null)]
+    [InlineData("", "https://host/", null)]
+    public void Sso_landing_url_is_built_from_the_panel_base_url_and_a_relative_path_on_the_same_host(string path, string? baseUrl, string? expected)
+    {
+        var settings = new Dictionary<string, string?> { ["Api:ClientKey"] = ApiFactory.ClientKey, ["ApplicationIntegrations:APP:SsoKey"] = "sso-key-long-enough-000000000000000000000", ["ApplicationIntegrations:APP:SsoPath"] = path };
+        var clients = new ConfigurationSsoClients(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
+        Assert.Equal(expected, clients.LandingUrl("app", baseUrl));
+    }
+
+    [Fact]
+    public void An_explicit_sso_url_wins_over_the_path_and_an_invalid_one_does_not_fall_back()
+    {
+        var key = "sso-key-long-enough-000000000000000000000";
+        ConfigurationSsoClients Make(string? url) => new(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            { ["ApplicationIntegrations:APP:SsoKey"] = key, ["ApplicationIntegrations:APP:SsoPath"] = "Account/Sso", ["ApplicationIntegrations:APP:SsoUrl"] = url }).Build());
+        Assert.Equal("https://fixed.example/sso", Make("https://fixed.example/sso").LandingUrl("app", "https://host/"));
+        Assert.Null(Make("ftp://fixed.example/sso").LandingUrl("app", "https://host/"));           // SsoUrl خراب = خاموش، نه برگشت به مسیر
+        Assert.Equal("https://host/Account/Sso", Make(null).LandingUrl("app", "https://host/"));
+    }
 }

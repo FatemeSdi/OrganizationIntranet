@@ -4,6 +4,7 @@ using OrganizationIntranet.Application.Services;
 
 namespace OrganizationIntranet.Api.Security;
 
+/// <summary>هر درخواست احرازشده را با بانک می‌سنجد: کاربر فعال باشد و مهر امنیتی و نسخه‌ی تنظیمات ورود در توکن با مقدار فعلی یکی باشد، وگرنه ۴۰۱. بنابراین تغییر رمز، غیرفعال‌شدن کاربر و تغییر تنظیمات فوراً همه‌ی توکن‌های قبلی را باطل می‌کند. مسیرهای ناشناس و اتصال سامانه‌ها از این بررسی معاف‌اند.</summary>
 public sealed class AuthenticationSessionMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, AuthenticationService authentication)

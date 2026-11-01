@@ -31,6 +31,22 @@ public class AssignModel(ApiClient api) : PageModel
     {
         await LoadAsync(); SelectedRoleIds = Permission!.SelectedRoleIds; return Page();
     }
+    /// <summary>ثبت لحظه‌ای افزودن/برداشتن یک نقش از این مجوز (از admin-pickers.js)؛ قواعد «مجوز سیستمی از ADMIN گرفته نشود» در API اعمال می‌شود.</summary>
+    public async Task<IActionResult> OnPostRoleAsync([FromBody] RoleToggleBody body)
+    {
+        try
+        {
+            var current = await api.GetAsync<PermissionDto>($"api/admin/permissions/{Id}");
+            var roles = current.SelectedRoleIds.ToHashSet();
+            var roleId = checked((int)body.Id);
+            if (body.Granted) roles.Add(roleId); else roles.Remove(roleId);
+            var result = await api.PostAsync<OperationResult>($"api/admin/permissions/{Id}/roles", new RolesRequest(roles.ToList()));
+            return new JsonResult(new { ok = true, message = result.Message });
+        }
+        catch (ApiException ex) when ((int)ex.Status is 400 or 404 or 409) { return new JsonResult(new { ok = false, message = ex.Message }) { StatusCode = 400 }; }
+    }
+    public sealed record RoleToggleBody(string Kind, long Id, bool Granted);
+
     public async Task<IActionResult> OnPostAsync()
     {
         try

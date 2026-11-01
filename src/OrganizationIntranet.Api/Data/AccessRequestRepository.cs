@@ -7,16 +7,21 @@ using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی درخواست‌های دسترسی. تعارض هم‌زمانی (Revision) به AccessRequestConflictException تبدیل می‌شود.</summary>
 public sealed class AccessRequestRepository(AppDbContext db) : IAccessRequestRepository
 {
+    /// <summary>سامانه‌های در اختیار کاربر (همان تعریف مشترک).</summary>
     private IQueryable<AppEntity> Available(long userId) => ApplicationAccessQueries.Available(db, userId);
+    /// <summary>سامانه‌های قابل درخواست: فعال، کاربر فعال، بدون دسترسی فعلی (عمومی‌ها هم دسترسی حساب می‌شوند) و بدون درخواست در انتظار.</summary>
     private IQueryable<AppEntity> Requestable(long userId) => db.Applications.Where(a => a.IsActive
         && db.Users.Any(u => u.UserId == userId && u.IsActive) && !Available(userId).Any(v => v.ApplicationId == a.ApplicationId)
         && !db.ApplicationAccessRequests.Any(r => r.UserId == userId && r.ApplicationId == a.ApplicationId && r.Status == AccessRequestStatuses.Pending));
     public Task<List<AppEntity>> RequestableAsync(long userId) => Requestable(userId).AsNoTracking().OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();
     public Task<bool> CanRequestAsync(long userId, int applicationId) => Requestable(userId).AnyAsync(a => a.ApplicationId == applicationId);
     public Task<bool> HasAccessAsync(long userId, int applicationId) => Available(userId).AnyAsync(a => a.ApplicationId == applicationId);
+    /// <summary>درخواست‌ها همراه سامانه، درخواست‌دهنده و بررسی‌کننده.</summary>
     private IQueryable<ApplicationAccessRequest> Requests => db.ApplicationAccessRequests.Include(r => r.Application).Include(r => r.User).Include(r => r.Reviewer);
+    /// <summary>فهرست درخواست‌ها از جدیدترین، با فیلتر کاربر و وضعیت و صفحه‌بندی در خود بانک.</summary>
     public async Task<(List<ApplicationAccessRequest> Items, int Total)> ListAsync(long? userId, string? status, int page, int pageSize)
     {
         var query = Requests.AsNoTracking();

@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>دسترسی به یک سامانه؛ هر ردیف یا برای یک کاربر (UserId) است یا برای یک نقش (RoleId)، نه هر دو.</summary>
 public class ApplicationAccess
 {
     public long ApplicationAccessId { get; set; }

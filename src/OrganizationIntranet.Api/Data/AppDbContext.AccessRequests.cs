@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>بخش درخواست دسترسی از DbContext.</summary>
 public partial class AppDbContext
 {
     public DbSet<ApplicationAccessRequest> ApplicationAccessRequests => Set<ApplicationAccessRequest>();

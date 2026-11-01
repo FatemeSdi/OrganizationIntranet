@@ -6,23 +6,29 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Controllers;
 
+/// <summary>API پورتال برای کاربر واردشده: سامانه‌های در اختیار او، ورود یکپارچه (SSO) و مرکز اعلان‌ها.</summary>
 [ApiController, Route("api/portal"), Authorize]
 public sealed class ApplicationCatalogController(ApplicationCatalogService service, NotificationCenterService center, SsoService sso, ILogger<ApplicationCatalogController> logger) : ControllerBase
 {
+    /// <summary>شناسه‌ی کاربر واردشده از Claim توکن.</summary>
     private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    /// <summary>سامانه‌های فعالی که کاربر به آن‌ها دسترسی دارد (مستقیم، از راه نقش یا عمومی)؛ هر کارت می‌گوید SSO دارد یا نه.</summary>
     [HttpGet("applications")] public Task<List<PortalApplicationDto>> Applications() => service.AvailableAsync(UserId);
-    // کلیک روی کارت سامانه‌ی دارای SSO: بلیت یک‌بارمصرف برای همان سامانه (دسترسی و کد ملی همین لحظه بررسی می‌شوند).
+    /// <summary>کلیک روی کارت سامانه‌ی دارای SSO: بلیت یک‌بارمصرف ۶۰ ثانیه‌ای برای همان سامانه می‌سازد؛ دسترسی و فعال بودن همین لحظه بررسی می‌شود.</summary>
     [HttpPost("applications/{id:int}/sso")] public async Task<SsoStartDto> StartSso(int id)
     {
         var result = await sso.StartAsync(UserId, id);
         logger.LogInformation("SSO ticket issued for application {ApplicationId} to user {UserId}", id, UserId);
         return result;
     }
+    /// <summary>اعلان‌های سامانه‌ها برای کاربر (آخرین ۵۰ مورد؛ برای زنگ هدر).</summary>
     [HttpGet("notifications")] public Task<List<PortalNotificationDto>> Notifications() => service.NotificationsAsync(UserId);
-    // همه‌ی اعلان‌ها (سامانه‌ها + هشدار درخواست) با صفحه‌بندی سمت سرور؛ kind=system|request، status=unread|read، days=1|7|30|90
+    /// <summary>مرکز اعلان‌ها: همه‌ی اعلان‌ها (سامانه‌ها و هشدار درخواست) با صفحه‌بندی سمت سرور. فیلترها: kind=system|request، status=unread|read، days=1|7|30|90.</summary>
     [HttpGet("notifications/page")] public Task<NotificationCenterDto> NotificationPage(string? kind = null, string? status = null, int? days = null, int page = 1)
         => center.PageAsync(UserId, kind, status, days, page);
+    /// <summary>باز کردن یک اعلان: آن را خوانده‌شده می‌کند و مقصد امن را برمی‌گرداند.</summary>
     [HttpPost("notifications/{id:long}/open")] public Task<NotificationDestinationDto> OpenNotification(long id) => service.OpenNotificationAsync(UserId, id);
+    /// <summary>همه‌ی اعلان‌های کاربر را خوانده‌شده می‌کند.</summary>
     [HttpPost("notifications/read")] public async Task<OperationResult> ReadNotifications()
     { await service.MarkNotificationsReadAsync(UserId); return new(true); }
 }

@@ -90,18 +90,18 @@
                 @Html.AntiForgeryToken()
                 <div class="mb-3"><label asp-for="ApplicationName" class="form-label">نام سامانه</label><input asp-for="ApplicationName" class="form-control" placeholder="مثلاً اتوماسیون اداری" required /></div>
                 <div class="mb-3"><label asp-for="ApplicationCode" class="form-label">کد سامانه</label><input asp-for="ApplicationCode" class="form-control" dir="ltr" placeholder="AUTOMATION" required /></div>
-                <div class="mb-3"><label asp-for="BaseUrl" class="form-label">نشانی ورود</label><input asp-for="BaseUrl" class="form-control" dir="ltr" placeholder="https://..." /></div>
+                <div class="mb-3"><label asp-for="BaseUrl" class="form-label">نشانی ورود</label><input asp-for="BaseUrl" class="form-control" dir="ltr" placeholder="https://..." required type="url" /></div>
                 <div class="mb-3"><label asp-for="Description" class="form-label">خلاصه کارکرد</label><textarea asp-for="Description" class="form-control" rows="2"></textarea></div>
                 <div class="row g-2 mb-3">
-                    <div class="col-6"><label asp-for="DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="DisplayOrder" type="number" class="form-control" /></div>
-                    <div class="col-6"><label asp-for="Icon" class="form-label">آیکن</label><select asp-for="Icon" class="form-select">
+                    <div class="col-6"><label asp-for="DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="DisplayOrder" type="number" min="0" class="form-control" placeholder="خالی = آخرین ردیف" /></div>
+                    <div class="col-6"><label asp-for="Icon" class="form-label">آیکن</label><select asp-for="Icon" class="form-select" data-icon-picker>
                         @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@AdminLabels.Icon(icon)</option> }
                     </select></div>
                 </div>
-                <div class="switch-row"><label class="switch-row__label" for="RequiresLogin">نیازمند ورود در سامانه</label><input asp-for="RequiresLogin" class="form-check-input" role="switch" /></div>
-                <div class="switch-row"><label class="switch-row__label" for="IsInternetAccessible">قابل دسترسی از اینترنت</label><input asp-for="IsInternetAccessible" class="form-check-input" role="switch" /></div>
+                <div class="switch-row"><div><label class="switch-row__label" for="RequiresLogin">نیازمند ورود در سامانه</label><p class="switch-row__help">کاربر بعد از باز کردن سامانه، در خود سامانه هم باید وارد شود.</p></div><input asp-for="RequiresLogin" class="form-check-input" role="switch" /></div>
+                <div class="switch-row"><div><label class="switch-row__label" for="IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">سامانه از بیرون شبکه‌ی سازمان هم قابل استفاده است. فقط برای اطلاع کاربر.</p></div><input asp-for="IsInternetAccessible" class="form-check-input" role="switch" /></div>
                 <div class="switch-row">
-                    <div><label class="switch-row__label" for="IsPublic">عمومی</label><p class="switch-row__help">برای همه‌ی کاربران فعال، بدون تخصیص دسترسی</p></div>
+                    <div><label class="switch-row__label" for="IsPublic">عمومی</label><p class="switch-row__help">کارت سامانه را همه می‌بینند و نیازی به تخصیص دسترسی نیست.</p></div>
                     <input asp-for="IsPublic" class="form-check-input" role="switch" />
                 </div>
                 <div class="my-3"><label asp-for="AccessRequestNotificationChannels" class="form-label">اطلاع‌رسانی درخواست‌های دسترسی</label><select asp-for="AccessRequestNotificationChannels" class="form-select">

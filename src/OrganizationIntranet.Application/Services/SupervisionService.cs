@@ -4,14 +4,17 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>نظارت بر درخواست‌های دسترسی: گروه‌های نظارت هر سامانه، هشدار ناظران، کارتابل فقط‌خواندنی و صف پیامک.</summary>
 public sealed class SupervisionService(ISupervisionRepository repository, IApplicationCatalogRepository catalog)
 {
+    /// <summary>گروه‌های نظارت یک سامانه با شناسه‌ی کاربران و نقش‌های عضو.</summary>
     public async Task<List<SupervisionGroupDto>> GroupsAsync(int applicationId)
     {
         _ = await catalog.FindAsync(applicationId) ?? throw new KeyNotFoundException();
         return (await repository.GroupsAsync(applicationId)).Select(g => new SupervisionGroupDto(g.ApplicationSupervisionGroupId, g.ApplicationId, g.Name, g.IsActive,
             g.Members.Where(m => m.UserId.HasValue).Select(m => m.UserId!.Value).ToList(), g.Members.Where(m => m.RoleId.HasValue).Select(m => m.RoleId!.Value).ToList(), g.Revision)).ToList();
     }
+    /// <summary>ساخت (Id=0) یا ویرایش گروه: نام ≤۱۵۰ نویسه، اعضا معتبر و گروه فعال حداقل یک عضو. Revision تعارض ویرایش هم‌زمان را می‌گیرد.</summary>
     public async Task SaveGroupAsync(int applicationId, SupervisionGroupRequest input)
     {
         _ = await catalog.FindAsync(applicationId) ?? throw new KeyNotFoundException();
@@ -26,13 +29,16 @@ public sealed class SupervisionService(ISupervisionRepository repository, IAppli
         group.Name = name; group.IsActive = input.IsActive; group.Revision = Guid.NewGuid();
         repository.SetMembers(group, users, roles); await repository.SaveAsync();
     }
+    /// <summary>هشدارهای درخواست جدید یک کاربر (ناظر یا دارنده‌ی ACCESS_REQUEST_REVIEW) و شمار خوانده‌نشده‌ها.</summary>
     public async Task<AccessRequestAlertsDto> AlertsAsync(long userId)
     {
         var result = await repository.AlertsAsync(userId);
         return new(result.Items.Select(a => new AccessRequestAlertDto(a.AccessRequestAlertId, a.ApplicationAccessRequestId,
             a.Request.Application.ApplicationName, $"{a.Request.User.Name} {a.Request.User.LastName}".Trim(), a.CreatedAt, a.IsRead)).ToList(), result.UnreadCount);
     }
+    /// <summary>یک هشدار (یا اگر id خالی باشد همه‌ی هشدارهای کاربر) را خوانده‌شده می‌کند.</summary>
     public async Task MarkReadAsync(long userId, long? id) { await repository.MarkReadAsync(userId, id); await repository.SaveAsync(); }
+    /// <summary>خلاصه‌ی کارتابل ناظر: سامانه‌های تحت نظارت و شمار درخواست‌ها به تفکیک وضعیت.</summary>
     public async Task<SupervisionSummaryDto> InboxSummaryAsync(long userId, int? applicationId)
     {
         var (apps, counts) = await repository.InboxSummaryAsync(userId, applicationId);
@@ -48,6 +54,7 @@ public sealed class SupervisionService(ISupervisionRepository repository, IAppli
             r.UserId, r.User.Username, $"{r.User.Name} {r.User.LastName}".Trim(), r.Reason, r.Status, r.CreatedAt, r.ResolvedAt,
             null, r.ReviewNote, r.Revision)).ToList(), result.Total, page, 20);
     }
+    /// <summary>صف و سابقه‌ی پیامک‌های اطلاع‌رسانی درخواست‌ها (۲۰ مورد در هر صفحه).</summary>
     public async Task<AccessRequestSmsListDto> SmsAsync(int page)
     {
         ValidatePage(page);
@@ -55,6 +62,7 @@ public sealed class SupervisionService(ISupervisionRepository repository, IAppli
         return new(result.Items.Select(a => new AccessRequestSmsDto(a.AccessRequestAlertId, a.ApplicationAccessRequestId, a.Request.Application.ApplicationName,
             $"{a.User.Name} {a.User.LastName} ({a.User.Username})", a.SmsStatus, a.SmsAttempts, a.SmsError, a.SmsSentAt)).ToList(), result.Total, page, 20);
     }
+    /// <summary>پیامک ناموفقِ مربوط به درخواستِ هنوز در انتظار را دوباره در صف می‌گذارد؛ در غیر این صورت خطا می‌دهد.</summary>
     public async Task RetrySmsAsync(long id)
     {
         var alert = await repository.FindSmsAsync(id) ?? throw new KeyNotFoundException();
@@ -62,5 +70,6 @@ public sealed class SupervisionService(ISupervisionRepository repository, IAppli
         alert.SmsStatus = "Pending"; alert.SmsAttempts = 0; alert.NextAttemptAt = DateTime.UtcNow; alert.SmsError = null; alert.Revision = Guid.NewGuid();
         await repository.SaveAsync();
     }
+    /// <summary>شماره‌ی صفحه باید بین ۱ و ۱۰۰۰۰۰ باشد.</summary>
     private static void ValidatePage(int page) { if (page < 1 || page > 100000) throw new ArgumentException("شماره صفحه معتبر نیست"); }
 }

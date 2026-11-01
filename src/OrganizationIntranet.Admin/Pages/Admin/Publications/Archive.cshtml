@@ -1,0 +1,86 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Publications.ArchiveModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "مطالب بایگانی‌شده";
+    ViewData["Icon"] = "ti ti-archive";
+    ViewData["Subtitle"] = "مطالبی که از پورتال برداشته شده‌اند ولی حذف نشده‌اند و قابل بازگردانی‌اند";
+    ViewData["ParentTitle"] = "اطلاع‌رسانی سازمانی";
+    ViewData["ParentUrl"] = "/Admin/Publications";
+    Layout = "_LayoutAdmin";
+    var filtered = !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Kind);
+}
+@section PageActions {
+    <a asp-page="Index" class="btn btn-primary-light"><i class="ti ti-arrow-right me-1"></i>بازگشت به اطلاع‌رسانی</a>
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string)' />
+
+<div class="admin-callout mb-4">
+    <i class="ti ti-info-circle" aria-hidden="true"></i>
+    <div>مطلب بایگانی‌شده در پورتال و فهرست اصلی دیده نمی‌شود و ویرایش نمی‌شود. با «بازگردانی» به‌صورت پیش‌نویس برمی‌گردد و پس از ویرایش می‌توانید دوباره منتشرش کنید.</div>
+</div>
+
+<div class="card custom-card">
+    <form method="get" class="admin-toolbar" role="search">
+        <div class="admin-toolbar__search"><i class="ti ti-search" aria-hidden="true"></i><input asp-for="Search" type="search" maxlength="200" class="form-control" placeholder="جست‌وجو در عنوان و خلاصه" aria-label="جست‌وجو در عنوان و خلاصه" /></div>
+        <select asp-for="Kind" class="form-select" aria-label="نوع محتوا" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">
+            <option value="">همه انواع</option>
+            @foreach (var kind in new[] { "News", "Announcement", "Circular" }) { <option value="@kind">@PublicationKinds.Label(kind)</option> }
+        </select>
+        <button class="btn btn-primary" type="submit"><i class="ti ti-search me-1"></i>جست‌وجو</button>
+        @if (filtered) { <a asp-page="Archive" class="btn btn-primary-light" title="پاک‌کردن فیلترها" aria-label="پاک‌کردن فیلترها"><i class="ti ti-filter-off"></i></a> }
+        <span class="admin-toolbar__count">@Model.Result.Total مطلب</span>
+    </form>
+
+    @if (Model.Result.Items.Count == 0)
+    {
+        <div class="card-body">
+            @if (filtered)
+            {
+                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "مطلبی پیدا نشد", "عبارت جست‌وجو یا نوع را تغییر دهید.")' />
+            }
+            else
+            {
+                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-archive-off", "مطلب بایگانی‌شده‌ای وجود ندارد", "مطلبی که بایگانی کنید اینجا نمایش داده می‌شود.")' />
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-admin publication-table">
+                <thead><tr><th>مطلب</th><th>نوع</th><th>تاریخ بایگانی</th><th class="col-actions">عملیات</th></tr></thead>
+                <tbody>
+                    @foreach (var item in Model.Result.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="publication-row">
+                                    <span class="publication-row__thumb publication-row__thumb--empty" data-kind="@item.Kind" aria-hidden="true"><i class="ti ti-archive"></i></span>
+                                    <div class="min-w-0">
+                                        <a class="publication-row__title" asp-page="Edit" asp-route-id="@item.PublicationId" title="@item.Title">@item.Title</a>
+                                        <p class="publication-row__summary" title="@item.Summary">@item.Summary</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary-transparent">@PublicationKinds.Label(item.Kind)</span></td>
+                            <td class="text-nowrap text-muted fs-12">@item.UpdatedAt.ToPersianDate()</td>
+                            <td class="col-actions">
+                                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                    <a asp-page="Edit" asp-route-id="@item.PublicationId" class="btn btn-sm btn-primary-light"><i class="ti ti-eye me-1"></i>مشاهده</a>
+                                    <form method="post" asp-page-handler="Restore" asp-route-id="@item.PublicationId" asp-route-kind="@Model.Kind" asp-route-search="@Model.Search" asp-route-pageNumber="@Model.PageNumber" class="m-0" data-busy>
+                                        <button type="submit" class="btn btn-sm btn-success-light" data-confirm="@($"«{item.Title}» به پیش‌نویس بازگردانده شود؟")"><i class="ti ti-arrow-back-up me-1"></i>بازگردانی</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Result.PageSize, Model.Result.Total, "مطلب", new Dictionary<string, string?> { ["kind"] = Model.Kind, ["search"] = Model.Search })' />
+</div>

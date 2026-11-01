@@ -33,6 +33,18 @@ public class EditModel(ApiClient api) : PageModel
         Input.Services.Add(new());
         await LoadPrincipalsAsync();
     }
+    /// <summary>ثبت لحظه‌ای افزودن/برداشتن یک کاربر یا نقش از دسترسی سامانه (از admin-pickers.js)؛ بقیه‌ی تنظیمات صفحه ذخیره نمی‌شوند.</summary>
+    public async Task<IActionResult> OnPostAccessAsync([FromBody] AccessToggleBody body)
+    {
+        try
+        {
+            var request = body.Kind == "role" ? new AccessToggleRequest(null, checked((int)body.Id), body.Granted) : new AccessToggleRequest(body.Id, null, body.Granted);
+            var result = await api.PostAsync<OperationResult>($"api/admin/applications/{Id}/access", request);
+            return new JsonResult(new { ok = true, message = result.Message });
+        }
+        catch (ApiException ex) when ((int)ex.Status is 400 or 404 or 409) { return new JsonResult(new { ok = false, message = ex.Message }) { StatusCode = 400 }; }
+    }
+
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid) { ErrorMessage = "مقادیر واردشده معتبر نیست"; await LoadPrincipalsAsync(); return Page(); }
@@ -51,13 +63,15 @@ public class EditModel(ApiClient api) : PageModel
         { ErrorMessage = ex.Message; await LoadPrincipalsAsync(); return Page(); }
     }
 
+    public sealed record AccessToggleBody(string Kind, long Id, bool Granted);
+
     public sealed class ApplicationInput
     {
         public string ApplicationName { get; set; } = "";
         public string ApplicationCode { get; set; } = "";
         public string? BaseUrl { get; set; }
         public string? Description { get; set; }
-        public int DisplayOrder { get; set; }
+        public int? DisplayOrder { get; set; }
         public string AccessRequestNotificationChannels { get; set; } = "InApp";
         public string Icon { get; set; } = "apps";
         public bool RequiresLogin { get; set; } = true;

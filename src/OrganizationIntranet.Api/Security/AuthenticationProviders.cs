@@ -9,15 +9,19 @@ using OtpNet;
 
 namespace OrganizationIntranet.Api.Security;
 
+/// <summary>پیاده‌سازی سرویس‌های بیرونی ورود: رمزگذاری با Data Protection، TOTP، LDAPS و ارسال پیامک (درگاه داخلی یا سرویس HTTPS). هیچ راز، شماره یا کدی در لاگ نمی‌آید.</summary>
 public sealed class AuthenticationProviders(IDataProtectionProvider protection, IHttpClientFactory clients, ISmsGateway smsGateway, ILogger<AuthenticationProviders> logger) : IAuthenticationProviders
 {
+    /// <summary>درگاه پیامک داخلی پیکربندی شده است؟ آنگاه نشانی و کلید HTTPS تنظیمات ورود لازم نیست.</summary>
     public bool InternalSmsAvailable => smsGateway.IsConfigured;
     private readonly IDataProtector protector = protection.CreateProtector("OrganizationIntranet.Authentication.Secrets.v1");
     public string Protect(string value) => protector.Protect(value);
     public string Unprotect(string value) => protector.Unprotect(value);
     public string NewAuthenticatorSecret() => Base32Encoding.ToString(RandomNumberGenerator.GetBytes(20));
+    /// <summary>کد TOTP را با پنجره‌ی ±۱ گام (۳۰ ثانیه) می‌سنجد و گام مطابق را برمی‌گرداند تا بازپخش رد شود.</summary>
     public bool VerifyAuthenticator(string secret, string code, out long step) =>
         new Totp(Base32Encoding.ToBytes(secret)).VerifyTotp(code, out step, new VerificationWindow(previous: 1, future: 1));
+    /// <summary>bind با LDAPS و UPN (نام کاربری + دامنه‌ی تنظیم‌شده)؛ نام‌های شامل @ \ / رد می‌شوند و گواهی سرور با اعتماد سیستم‌عامل سنجیده می‌شود.</summary>
     public Task<bool> VerifyLdapAsync(AuthenticationSettingsDto settings, string username, string password)
     {
         // AD UPN bind: fixed configured domain, canonical local username, no search-filter interpolation.
@@ -36,6 +40,7 @@ public sealed class AuthenticationProviders(IDataProtectionProvider protection, 
         }
         catch (LdapException) { logger.LogWarning("LDAP authentication failed"); return Task.FromResult(false); }
     }
+    /// <summary>کد تأیید را می‌فرستد: با درگاه داخلی اگر پیکربندی شده، وگرنه با سرویس HTTPS تنظیمات (کلید Bearer رمزگشایی می‌شود).</summary>
     public async Task SendSmsAsync(AuthenticationSettingsDto settings, string protectedApiKey, string mobile, string code)
     {
         var message = $"کد تأیید اینترانت: {code}\nاعتبار: ۵ دقیقه";

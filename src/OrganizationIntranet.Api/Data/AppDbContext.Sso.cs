@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>بخش ورود یکپارچه از DbContext: بلیت‌های یک‌بارمصرف و نگاشت نام کاربری کاربر در هر سامانه.</summary>
 public partial class AppDbContext
 {
     public DbSet<SsoTicket> SsoTickets => Set<SsoTicket>();

@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>قیدهای یکپارچگی ورود و امنیت (تنظیمات تک‌ردیفی، چالش، کد ملی یکتا) که فقط روی SQL Server اعمال می‌شوند.</summary>
 public partial class AppDbContext
 {
     private void ConfigureAuthenticationIntegrity(ModelBuilder modelBuilder)

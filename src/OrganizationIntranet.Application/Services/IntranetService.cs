@@ -4,14 +4,18 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>منطق کاربران، نقش‌ها و مجوزها: ساخت و ویرایش، پروفایل با مجوزهای مؤثر و قواعد جلوگیری از قفل‌شدن پنل (نقش ADMIN غیرفعال نمی‌شود و همیشه یک مدیر فعال می‌ماند).</summary>
 public sealed class IntranetService(IIntranetRepository repository, IPasswordService passwords)
 {
+    /// <summary>رشته‌ی خالی یا فقط فاصله را null می‌کند.</summary>
     private static string? Optional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+    /// <summary>اجباری بودن و حداکثر طول مقدار را بررسی می‌کند.</summary>
     private static void Required(string? value, int length, string name)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > length)
             throw new ArgumentException($"{name} الزامی است و حداکثر {length} کاراکتر دارد");
     }
+    /// <summary>حداکثر طول یک مقدار اختیاری را بررسی می‌کند.</summary>
     private static void Limit(string? value, int length)
     {
         if (value?.Length > length) throw new ArgumentException("طول مقدار واردشده بیش از حد مجاز است");
@@ -22,22 +26,27 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         u.UserRoles.Where(r => r.Role.IsActive).Select(r => r.Role.RoleCode).ToList(),
         u.UserRoles.Where(r => r.Role.IsActive).SelectMany(r => r.Role.RolePermissions).Where(r => r.Permission.IsActive).Select(r => r.Permission.PermissionCode).Distinct().ToList());
 
+    /// <summary>پروفایل کاربر با نقش‌ها و مجوزهای مؤثر؛ مجوز فقط از نقش فعال و مجوز فعال می‌آید.</summary>
     public async Task<ProfileDto?> ProfileAsync(long id)
     {
         var user = await repository.FindUserAsync(id);
         return user is null ? null : Profile(user);
     }
+    /// <summary>فهرست کاربران به ترتیب نام.</summary>
     public async Task<List<UserDto>> UsersAsync() => (await repository.GetUsersAsync()).OrderBy(u => u.Name).Select(Map).ToList();
+    /// <summary>یک کاربر با نقش‌هایش؛ null اگر نباشد.</summary>
     public async Task<UserDto?> UserAsync(long id)
     {
         var user = await repository.FindUserAsync(id);
         return user is null ? null : Map(user);
     }
+    /// <summary>آمار داشبورد پنل: شمار کاربران (کل و فعال)، نقش‌ها، سامانه‌ها و پنج کاربر آخر.</summary>
     public async Task<DashboardDto> DashboardAsync()
     {
         var users = await repository.GetUsersAsync();
         return new(users.Count, users.Count(u => u.IsActive), (await repository.GetRolesAsync()).Count, (await repository.GetApplicationsAsync()).Count, users.OrderByDescending(u => u.CreatedAt).Take(5).Select(Map).ToList());
     }
+    /// <summary>ساخت (شناسه‌ی خالی) یا ویرایش کاربر همراه نقش‌ها و رمز اختیاری. کاربر جدید رمز می‌خواهد. با هر ذخیره مهر امنیتی عوض می‌شود تا نشست‌های قبلی باطل شوند.</summary>
     public async Task SaveUserAsync(UserEditRequest request)
     {
         Required(request.Name, 100, "نام"); Required(request.LastName, 100, "نام خانوادگی"); Required(request.Username, 100, "نام کاربری");
@@ -60,7 +69,22 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         repository.SetUserRoles(user, ids);
         await repository.SaveAsync(); // One SaveChanges transaction also covers a new user's role assignments.
     }
+    /// <summary>افزودن یا برداشتن یک نقش از کاربر موجود (ثبت لحظه‌ای)؛ همان قواعد ذخیره‌ی کاربر: نقش معتبر و حداقل یک مدیر فعال باقی بماند. تکرار بی‌اثر است.</summary>
+    public async Task SetUserRoleAsync(long userId, UserRoleToggleRequest request)
+    {
+        var user = await repository.FindUserAsync(userId) ?? throw new KeyNotFoundException();
+        var ids = user.UserRoles.Select(r => r.RoleId).ToHashSet();
+        if (request.Granted ? !ids.Add(request.RoleId) : !ids.Remove(request.RoleId)) return;
+        var list = ids.ToList();
+        await ValidateRoles(list);
+        await EnsureAnotherAdminRemainsAsync(userId, user.IsActive, list);
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        user.AuthenticationVersion = Guid.NewGuid();
+        repository.SetUserRoles(user, list);
+        await repository.SaveAsync();
+    }
     private static RoleDto Map(Role r, RoleUsage? usage) => new(r.RoleId, r.RoleName, r.RoleCode, r.IsActive, r.CreatedAt, usage?.Users ?? 0, usage?.Permissions ?? 0, usage?.Links ?? 0);
+    /// <summary>فهرست نقش‌ها با شمار کاربران، مجوزها و اتصال‌ها و اینکه قابل حذف هستند یا نه.</summary>
     public async Task<List<RoleDto>> RolesAsync()
     {
         var usage = await repository.GetRoleUsageAsync();
@@ -90,12 +114,14 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
             throw new ArgumentException($"نقشی با کد {code} از قبل وجود دارد");
         return (name, code);
     }
+    /// <summary>ساخت نقش تازه با کد یکتا.</summary>
     public async Task CreateRoleAsync(RoleRequest request)
     {
         var (name, code) = await ValidRoleAsync(request, null);
         repository.AddRole(new Role { RoleName = name, RoleCode = code, IsActive = true, CreatedAt = DateTime.UtcNow });
         await repository.SaveAsync();
     }
+    /// <summary>ویرایش نام و کد نقش؛ کد نقش‌های سیستمی ADMIN و EXPERT عوض نمی‌شود چون برنامه آن‌ها را با کد پیدا می‌کند.</summary>
     public async Task UpdateRoleAsync(int id, RoleRequest request)
     {
         var role = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
@@ -119,6 +145,7 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         repository.RemoveRole(role);
         await repository.SaveAsync();
     }
+    /// <summary>فعال/غیرفعال کردن نقش؛ ADMIN غیرفعال نمی‌شود و نقش غیرفعال هیچ مجوز یا دسترسی نمی‌دهد.</summary>
     public async Task ToggleRoleAsync(int id)
     {
         var entity = (await repository.GetRolesAsync()).FirstOrDefault(r => r.RoleId == id) ?? throw new KeyNotFoundException();
@@ -127,11 +154,14 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         entity.IsActive = !entity.IsActive; await repository.SaveAsync();
     }
     private static PermissionDto Map(Permission p) => new(p.PermissionId, p.PermissionName, p.PermissionCode, p.Description, p.Application.ApplicationName, p.IsActive, p.RolePermissions.Count, p.RolePermissions.Select(r => r.RoleId).ToList());
+    /// <summary>فهرست مجوزها به ترتیب سامانه و نام، با شمار نقش‌های دارنده.</summary>
     public async Task<List<PermissionDto>> PermissionsAsync() => (await repository.GetPermissionsAsync()).OrderBy(p => p.Application.ApplicationName).ThenBy(p => p.PermissionName).Select(Map).ToList();
+    /// <summary>یک مجوز با شناسه‌ی نقش‌های دارنده‌اش؛ null اگر نباشد.</summary>
     public async Task<PermissionDto?> PermissionAsync(int id)
     {
         var p = await repository.FindPermissionAsync(id); return p is null ? null : Map(p);
     }
+    /// <summary>ساخت مجوز تازه برای یک سامانه‌ی فعال؛ کد با حروف بزرگ ذخیره می‌شود.</summary>
     public async Task CreatePermissionAsync(PermissionRequest request)
     {
         Required(request.PermissionName, 150, "نام مجوز"); Required(request.PermissionCode, 100, "کد مجوز"); Limit(request.Description, 500);
@@ -139,12 +169,14 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         repository.AddPermission(new Permission { PermissionName = request.PermissionName, PermissionCode = request.PermissionCode.ToUpperInvariant(), ApplicationId = request.ApplicationId, Description = Optional(request.Description), IsActive = true, CreatedAt = DateTime.UtcNow });
         await repository.SaveAsync();
     }
+    /// <summary>فعال/غیرفعال کردن مجوز؛ مجوزهای سیستمی پنل غیرفعال نمی‌شوند.</summary>
     public async Task TogglePermissionAsync(int id)
     {
         var p = await repository.FindPermissionAsync(id) ?? throw new KeyNotFoundException();
         if (p.IsActive && AdminPermissions.IsSystem(p.PermissionCode)) throw new ArgumentException("مجوزهای سیستمی پنل مدیریت غیرفعال نمی‌شوند");
         p.IsActive = !p.IsActive; await repository.SaveAsync();
     }
+    /// <summary>جایگزینی مجموعه‌ی نقش‌های دارنده‌ی مجوز؛ مجوز سیستمی از نقش ADMIN گرفته نمی‌شود.</summary>
     public async Task AssignPermissionAsync(int id, RolesRequest request)
     {
         var p = await repository.FindPermissionAsync(id) ?? throw new KeyNotFoundException();
@@ -163,6 +195,7 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         if (users.Any(u => u.UserId == userId && IsAdmin(u)) && !users.Any(u => u.UserId != userId && IsAdmin(u)))
             throw new ArgumentException("دست‌کم یک کاربر فعال باید نقش مدیر (ADMIN) داشته باشد؛ ابتدا نقش مدیر را به کاربر دیگری بدهید");
     }
+    /// <summary>همه‌ی شناسه‌های نقش باید موجود و فعال باشند.</summary>
     private async Task ValidateRoles(List<int> ids)
     {
         var roles = await repository.GetRolesAsync();

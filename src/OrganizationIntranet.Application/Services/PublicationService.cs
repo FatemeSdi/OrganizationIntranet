@@ -4,9 +4,11 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>منطق اطلاع‌رسانی سازمانی: فهرست و جزئیات با دامنه‌ی دید (مدیر، کاربر واردشده، بازدیدکننده)، ساخت و ویرایش با کنترل هم‌زمانی (Revision)، بایگانی و تصویر شاخص.</summary>
 public sealed class PublicationService(IPublicationRepository repository)
 {
     private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0, p.IsArchived);
+    /// <summary>فهرست مطالب: فقط منتشرشده‌ها یا همه (بایگانی‌شده‌ها در هر دو نیستند).</summary>
     public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page) =>
         ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page);
     /// <summary>فهرست مدیر با فیلتر وضعیت: published، draft، public، archived یا خالی (همه‌ی بایگانی‌نشده‌ها).</summary>
@@ -18,6 +20,7 @@ public sealed class PublicationService(IPublicationRepository repository)
         }, kind, search, page);
     /// <summary>فهرست محتوای منتشرشده‌ی عمومی برای بازدیدکننده‌ی ناشناس.</summary>
     public Task<PublicationListDto> ListPublicAsync(string? kind, string? search, int page) => ListAsync(PublicationScope.Public, kind, search, page);
+    /// <summary>فهرست ۲۰تایی با اعتبارسنجی ورودی (نوع، شماره‌ی صفحه، جست‌وجو حداکثر ۲۰۰ نویسه)؛ متن کامل مطالب در فهرست خالی می‌آید.</summary>
     private async Task<PublicationListDto> ListAsync(PublicationScope scope, string? kind, string? search, int page)
     {
         if (kind is not null && !PublicationKinds.IsValid(kind)) throw new ArgumentException("نوع محتوا معتبر نیست");
@@ -25,10 +28,12 @@ public sealed class PublicationService(IPublicationRepository repository)
         var result = await repository.ListAsync(scope, kind, search?.Trim(), page, 20);
         return new(result.Items.Select(p => Map(p) with { Body = "" }).ToList(), result.Total, page, 20);
     }
+    /// <summary>یک مطلب (منتشرشده یا هر وضعیت)؛ ناموجود KeyNotFoundException.</summary>
     public async Task<PublicationDto> GetAsync(long id, bool publishedOnly) =>
         Map(await repository.FindAsync(id, publishedOnly ? PublicationScope.Published : PublicationScope.All) ?? throw new KeyNotFoundException());
     /// <summary>جزئیات محتوای عمومی؛ پیش‌نویس یا محتوای غیرعمومی برای ناشناس «یافت نشد» است (وجود آن‌ها لو نمی‌رود).</summary>
     public async Task<PublicationDto> GetPublicAsync(long id) => Map(await repository.FindAsync(id, PublicationScope.Public) ?? throw new KeyNotFoundException());
+    /// <summary>ساخت یا ویرایش مطلب: عنوان ≤۲۰۰، خلاصه ≤۱۰۰۰ و متن ≤۵۰۰۰۰ نویسه؛ «عمومی» فقط با «منتشرشده». ویرایش با Revision قدیمی تعارض می‌دهد و مطلب بایگانی‌شده ویرایش نمی‌شود.</summary>
     public async Task<PublicationDto> SaveAsync(long? id, PublicationEditRequest request, long actor)
     {
         if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
@@ -80,6 +85,7 @@ public sealed class PublicationService(IPublicationRepository repository)
         if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data[8..12].SequenceEqual("WEBP"u8)) return "image/webp";
         return null;
     }
+    /// <summary>جایگزینی تصویر شاخص: Base64 تا ۲ مگابایت، نوع از امضای فایل. Revision متن عوض نمی‌شود تا ویرایش هم‌زمان متن تعارض نگیرد.</summary>
     public async Task<PublicationDto> SetImageAsync(long id, string? base64, long actor)
     {
         if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");
@@ -98,6 +104,7 @@ public sealed class PublicationService(IPublicationRepository repository)
         await repository.SaveAsync();
         return Map(p);
     }
+    /// <summary>حذف تصویر شاخص؛ بدون تصویر بی‌اثر است.</summary>
     public async Task RemoveImageAsync(long id, long actor)
     {
         if (actor <= 0) throw new ArgumentException("کاربر معتبر نیست");

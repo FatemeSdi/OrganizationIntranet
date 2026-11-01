@@ -7,15 +7,17 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>ورود یکپارچه (SSO) با بلیت یک‌بارمصرف (docs/sso.md): صدور بلیت برای کاربر، تحویل آن توسط سرور سامانه و نگاشت نام کاربری کاربر در هر سامانه.</summary>
 public sealed class SsoService(ISsoRepository repository, ISsoClients clients)
 {
+    /// <summary>هش SHA-256 بلیت؛ خود بلیت هرگز ذخیره نمی‌شود.</summary>
     internal static byte[] Hash(string ticket) => SHA256.HashData(Encoding.ASCII.GetBytes(ticket));
 
     /// <summary>کاربر واردشده روی کارت سامانه کلیک کرده است: بلیت ۶۰ثانیه‌ای فقط برای همان سامانه.</summary>
     public async Task<SsoStartDto> StartAsync(long userId, int applicationId)
     {
         var target = await repository.TargetAsync(userId, applicationId) ?? throw new KeyNotFoundException();
-        var url = clients.LandingUrl(target.ApplicationCode) ?? throw new ArgumentException("ورود یکپارچه برای این سامانه فعال نیست");
+        var url = clients.LandingUrl(target.ApplicationCode, target.BaseUrl) ?? throw new ArgumentException("ورود یکپارچه برای این سامانه فعال نیست");
         var ticket = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         var now = DateTime.UtcNow;
         repository.AddTicket(new SsoTicket { TicketHash = Hash(ticket), UserId = userId, ApplicationId = target.ApplicationId, CreatedAt = now, ExpiresAt = now.AddSeconds(SingleSignOn.TicketSeconds) });
@@ -40,8 +42,8 @@ public sealed class SsoService(ISsoRepository repository, ISsoClients clients)
         var user = await repository.FindUserAsync(userId) ?? throw new KeyNotFoundException();
         var rows = await repository.AccountRowsAsync(userId);
         return new(user.UserId, user.Username, (user.Name + " " + user.LastName).Trim(),
-            rows.Where(r => clients.LandingUrl(r.ApplicationCode) is not null || r.ExternalUsername is not null)
-                .Select(r => new SsoAccountDto(r.ApplicationId, r.ApplicationCode, r.ApplicationName, clients.LandingUrl(r.ApplicationCode) is not null, r.HasAccess, r.ExternalUsername)).ToList());
+            rows.Where(r => clients.LandingUrl(r.ApplicationCode, r.BaseUrl) is not null || r.ExternalUsername is not null)
+                .Select(r => new SsoAccountDto(r.ApplicationId, r.ApplicationCode, r.ApplicationName, clients.LandingUrl(r.ApplicationCode, r.BaseUrl) is not null, r.HasAccess, r.ExternalUsername)).ToList());
     }
 
     /// <summary>ثبت (یا با مقدار خالی حذف) نام کاربری کاربر در یک سامانه. حساب هر سامانه فقط به یک کاربر اینترانت تعلق دارد.</summary>

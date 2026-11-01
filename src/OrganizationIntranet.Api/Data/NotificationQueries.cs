@@ -3,9 +3,10 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>کوئری مشترک اعلان‌های قابل‌دیدن کاربر.</summary>
 internal static class NotificationQueries
 {
-    // اعلان فقط از سامانه‌ای دیده می‌شود که کاربر الان به آن دسترسی دارد و سرویس فعال NOTIFICATIONS دارد.
+    /// <summary>اعلان‌های کاربر فقط از سامانه‌ای دیده می‌شود که کاربر الان به آن دسترسی دارد و سرویس فعال NOTIFICATIONS دارد.</summary>
     internal static IQueryable<UserNotification> Visible(AppDbContext db, long userId)
     {
         var ids = ApplicationAccessQueries.Available(db, userId)

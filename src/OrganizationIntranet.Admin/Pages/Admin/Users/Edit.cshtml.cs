@@ -57,6 +57,19 @@ public class EditModel(ApiClient api) : PageModel
         }
         return Page();
     }
+    /// <summary>ثبت لحظه‌ای افزودن/برداشتن یک نقش از کاربر موجود (از admin-pickers.js)؛ قواعد «حداقل یک مدیر فعال» در API اعمال می‌شود.</summary>
+    public async Task<IActionResult> OnPostRoleAsync([FromBody] RoleToggleBody body)
+    {
+        if (IsNew) return new JsonResult(new { ok = false, message = "ابتدا کاربر را ذخیره کنید." }) { StatusCode = 400 };
+        try
+        {
+            var result = await api.PostAsync<OperationResult>($"api/admin/users/{Id}/role", new UserRoleToggleRequest(checked((int)body.Id), body.Granted));
+            return new JsonResult(new { ok = true, message = result.Message });
+        }
+        catch (ApiException ex) when ((int)ex.Status is 400 or 404 or 409) { return new JsonResult(new { ok = false, message = ex.Message }) { StatusCode = 400 }; }
+    }
+    public sealed record RoleToggleBody(string Kind, long Id, bool Granted);
+
     public async Task<IActionResult> OnPostAsync()
     {
         await LoadRolesAsync();
