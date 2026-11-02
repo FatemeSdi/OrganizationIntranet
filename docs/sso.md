@@ -45,23 +45,25 @@
 
 ```json
 "ApplicationIntegrations": {
-  "TASKTRACK": {
-    "SsoUrl": "https://tasktrack.local/Security/Account/Sso",
+  "TTMS": {
+    "SsoPath": "Security/Account/Sso",
     "SsoKey": "<دست‌کم ۳۲ کاراکتر تصادفی>"
   }
 }
 ```
 
-- کلید بخش (`TASKTRACK`) همان `ApplicationCode` سامانه در پنل است.
+- کلید بخش (`TTMS`) همان `ApplicationCode` سامانه در پنل است.
 - `SsoKey` باید با `Api:ClientKey`، `Api:AdminClientKey` و `PushKey` همان سامانه فرق داشته باشد. اگر یکی باشد، SSO خاموش می‌ماند.
-- `SsoUrl` باید آدرس مطلق HTTP(S) باشد، بدون نام کاربری و رمز در آدرس و بدون `#`. در استقرار فقط HTTPS.
+- **`SsoPath`** مسیر نسبی صفحه‌ی SSO در خود سامانه است (مثل `Security/Account/Sso`). آدرس کامل = «نشانی ورود» (BaseUrl) سامانه در پنل مدیریت + `SsoPath`. پس **پورت و میزبان هر سیستم فقط یک‌بار در پنل تنظیم می‌شود** (همان جایی که برای خود کارت تنظیم می‌کنید) و با pull و push در Git عوض نمی‌شود. میزبان آدرس همیشه همان میزبان BaseUrl است و مسیر نمی‌تواند آن را عوض کند.
+- `SsoUrl` (اختیاری) آدرس مطلق ثابت است و اگر باشد بر `SsoPath` مقدم است. باید HTTP(S) باشد، بدون نام کاربری و رمز و بدون `#`. در استقرار فقط HTTPS.
+- نبود BaseUrl در پنل یعنی آدرسی ساخته نمی‌شود و SSO آن سامانه خاموش می‌ماند.
 - تا هر دو مقدار درست نباشند، کارت مثل قبل به BaseUrl می‌رود.
 - همان `SsoKey` را در تنظیمات خود سامانه بگذارید: TaskTrack در `appsettings.json` (`IntranetSso:Key`)، ITS در `Web.config` (`IntranetSso:Key`) و سامانه‌ی ACCESSREPORT در `appsettings.json` پروژه‌ی API آن (`IntranetSso:Key`). اگر کلید یکی از دو طرف عوض شود، باید در طرف دیگر هم عوض شود؛ وگرنه تحویل بلیت ۴۰۱ می‌دهد.
 - اگر قبلاً کلیدی با `dotnet user-secrets` گذاشته‌اید، آن را پاک کنید: User Secrets در محیط Development روی `appsettings.json` مقدم است و مقدار قدیمی دوباره مشکل می‌سازد (`dotnet user-secrets remove "<نام>" --project <پروژه>`).
 
 ## پیاده‌سازی در سامانه‌ی مقصد
 
-یک action بی‌نیاز به ورود (`AllowAnonymous`) روی همان `SsoUrl` بسازید که این کارها را بکند:
+یک action بی‌نیاز به ورود (`AllowAnonymous`) روی همان مسیر (`SsoPath`) بسازید که این کارها را بکند:
 
 1. `ticket` را از query بخواند و قالبش را بررسی کند: `^[A-Za-z0-9_-]{43}$`.
 2. از **سرور** درخواست redeem را با `HttpClient` به آدرس API اینترانت بفرستد. HTTPS با اعتبارسنجی گواهی، timeout کوتاه، بدون دنبال‌کردن redirect.

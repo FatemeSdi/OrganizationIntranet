@@ -10,6 +10,7 @@
     var filtered = !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Kind) || Model.Status is not null;
 }
 @section PageActions {
+    <a asp-page="Archive" class="btn btn-primary-light"><i class="ti ti-archive me-1"></i>بایگانی‌شده‌ها</a>
     <a asp-page="Edit" class="btn btn-primary btn-wave"><i class="ti ti-plus me-1"></i>افزودن محتوا</a>
 }
 

@@ -132,14 +132,6 @@
         apply(false);
     });
 
-    // شمارنده‌ی موارد انتخاب‌شده در _PickList.
-    document.querySelectorAll('[data-pick-list]').forEach(function (list) {
-        var count = list.querySelector('[data-pick-count]');
-        list.addEventListener('change', function () {
-            count.textContent = fa(list.querySelectorAll('input[type=checkbox]:checked').length);
-        });
-    });
-
     // سوییچ وضعیت که فرم خودش را ارسال می‌کند؛ برای غیرفعال‌کردن، در صورت وجود data-confirm-off تأیید می‌گیرد.
     document.querySelectorAll('[data-autosubmit]').forEach(function (input) {
         input.addEventListener('change', function () {
@@ -197,4 +189,52 @@
         field.addEventListener('input', update);
         update();
     });
+
+    // ستاره‌ی قرمز کنار عنوان هر فیلد اجباری در همه‌ی صفحه‌های پنل: فیلدی که صریحاً required (یا aria-required) دارد.
+    // data-val-required عمداً ملاک نیست: ASP.NET آن را برای هر نوع غیرقابل‌تهی (bool، int) هم می‌گذارد و سوییچ‌ها را اشتباهاً اجباری نشان می‌داد.
+    // عنوان از label[for] یا label دربرگیرنده می‌آید؛ در جدول‌های بی‌label (مثل سرویس‌های سامانه) سرستون همان ستون ستاره می‌گیرد.
+    // اگر عنوان از قبل ستاره دارد (نوشته‌ی دستی در صفحه) دوباره اضافه نمی‌شود. آخر فایل است تا برچسب‌های کارتی جدول (data-label) را خراب نکند.
+    (function markRequiredFields() {
+        function hasStar(element) {
+            var marks = element.querySelectorAll('.text-danger, .required-star');
+            return Array.prototype.some.call(marks, function (m) { return m.classList.contains('required-star') || m.textContent.trim() === '*'; });
+        }
+        function addStar(element) {
+            if (!element || hasStar(element)) return;
+            var star = document.createElement('span');
+            star.className = 'text-danger required-star';
+            star.setAttribute('aria-hidden', 'true');
+            star.textContent = '*';
+            element.appendChild(document.createTextNode(' '));
+            element.appendChild(star);
+        }
+        function labelOf(control) {
+            if (control.id) {
+                var labels = document.getElementsByTagName('label');
+                for (var i = 0; i < labels.length; i++) if (labels[i].htmlFor === control.id) return labels[i];
+            }
+            return control.closest('label');
+        }
+        function headerOf(control) {
+            var cell = control.closest('td');
+            var table = cell && cell.closest('table');
+            if (!table) return null;
+            var column = 0;
+            Array.prototype.some.call(cell.parentElement.children, function (c) {
+                if (c === cell) return true;
+                column += parseInt(c.getAttribute('colspan') || '1', 10);
+                return false;
+            });
+            var headers = table.querySelectorAll('thead th');
+            return headers[column] || null;
+        }
+        var selector = 'input[required], select[required], textarea[required], [aria-required="true"]';
+        document.querySelectorAll(selector).forEach(function (control) {
+            var type = (control.getAttribute('type') || '').toLowerCase();
+            if (type === 'hidden' || type === 'submit' || type === 'button' || type === 'radio' || type === 'checkbox') return;
+            if (control.closest('[data-no-required-star]')) return;
+            addStar(labelOf(control) || headerOf(control));
+        });
+    })();
+
 })();

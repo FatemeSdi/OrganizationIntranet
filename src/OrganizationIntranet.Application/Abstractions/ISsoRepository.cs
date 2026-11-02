@@ -3,11 +3,11 @@ using OrganizationIntranet.Domain.Entities;
 namespace OrganizationIntranet.Application.Abstractions;
 
 /// <summary>سامانه‌ای که کاربر الان به آن دسترسی دارد.</summary>
-public sealed record SsoTarget(int ApplicationId, string ApplicationCode, long UserId);
+public sealed record SsoTarget(int ApplicationId, string ApplicationCode, string? BaseUrl, long UserId);
 /// <summary>نتیجه‌ی مصرف بلیت: کاربر اینترانت و نامی که باید به سامانه داده شود (نگاشت‌شده یا همان نام کاربری اینترانت).</summary>
 public sealed record SsoRedeemed(User User, string ApplicationUsername);
 /// <summary>یک سامانه‌ی فعال با وضعیت دسترسی کاربر و نام کاربری نگاشت‌شده‌اش (در صورت وجود).</summary>
-public sealed record SsoAccountRow(int ApplicationId, string ApplicationCode, string ApplicationName, bool HasAccess, string? ExternalUsername);
+public sealed record SsoAccountRow(int ApplicationId, string ApplicationCode, string ApplicationName, string? BaseUrl, bool HasAccess, string? ExternalUsername);
 
 public interface ISsoRepository
 {
@@ -35,6 +35,6 @@ public interface ISsoRepository
 /// <summary>تنظیمات SSO هر سامانه (در تنظیمات امن API، نه بانک).</summary>
 public interface ISsoClients
 {
-    /// <summary>آدرس دریافت بلیت در سامانه؛ null یعنی SSO برای این سامانه پیکربندی نشده است.</summary>
-    string? LandingUrl(string applicationCode);
+    /// <summary>آدرس دریافت بلیت در سامانه؛ null یعنی SSO برای این سامانه پیکربندی نشده است. baseUrl «نشانی ورود» سامانه در پنل است و برای ساختن آدرس از SsoPath به کار می‌رود.</summary>
+    string? LandingUrl(string applicationCode, string? baseUrl = null);
 }

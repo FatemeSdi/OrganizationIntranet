@@ -13,6 +13,7 @@ namespace OrganizationIntranet.Api.Controllers;
 [Authorize(AuthenticationSchemes = ApplicationIntegrationHandler.SchemeName), EnableRateLimiting("integration")]
 public sealed class SsoIntegrationController(SsoService service, ILogger<SsoIntegrationController> logger) : ControllerBase
 {
+    /// <summary>تحویل بلیت: سامانه‌ی مقصد بلیت یک‌بارمصرف را می‌دهد و نام کاربری همان کاربر در آن سامانه را می‌گیرد. هر خطای بلیت پیام یکسان دارد.</summary>
     [HttpPost("redeem"), RequestSizeLimit(4096)]
     public async Task<SsoIdentityDto> Redeem(SsoRedeemRequest request)
     {

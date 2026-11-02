@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>هشدارِ یک درخواست دسترسی برای یک ناظر یا بررسی‌کننده: وضعیت درون‌برنامه‌ای (InApp، IsRead) و وضعیت پیامک (SmsStatus: NotRequested، Pending، Processing، Sent، Failed، Cancelled).</summary>
 public class AccessRequestAlert
 {
     public long AccessRequestAlertId { get; set; }

@@ -4,6 +4,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Security;
 
+/// <summary>دروازه‌ی API مدیریت: برای هر مسیر دارای [AdminClient] دو چیز لازم است، دارا بودن مجوز INTRANET_ADMIN (زنده از بانک) و هدر X-Intranet-Admin با کلید مدیریتی که فقط سرور Admin دارد. مقایسه‌ی کلید در زمان ثابت است.</summary>
 public sealed class AdminClientMiddleware(RequestDelegate next, IConfiguration configuration, ILogger<AdminClientMiddleware> logger)
 {
     private readonly byte[] expected = SHA256.HashData(Encoding.UTF8.GetBytes(configuration["Api:AdminClientKey"]!));

@@ -4,8 +4,10 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی ورود: تنظیمات و چالش‌ها. هنگام ذخیره، ستون نسخه‌ی چالش و نسخه‌ی احراز هویت کاربر عوض می‌شود تا ویرایش هم‌زمان تعارض بدهد.</summary>
 public sealed class AuthenticationRepository(AppDbContext db) : IAuthenticationRepository
 {
+    /// <summary>ردیف تنظیمات ورود (Id=1)؛ اگر در بانکِ خالی (توسعه و آزمون) نبود، با مقدار پیش‌فرض ساخته می‌شود.</summary>
     public async Task<AuthenticationSettings> SettingsAsync()
     {
         var settings = await db.Set<AuthenticationSettings>().SingleOrDefaultAsync(x => x.Id == 1);

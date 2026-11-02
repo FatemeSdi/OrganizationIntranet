@@ -6,12 +6,15 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Controllers;
 
+/// <summary>تنظیمات ورود و امنیت (روش‌های ورود، LDAP، پیامک، ورود دومرحله‌ای)؛ نیاز به AUTH_SETTINGS_EDIT. رازها (کلید پیامک) هرگز برگردانده نمی‌شوند.</summary>
 [OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin/authentication"), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEditPolicy)]
 public sealed class AuthenticationSettingsController(AuthenticationService authentication) : ControllerBase
 {
+    /// <summary>تنظیمات فعلی ورود (بدون مقدار رازها).</summary>
     [HttpGet]
     public Task<AuthenticationSettingsDto> Get() => authentication.SettingsAsync();
+    /// <summary>ذخیره‌ی تنظیمات؛ همه‌ی توکن‌ها و نشست‌ها باطل می‌شوند. غیرفعال‌کردن ورود با رمز فقط پس از ورود موفق با LDAP ممکن است تا مدیر قفل نشود.</summary>
     [HttpPost]
     public async Task<OperationResult> Save(AuthenticationSettingsDto request)
     {

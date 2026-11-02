@@ -38,10 +38,10 @@ public sealed partial class PortalSmokeTests
     public async Task Administrative_workflow_rechecks_current_admin_role_and_validates_channel_configuration()
     {
         await Login();
-        (await client.PostAsJsonAsync("/api/admin/applications", new ApplicationRequest("پیامک", "SMSAPP", null, null, 1, AccessRequestNotificationChannels: "Both"))).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync("/api/admin/applications", new ApplicationRequest("پیامک", "SMSAPP", "https://sms.example/", null, 1, AccessRequestNotificationChannels: "Both"))).EnsureSuccessStatusCode();
         var created = (await client.GetFromJsonAsync<List<ApplicationDto>>("/api/admin/applications"))!.Single(a => a.ApplicationCode == "SMSAPP");
         Assert.Equal("Both", created.AccessRequestNotificationChannels);
-        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/applications", new ApplicationRequest("نامعتبر", "INVALID", null, null, 1, AccessRequestNotificationChannels: "invalid"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/admin/applications", new ApplicationRequest("نامعتبر", "INVALID", "https://invalid.example/", null, 1, AccessRequestNotificationChannels: "invalid"))).StatusCode);
         using var scope = api.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         (await db.Roles.SingleAsync(r => r.RoleCode == "ADMIN")).IsActive = false; await db.SaveChangesAsync();
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/admin/access-requests")).StatusCode);

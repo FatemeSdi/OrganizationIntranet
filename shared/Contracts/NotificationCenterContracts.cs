@@ -12,6 +12,7 @@ public static class NotificationCenter
     public static bool ValidStatus(string? status) => status is null or Unread or Read;
     public static bool ValidDays(int? days) => days is null || Periods.Any(p => p.Days == days);
 }
+/// <summary>یک ردیف مرکز اعلان (اعلان سامانه یا هشدار درخواست)؛ HasDestination می‌گوید لینک امن دارد یا نه.</summary>
 public record NotificationCenterItemDto(string Kind, long Id, string Source, string Title, DateTime CreatedAt, bool Unread, bool HasDestination);
 /// <summary>AllCount و UnreadCount برای تب‌ها، با همان فیلتر منبع و تاریخ ولی بدون فیلتر وضعیت؛ Total شمار فیلترشده برای صفحه‌بندی است.</summary>
 public record NotificationCenterDto(List<NotificationCenterItemDto> Items, int Total, int Page, int PageSize, int AllCount, int UnreadCount)
@@ -20,6 +21,7 @@ public record NotificationCenterDto(List<NotificationCenterItemDto> Items, int T
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Total / (double)Math.Max(1, PageSize)));
 }
 
+/// <summary>سامانه‌ای که کاربر ناظر آن است.</summary>
 public record SupervisedApplicationDto(int ApplicationId, string Name);
 /// <summary>سامانه‌هایی که کاربر ناظر آن‌هاست و شمار درخواست‌ها به تفکیک وضعیت (با فیلتر سامانه‌ی انتخاب‌شده). بدون سامانه یعنی ناظر نیست.</summary>
 public record SupervisionSummaryDto(List<SupervisedApplicationDto> Applications, Dictionary<string, int> StatusCounts)

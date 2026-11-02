@@ -192,7 +192,7 @@ public sealed partial class PortalSmokeTests
         Assert.Contains("href=\"https://example.org\"", html); Assert.Contains("application-icons.svg#mail", html);
         Assert.DoesNotContain("const allSystems", html);
         var csrf = await Antiforgery(adminUi, "/Admin/Applications/Edit?id=1"); Assert.NotEmpty(csrf);
-        var fields = new Dictionary<string,string> { ["Id"] = "1", ["Input.ApplicationName"] = "ویرایش", ["Input.ApplicationCode"] = "TEST", ["Input.Icon"] = "clock", ["Input.IsPublic"] = "true" };
+        var fields = new Dictionary<string,string> { ["Id"] = "1", ["Input.ApplicationName"] = "ویرایش", ["Input.ApplicationCode"] = "TEST", ["Input.BaseUrl"] = "https://example.org/", ["Input.Icon"] = "clock", ["Input.IsPublic"] = "true" };
         Assert.Equal(HttpStatusCode.BadRequest, (await adminUi.PostAsync("/Admin/Applications/Edit?id=1", new FormUrlEncodedContent(fields))).StatusCode);
         fields["__RequestVerificationToken"] = csrf;
         Assert.Equal(HttpStatusCode.Redirect, (await adminUi.PostAsync("/Admin/Applications/Edit?id=1", new FormUrlEncodedContent(fields))).StatusCode);

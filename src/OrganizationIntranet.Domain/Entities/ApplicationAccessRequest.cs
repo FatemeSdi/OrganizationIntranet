@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>درخواست دسترسی کاربر به یک سامانه با دلیل، وضعیت (Pending، Approved، Rejected، Cancelled) و تصمیم مدیر. Revision جلوی تصمیم هم‌زمان را می‌گیرد.</summary>
 public class ApplicationAccessRequest
 {
     public long ApplicationAccessRequestId { get; set; }

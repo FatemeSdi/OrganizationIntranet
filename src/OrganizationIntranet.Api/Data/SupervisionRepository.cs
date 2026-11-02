@@ -6,6 +6,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی نظارت: گروه‌ها، هشدارها (درون‌برنامه‌ای و پیامک)، کارتابل و صف پیامک.</summary>
 public sealed class SupervisionRepository(AppDbContext db) : ISupervisionRepository
 {
     public Task<List<ApplicationSupervisionGroup>> GroupsAsync(int applicationId) => db.ApplicationSupervisionGroups.Include(g => g.Members)
@@ -21,6 +22,7 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
         foreach (var user in users.Where(id => !group.Members.Any(m => m.UserId == id))) group.Members.Add(new() { UserId = user });
         foreach (var role in roles.Where(id => !group.Members.Any(m => m.RoleId == id))) group.Members.Add(new() { RoleId = role });
     }
+    /// <summary>برای یک درخواست تازه به هر گیرنده یک هشدار می‌سازد؛ بسته به روش اطلاع‌رسانی سامانه (InApp، Sms یا Both) درون‌برنامه‌ای و/یا در صف پیامک.</summary>
     public async Task EnqueueAsync(ApplicationAccessRequest request)
     {
         var app = await db.Applications.SingleAsync(a => a.ApplicationId == request.ApplicationId);
@@ -31,7 +33,9 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
                 SmsStatus = app.AccessRequestNotificationChannels is "Sms" or "Both" ? "Pending" : "NotRequested",
                 NextAttemptAt = app.AccessRequestNotificationChannels is "Sms" or "Both" ? DateTime.UtcNow : null });
     }
+    /// <summary>هشدارهای قابل‌دیدن کاربر (فقط برای سامانه‌هایی که هنوز ناظرشان است).</summary>
     private IQueryable<AccessRequestAlert> Visible(long userId) => SupervisionQueries.Alerts(db, userId);
+    /// <summary>حداکثر ۵۰ هشدار (اول خوانده‌نشده‌ها، سپس جدیدترین) و شمار کل خوانده‌نشده‌ها.</summary>
     public async Task<(List<AccessRequestAlert> Items, int UnreadCount)> AlertsAsync(long userId)
     {
         var query = Visible(userId);
@@ -39,6 +43,7 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
         return (await query.AsNoTracking().Include(a => a.Request).ThenInclude(r => r.Application).Include(a => a.Request).ThenInclude(r => r.User)
             .OrderBy(a => a.IsRead).ThenByDescending(a => a.AccessRequestAlertId).Take(50).ToListAsync(), count);
     }
+    /// <summary>یک هشدار یا همه را خوانده‌شده می‌کند؛ هشدار ناموجود یا غیرقابل‌دید KeyNotFoundException می‌دهد.</summary>
     public async Task MarkReadAsync(long userId, long? alertId)
     {
         var alerts = await Visible(userId).Where(a => !alertId.HasValue || a.AccessRequestAlertId == alertId.Value).ToListAsync();
@@ -54,6 +59,7 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
             .GroupBy(r => r.Status).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.Count);
         return (list.Select(a => (a.ApplicationId, a.ApplicationName)).ToList(), counts);
     }
+    /// <summary>کارتابل ناظر: اول درخواست‌های در انتظار، سپس جدیدترین؛ محدود به سامانه‌های تحت نظارت.</summary>
     public async Task<(List<ApplicationAccessRequest> Items, int Total)> InboxAsync(long userId, int page, int pageSize, string? status = null, int? applicationId = null)
     {
         var apps = SupervisionQueries.Applications(db, userId);
@@ -63,6 +69,7 @@ public sealed class SupervisionRepository(AppDbContext db) : ISupervisionReposit
         return (await query.Include(r => r.User).Include(r => r.Application).OrderBy(r => r.Status != "Pending").ThenByDescending(r => r.ApplicationAccessRequestId)
             .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(), count);
     }
+    /// <summary>هشدارهایی که پیامک برایشان درخواست شده (صف و سابقه).</summary>
     public async Task<(List<AccessRequestAlert> Items, int Total)> SmsAsync(int page, int pageSize)
     {
         var query = db.AccessRequestAlerts.AsNoTracking().Where(a => a.SmsStatus != "NotRequested");

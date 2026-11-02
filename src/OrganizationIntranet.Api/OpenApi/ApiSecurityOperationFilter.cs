@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace OrganizationIntranet.Api.OpenApi;
 
+/// <summary>در Swagger برای هر مسیر نشان می‌دهد چه اعتباری لازم است: کلید UI، توکن Bearer (مگر مسیر ناشناس) و کلید مدیریتی (برای مسیرهای [AdminClient])؛ مسیرهای سامانه‌های دیگر فقط کلید همان سامانه.</summary>
 public sealed class ApiSecurityOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

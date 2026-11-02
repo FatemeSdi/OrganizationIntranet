@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>DbContext اصلی اینترانت (SQL Server). مدل بر پایه‌ی جدول‌های سه Schema است: Sec (کاربر، نقش، مجوز، ورود)، App (سامانه‌ها و دسترسی) و Notify (اعلان و مطالب). تنظیمات موجودیت‌ها بین چند فایل partial تقسیم شده است.</summary>
 public partial class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -21,6 +22,7 @@ public partial class AppDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
 
+    /// <summary>تعریف جدول‌ها، کلیدها، ایندکس‌ها و قیدها؛ باید با migrationهای database/migrations یکی بماند (آزمون‌های Live این را می‌سنجند).</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureAuthenticationIntegrity(modelBuilder);

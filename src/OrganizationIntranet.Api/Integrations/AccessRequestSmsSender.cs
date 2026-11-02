@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Integrations;
 
+/// <summary>ارسال پیامک اطلاع‌رسانی درخواست دسترسی: با درگاه داخلی اگر پیکربندی شده، وگرنه با سرویس HTTPS تنظیمات ورود و هدر Idempotency-Key.</summary>
 public sealed class AccessRequestSmsSender(IAuthenticationRepository settingsRepository, IAuthenticationProviders protection, IHttpClientFactory clients, ISmsGateway smsGateway) : IAccessRequestSmsSender
 {
     public async Task SendAsync(string mobile, string message, string idempotencyKey, CancellationToken cancellationToken)

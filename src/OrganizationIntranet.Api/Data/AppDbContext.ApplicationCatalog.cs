@@ -3,6 +3,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>بخش کاتالوگ سامانه‌ها از DbContext: دسترسی کاربران و نقش‌ها و سرویس‌های هر سامانه.</summary>
 public partial class AppDbContext
 {
     public DbSet<ApplicationAccess> ApplicationAccessGrants => Set<ApplicationAccess>();

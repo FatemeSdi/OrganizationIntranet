@@ -37,7 +37,7 @@
         </div>
         <div class="row g-3">
             <div class="col-md-6"><label asp-for="Username" class="form-label">نام کاربری <span class="text-danger">*</span></label><input asp-for="Username" class="form-control" dir="ltr" required autocomplete="off" /></div>
-            <div class="col-md-6"><label asp-for="NewPassword" class="form-label">@(Model.IsNew ? "رمز عبور" : "رمز عبور جدید")</label><input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" /></div>
+            <div class="col-md-6"><label asp-for="NewPassword" class="form-label">@(Model.IsNew ? "رمز عبور" : "رمز عبور جدید")</label><input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" required="@Model.IsNew" /></div>
             <div class="col-12">
                 <div class="switch-row">
                     <div>
@@ -53,23 +53,17 @@
     <section class="form-section">
         <div>
             <h2 class="form-section__title"><i class="ti ti-user-shield"></i>نقش‌ها</h2>
-            <p class="form-section__help">نقش، سطح کلی دسترسی را تعیین می‌کند و مجوزهای هر سامانه از طریق نقش‌ها داده می‌شود. تغییر نقش حداکثر ظرف ۵ دقیقه در نشست کاربر اعمال می‌شود.</p>
+            <p class="form-section__help">نقش، سطح کلی دسترسی کاربر را تعیین می‌کند. برای کاربر موجود همان لحظه ثبت می‌شود.</p>
         </div>
-        <div class="row g-2">
-            @foreach (var role in Model.AllRoles)
-            {
-                <div class="col-md-6">
-                    <div class="switch-row mb-0">
-                        <label class="switch-row__label" for="role-@role.RoleId">@role.RoleName <span class="code-chip ms-1">@role.RoleCode</span></label>
-                        <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" />
-                    </div>
-                </div>
-            }
-            @if (Model.AllRoles.Count == 0)
-            {
-                <div class="col-12"><span class="text-muted fs-13">هیچ نقشی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span></div>
-            }
-        </div>
+        @if (Model.AllRoles.Count == 0)
+        {
+            <span class="text-muted fs-13">هیچ نقشی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span>
+        }
+        else
+        {
+            @* فهرست کشویی قابل جست‌وجو (با ۳۰ نقش هم جا می‌گیرد)؛ برای کاربر موجود هر انتخاب همان لحظه ثبت می‌شود، برای کاربر جدید همراه فرم ذخیره می‌شود. *@
+            <partial name="_EntityPicker" model='OrganizationIntranet.Pages.Shared.PickList.ForRoles("SelectedRoleIds", "نقش‌های کاربر", Model.AllRoles, Model.SelectedRoleIds, Model.IsNew ? null : Url.Page("Edit", "Role", new { id = Model.Id }))' />
+        }
     </section>
 
     <div class="form-actions">

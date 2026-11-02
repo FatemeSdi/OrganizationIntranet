@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>مجوز (جدول Sec.Permission): اجازه‌ی دقیق یک کار در یک سامانه؛ کد آن در هر سامانه یکتاست.</summary>
 public class Permission
 {
     public int PermissionId { get; set; }

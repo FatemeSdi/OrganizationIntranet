@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Integrations;
 
+/// <summary>سرویس پس‌زمینه: هر چند ثانیه (۱۵ تا ۳۶۰۰، پیش‌فرض ۶۰) اعلان‌های سامانه‌هایی را که سرویس NOTIFICATIONS با نشانی دارند واکشی می‌کند. شکست یک سامانه بقیه را متوقف نمی‌کند و فقط پیام کلی در سرویس ثبت می‌شود.</summary>
 public sealed class NotificationPullWorker(IServiceScopeFactory scopes, IConfiguration configuration, ILogger<NotificationPullWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,6 +23,7 @@ public sealed class NotificationPullWorker(IServiceScopeFactory scopes, IConfigu
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
     }
+    /// <summary>یک دور واکشی برای همه‌ی سامانه‌های دارای PullUrl؛ نتیجه با نشانگر (cursor) ذخیره می‌شود تا دور بعد از همان‌جا ادامه یابد.</summary>
     public async Task PollAsync(CancellationToken cancellationToken)
     {
         List<(int Id, string Code)> registrations;

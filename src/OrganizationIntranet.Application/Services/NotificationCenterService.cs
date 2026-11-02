@@ -3,8 +3,10 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>مرکز اعلان‌های کاربر: اعلان سامانه‌ها و هشدار درخواست‌های دسترسی در یک فهرست با فیلتر و صفحه‌بندی سمت سرور.</summary>
 public sealed class NotificationCenterService(INotificationCenterRepository repository)
 {
+    /// <summary>یک صفحه از مرکز اعلان. kind=system|request، status=unread|read و days=1|7|30|90 را اعتبارسنجی می‌کند. شمار کل، همه و خوانده‌نشده برای تب‌ها هم برمی‌گردد.</summary>
     public async Task<NotificationCenterDto> PageAsync(long userId, string? kind, string? status, int? days, int page)
     {
         if (!NotificationCenter.ValidKind(kind) || !NotificationCenter.ValidStatus(status) || !NotificationCenter.ValidDays(days) || page is < 1 or > 100000)

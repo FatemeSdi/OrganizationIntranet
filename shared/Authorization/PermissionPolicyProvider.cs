@@ -9,6 +9,7 @@ namespace OrganizationIntranet.Authorization;
 /// </summary>
 public class PermissionPolicyProvider : IAuthorizationPolicyProvider
 {
+    /// <summary>پیشوند نام Policy مجوزی: Permission:CODE.</summary>
     public const string Prefix = "Permission:";
 
     private readonly DefaultAuthorizationPolicyProvider _fallbackProvider;

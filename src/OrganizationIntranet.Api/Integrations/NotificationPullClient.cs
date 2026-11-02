@@ -3,9 +3,10 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.Api.Integrations;
 
-// The exact endpoint and its credential are pinned in server configuration, separate from UI client keys.
+/// <summary>واکشی اعلان از سامانه‌های دیگر (Pull). نشانی دقیق و کلید هر سامانه در تنظیمات سرور ثابت شده‌اند، جدا از کلیدهای UI، و پاسخ بیش از ۲۵۶ کیلوبایت رد می‌شود.</summary>
 public sealed class NotificationPullClient(HttpClient client, IConfiguration configuration)
 {
+    /// <summary>یک دسته اعلان را از نشانی ثبت‌شده‌ی سامانه می‌گیرد؛ نشانی باید HTTPS، بدون نام کاربری و دقیقاً برابر PullUrl تنظیمات باشد و cursor را سرور اضافه می‌کند.</summary>
     public async Task<ApplicationNotificationBatch> FetchAsync(string applicationCode, string endpoint, string? cursor, CancellationToken cancellationToken)
     {
         var settings = configuration.GetSection($"ApplicationIntegrations:{applicationCode}");

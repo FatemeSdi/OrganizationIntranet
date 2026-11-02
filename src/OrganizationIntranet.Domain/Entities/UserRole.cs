@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>عضویت یک کاربر در یک نقش (چند به چند).</summary>
 public class UserRole
 {
     public long UserRoleId { get; set; }

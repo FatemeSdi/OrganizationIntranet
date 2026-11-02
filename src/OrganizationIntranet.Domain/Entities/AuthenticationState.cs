@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>تنظیمات ورود و امنیت (جدول Sec.AuthenticationSettings): یک ردیف (Id=1) با JSON تنظیمات، کلید پیامک رمزگذاری‌شده و Revision که با هر تغییر همه‌ی نشست‌ها را باطل می‌کند.</summary>
 public sealed class AuthenticationSettings
 {
     public int Id { get; set; } = 1;
@@ -8,6 +9,7 @@ public sealed class AuthenticationSettings
     public Guid Revision { get; set; } = Guid.NewGuid();
 }
 
+/// <summary>چالش موقت ورود دومرحله‌ای، ورود با کد ملی، بازیابی رمز یا راه‌اندازی Authenticator: ۵ دقیقه اعتبار، حداکثر ۵ تلاش و یک‌بارمصرف. شناسه، هش توکن است نه خود توکن.</summary>
 public sealed class AuthenticationChallenge
 {
     public string Id { get; set; } = "";

@@ -205,6 +205,7 @@ a.stat-tile:hover { transform: translateY(-2px); border-color: rgba(var(--primar
 @media (prefers-reduced-motion: reduce) { .switch-row .form-check-input { transition: none; } }
 .switch-row:has(.form-check-input:checked) { border-color: rgba(var(--primary-rgb), .35); background: rgba(var(--primary-rgb), .03); }
 
+.required-star { font-weight: 700; margin-inline-start: .125rem; }
 .form-actions { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .875rem 1.25rem;
     background: var(--custom-white); border-top: 1px solid var(--default-border); border-radius: 0 0 var(--bs-card-border-radius, .5rem) var(--bs-card-border-radius, .5rem); }
 /* دکمه‌ی ثبت پایین سمت چپ (انتهای خط در RTL)؛ انصراف/بازگشت کنارش و راهنما در سمت راست */
@@ -220,13 +221,43 @@ a.stat-tile:hover { transform: translateY(-2px); border-color: rgba(var(--primar
 .admin-callout--warning { background: rgba(var(--warning-rgb), .08); border-color: rgba(var(--warning-rgb), .35); }
 .admin-callout--warning > i { color: rgb(var(--warning-rgb)); }
 
-/* فهرست انتخاب چندگانه */
-.pick-list__head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .5rem; }
-.pick-list__items { max-height: 280px; overflow-y: auto; border: 1px solid var(--default-border); border-radius: 12px; padding: .25rem; }
-.pick-list__item { display: flex; align-items: center; gap: .625rem; padding: .5rem .625rem; border-radius: 8px; cursor: pointer; font-size: .8125rem; margin: 0; }
-.pick-list__item:hover { background: var(--list-hover-focus-bg); }
-.pick-list__item:has(input:checked) { background: rgba(var(--primary-rgb), .07); }
-.pick-list__item[hidden] { display: none; }
+/* انتخاب کاربر/نقش: کادر جست‌وجو با فهرست کشویی + موارد انتخاب‌شده به‌صورت رادیوباتن (admin-pickers.js) */
+.entity-picker { display: grid; gap: .625rem; }
+.entity-picker__head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.entity-picker__combo { position: relative; }
+/* ظاهر فهرست کشویی: کادر با فلش در انتهای آن؛ کلیک روی هر جای کادر فهرست را باز می‌کند */
+.entity-picker__combo .form-control { cursor: pointer; padding-inline-end: 2.5rem; background: var(--custom-white); }
+.entity-picker__combo .form-control:focus { cursor: text; }
+.entity-picker__chevron { position: absolute; inset-inline-end: 0; top: 0; height: 100%; width: 2.5rem; display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--text-muted); cursor: pointer; z-index: 2; }
+.entity-picker__chevron i { font-size: 1.125rem; transition: transform .15s; }
+.entity-picker__combo:has(input[aria-expanded="true"]) .entity-picker__chevron i { transform: rotate(180deg); color: var(--primary-color); }
+.entity-picker__combo:has(input[aria-expanded="true"]) .form-control { border-color: var(--primary-color); }
+.entity-picker__menu { position: absolute; z-index: 30; inset-inline: 0; top: calc(100% + 4px); margin: 0; padding: .25rem; list-style: none; max-height: 260px; overflow-y: auto;
+    background: var(--custom-white); border: 1px solid var(--default-border); border-radius: 12px; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .35); }
+.entity-picker__menu[hidden], .entity-picker__menu li[hidden] { display: none; }
+.entity-picker__menu li[data-id] { display: flex; align-items: center; gap: .625rem; padding: .5rem .625rem; border-radius: 8px; cursor: pointer; font-size: .8125rem; }
+.entity-picker__menu li[data-id]:hover, .entity-picker__menu li.is-active { background: var(--list-hover-focus-bg); }
+.entity-picker__none { padding: .75rem; color: var(--text-muted); font-size: .8125rem; text-align: center; }
+.entity-picker__text { min-width: 0; flex: 1 1 auto; }
+.entity-picker__selected { list-style: none; margin: 0; padding: 0; display: grid; gap: .375rem; max-height: 320px; overflow-y: auto; }
+.entity-picker__item { border: 1px solid var(--default-border); border-radius: 10px; background: rgba(var(--primary-rgb), .05); }
+.entity-picker__item label { display: flex; align-items: center; gap: .625rem; margin: 0; padding: .5rem .75rem; cursor: pointer; font-size: .8125rem; }
+.entity-picker__item:hover { border-color: rgba(var(--danger-rgb), .45); background: rgba(var(--danger-rgb), .05); }
+.entity-picker__item .form-check-input { flex-shrink: 0; cursor: pointer; }
+.entity-picker__hint i { color: var(--primary-color); }
+.entity-picker.is-busy { opacity: .7; pointer-events: none; }
+
+/* انتخاب آیکن: خود آیکن کنار نام آن (سمت راست متن) */
+.icon-picker { position: relative; }
+.icon-picker__button { display: flex; align-items: center; gap: .625rem; text-align: start; cursor: pointer; }
+.icon-picker__icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; background: rgba(var(--primary-rgb), .1); color: var(--primary-color); }
+.icon-picker__icon svg { width: 18px; height: 18px; }
+.icon-picker__list { position: absolute; z-index: 30; inset-inline: 0; top: calc(100% + 4px); margin: 0; padding: .25rem; list-style: none; max-height: 280px; overflow-y: auto; min-width: 200px;
+    background: var(--custom-white); border: 1px solid var(--default-border); border-radius: 12px; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .35); }
+.icon-picker__list[hidden] { display: none; }
+.icon-picker__option { display: flex; align-items: center; gap: .625rem; padding: .375rem .5rem; border-radius: 8px; cursor: pointer; font-size: .8125rem; }
+.icon-picker__option:hover, .icon-picker__option:focus, .icon-picker__option[aria-selected="true"] { background: var(--list-hover-focus-bg); outline: none; }
+.icon-picker__option[aria-selected="true"] .icon-picker__icon { background: var(--primary-color); color: #fff; }
 
 /* تصویر کارت خبر: پیش‌نمایش هم‌شکل کارت اسلایدر پورتال */
 .publication-image-editor { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 1.25rem; align-items: start; }

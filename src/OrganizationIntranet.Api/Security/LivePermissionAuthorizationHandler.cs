@@ -25,6 +25,7 @@ public sealed class LivePermissions(IIntranetRepository users, IHttpContextAcces
     }
 }
 
+/// <summary>Policyهای Permission:CODE را با مجوزهای زنده‌ی کاربر (LivePermissions) تصمیم می‌گیرد.</summary>
 public sealed class LivePermissionAuthorizationHandler(LivePermissions permissions) : AuthorizationHandler<PermissionRequirement>
 {
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)

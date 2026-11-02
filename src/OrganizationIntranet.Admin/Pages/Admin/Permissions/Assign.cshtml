@@ -35,36 +35,19 @@
     <section class="form-section">
         <div>
             <h2 class="form-section__title"><i class="ti ti-user-shield"></i>نقش‌های دارای این مجوز</h2>
-            <p class="form-section__help">فقط نقش‌های فعال نمایش داده می‌شوند.</p>
+            <p class="form-section__help">نقش را انتخاب کنید؛ همان لحظه ثبت می‌شود. مجوز سیستمی از نقش مدیر گرفته نمی‌شود.</p>
         </div>
-        <div class="row g-2">
-            @foreach (var role in Model.AllRoles)
-            {
-                <div class="col-md-6">
-                    <div class="switch-row mb-0">
-                        <label class="switch-row__label" for="role-@role.RoleId">@role.RoleName <span class="code-chip ms-1">@role.RoleCode</span></label>
-                        @if (OrganizationIntranet.Contracts.AdminPermissions.IsSystem(Model.Permission.PermissionCode) && role.RoleCode == OrganizationIntranet.Contracts.AdminPermissions.AdminRoleCode)
-                        {
-                            @* مجوز سیستمی همیشه برای نقش مدیر می‌ماند؛ کنترل غیرفعال است و مقدار با فیلد پنهان ارسال می‌شود *@
-                            <input type="hidden" name="SelectedRoleIds" value="@role.RoleId" />
-                            <input type="checkbox" class="form-check-input" role="switch" id="role-@role.RoleId" checked disabled title="مجوز سیستمی از نقش مدیر گرفته نمی‌شود" />
-                        }
-                        else
-                        {
-                            <input type="checkbox" class="form-check-input" role="switch" name="SelectedRoleIds" value="@role.RoleId" id="role-@role.RoleId" checked="@Model.SelectedRoleIds.Contains(role.RoleId)" disabled="@(!canEdit)" />
-                        }
-                    </div>
-                </div>
-            }
-            @if (Model.AllRoles.Count == 0)
-            {
-                <div class="col-12"><span class="text-muted fs-13">هیچ نقش فعالی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span></div>
-            }
-        </div>
+        @if (Model.AllRoles.Count == 0)
+        {
+            <span class="text-muted fs-13">هیچ نقش فعالی تعریف نشده است. <a href="/Admin/Roles">تعریف نقش</a></span>
+        }
+        else
+        {
+            <partial name="_EntityPicker" model='OrganizationIntranet.Pages.Shared.PickList.ForRoles("SelectedRoleIds", "نقش‌های دارای این مجوز", Model.AllRoles, Model.SelectedRoleIds, canEdit ? Url.Page("Assign", "Role", new { id = Model.Id }) : null, !canEdit)' />
+        }
     </section>
 
     <div class="form-actions">
-        @if (canEdit) { <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره</button> }
-        <a href="/Admin/Permissions" class="btn btn-primary-light">انصراف</a>
+        <a href="/Admin/Permissions" class="btn btn-primary-light">بازگشت به مجوزها</a>
     </div>
 </form>

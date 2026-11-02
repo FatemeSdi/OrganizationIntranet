@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>مجوز مستقیم کاربر (چند به چند). در کد استفاده نمی‌شود؛ تصمیم حذف یا نگه‌داشتن آن هنوز گرفته نشده است.</summary>
 public class UserPermission
 {
     public long UserPermissionId { get; set; }

@@ -1,0 +1,52 @@
+@model OrganizationIntranet.Pages.Shared.PickList
+@*
+    انتخاب کاربر/نقش: فهرست کشویی قابل جست‌وجو + موارد انتخاب‌شده به‌صورت رادیوباتن (admin-pickers.js).
+    بدون JavaScript هم موارد انتخاب‌شده دیده می‌شوند و فیلدهای hidden با همان نام ارسال می‌شوند.
+    همه‌ی متن‌ها encode می‌شوند و JavaScript فقط با textContent/createElement کار می‌کند.
+*@
+@{
+    var id = "picker-" + Model.Name.Replace('.', '-');
+    var selected = Model.Items.Where(i => i.Selected).OrderBy(i => i.Label).ToList();
+}
+<div class="entity-picker" data-picker data-field="@Model.Name" data-kind="@Model.Kind" data-noun="@Model.Noun" data-instant-url="@Model.InstantUrl">
+    <div class="entity-picker__head">
+        <label class="form-label mb-0" for="@id-input">@Model.Label</label>
+        <span class="text-muted fs-12"><span data-pick-count>@selected.Count</span> مورد انتخاب‌شده</span>
+    </div>
+    @if (!Model.ReadOnly)
+    {
+    <div class="entity-picker__combo">
+        <button type="button" class="entity-picker__chevron" tabindex="-1" aria-label="باز و بسته کردن فهرست @(Model.Noun)‌ها" data-picker-toggle><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+        <input type="text" id="@id-input" class="form-control" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="@id-menu" autocomplete="off"
+               placeholder="@Model.SearchPlaceholder" data-picker-input />
+        <ul class="entity-picker__menu" id="@id-menu" role="listbox" aria-label="@Model.Label" hidden data-picker-menu>
+            @foreach (var item in Model.Items.OrderBy(i => i.Inactive).ThenBy(i => i.Label))
+            {
+                <li role="option" tabindex="-1" data-id="@item.Value" data-label="@item.Label" data-sub="@item.Sub" data-inactive="@(item.Inactive ? "1" : null)" data-search="@item.Label @item.Sub" hidden="@item.Selected">
+                    <span class="entity-picker__text"><span class="d-block text-truncate">@item.Label</span>@if (item.Sub is not null) { <small class="d-block text-muted text-truncate" dir="ltr">@item.Sub</small> }</span>
+                    @if (item.Inactive) { <span class="status-pill status-pill--muted ms-auto">غیرفعال</span> }
+                </li>
+            }
+            <li class="entity-picker__none" aria-disabled="true" hidden data-picker-none>موردی پیدا نشد.</li>
+        </ul>
+    </div>
+    }
+    <ul class="entity-picker__selected" data-picker-selected aria-label="@(Model.Noun)‌های انتخاب‌شده">
+        @foreach (var item in selected)
+        {
+            <li class="entity-picker__item" data-id="@item.Value">
+                <label>
+                    <input type="radio" class="form-check-input m-0" name="picked-@id-@item.Value" checked disabled="@Model.ReadOnly" aria-label="@(Model.ReadOnly ? item.Label : "برداشتن " + item.Label)" />
+                    <span class="entity-picker__text"><span class="d-block text-truncate">@item.Label</span>@if (item.Sub is not null) { <small class="d-block text-muted text-truncate" dir="ltr">@item.Sub</small> }</span>
+                    @if (item.Inactive) { <span class="status-pill status-pill--muted ms-auto">غیرفعال</span> }
+                </label>
+                <input type="hidden" name="@Model.Name" value="@item.Value" />
+            </li>
+        }
+    </ul>
+    <p class="entity-picker__empty text-muted fs-12 mb-0" data-picker-empty hidden="@(selected.Count > 0)">هنوز @(Model.Noun)‌ای انتخاب نشده است. از فهرست بالا انتخاب کنید.</p>
+    @if (Model.InstantUrl is not null)
+    {
+        <p class="entity-picker__hint text-muted fs-12 mb-0"><i class="ti ti-bolt" aria-hidden="true"></i> هر تغییر همان لحظه ثبت می‌شود.</p>
+    }
+</div>

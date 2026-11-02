@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>مجوزِ داده‌شده به یک نقش (چند به چند)؛ مسیر اصلی مجوزدهی.</summary>
 public class RolePermission
 {
     public long RolePermissionId { get; set; }

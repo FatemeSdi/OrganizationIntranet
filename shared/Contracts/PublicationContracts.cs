@@ -2,11 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OrganizationIntranet.Contracts;
 
+/// <summary>نوع مطلب: News (خبر)، Announcement (اطلاعیه) و Circular (بخشنامه) با برچسب فارسی.</summary>
 public static class PublicationKinds
 {
     public static bool IsValid(string? kind) => kind is "News" or "Announcement" or "Circular";
     public static string Label(string kind) => kind switch { "News" => "خبر", "Announcement" => "اطلاعیه", "Circular" => "بخشنامه", _ => "نامعتبر" };
 }
+/// <summary>ساخت یا ویرایش مطلب؛ سقف طول‌ها با ستون‌های بانک و فرم یکی است (عنوان ۲۰۰، خلاصه ۱۰۰۰، متن ۵۰۰۰۰). Revision در ویرایش برای تشخیص تعارض لازم است.</summary>
 public sealed class PublicationEditRequest
 {
     [Required, StringLength(200)] public string Title { get; set; } = "";
@@ -25,9 +27,11 @@ public record PublicationDto(long PublicationId, string Title, string Summary, s
 }
 /// <summary>بارگذاری تصویر شاخص؛ نوع فایل از امضای خود فایل تشخیص داده می‌شود.</summary>
 public sealed record PublicationImageUpload(string Base64);
+/// <summary>قواعد تصویر شاخص: حداکثر ۲ مگابایت و فقط JPEG، PNG یا WebP.</summary>
 public static class PublicationImageRules
 {
     public const int MaxBytes = 2 * 1024 * 1024;
     public const string Accept = "image/jpeg,image/png,image/webp";
 }
+/// <summary>صفحه‌ای از مطالب (۲۰ مورد در هر صفحه).</summary>
 public record PublicationListDto(List<PublicationDto> Items, int Total, int Page, int PageSize);

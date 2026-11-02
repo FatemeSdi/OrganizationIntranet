@@ -4,8 +4,10 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Application.Services;
 
+/// <summary>پذیرش اعلان‌های سامانه‌های دیگر (Push یا Pull): اعتبارسنجی بسته، یافتن گیرنده، ساخت یا به‌روزرسانی اعلان و حفظ وضعیت «خوانده‌شده» کاربر.</summary>
 public sealed class NotificationIntegrationService(INotificationIntegrationRepository repository)
 {
+    /// <summary>یک دسته (حداکثر ۱۰۰ اعلان) را برای سامانه‌ی applicationCode وارد می‌کند. هر اعلان با (سامانه، گیرنده، ExternalId) یکتاست و فقط اگر نسخه‌ی منبعش تازه‌تر باشد به‌روز می‌شود. مقصد اعلان باید هم‌مبدأ BaseUrl سامانه باشد. advanceCursor فقط برای Pull است و نشانگر همگام‌سازی را جلو می‌برد.</summary>
     public async Task<NotificationImportResult> ImportAsync(string applicationCode, ApplicationNotificationBatch batch, bool advanceCursor = false)
     {
         if (batch.Items is null || batch.Items.Count > 100 || batch.NextCursor?.Length > 1000) throw new ArgumentException("بسته اعلان معتبر نیست؛ حداکثر ۱۰۰ اعلان مجاز است");
@@ -49,6 +51,7 @@ public sealed class NotificationIntegrationService(INotificationIntegrationRepos
         await repository.SaveAsync();
         return new(imported, ignored);
     }
+    /// <summary>مقدار اجباری را تمیز می‌کند و اگر خالی یا بلندتر از max باشد خطا می‌دهد.</summary>
     private static string Required(string? value, int max)
     {
         value = value?.Trim();

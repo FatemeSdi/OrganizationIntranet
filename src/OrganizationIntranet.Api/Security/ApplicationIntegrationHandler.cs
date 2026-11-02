@@ -8,10 +8,13 @@ using Microsoft.Extensions.Options;
 
 namespace OrganizationIntranet.Api.Security;
 
+/// <summary>احراز هویت سامانه‌های دیگر (دریافت اعلان، تحویل بلیت SSO): هدر X-Application-Key باید با کلیدِ همان سامانه (ApplicationIntegrations:{CODE}:{KeyName}) یکی باشد. کلید باید دست‌کم ۳۲ نویسه و متفاوت از کلیدهای UI باشد.</summary>
 public sealed class ApplicationIntegrationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
     UrlEncoder encoder, IConfiguration configuration) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
+    /// <summary>نام Scheme احراز هویت سامانه‌ها.</summary>
     public const string SchemeName = "ApplicationIntegration";
+    /// <summary>کد سامانه را از مسیر می‌خواند، کلید همان کاربرد را (PushKey یا مثلاً SsoKey از [ApplicationIntegration]) از تنظیمات برمی‌دارد و در زمان ثابت با هدر مقایسه می‌کند. موفقیت یعنی Claim application_code.</summary>
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var code = Context.Request.RouteValues["applicationCode"]?.ToString()?.ToUpperInvariant();

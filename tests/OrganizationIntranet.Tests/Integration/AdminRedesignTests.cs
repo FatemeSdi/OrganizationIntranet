@@ -196,14 +196,19 @@ public sealed partial class PortalSmokeTests
         {
             var html = await browser.GetStringAsync("/Admin/Applications/Edit?id=1");
             Assert.DoesNotContain("multiple", html); // select چندگانه با فهرست چک‌باکسی جایگزین شده
-            Assert.Contains($"name=\"Input.UserIds\" value=\"{memberId}\"", html);
-            Assert.Contains("name=\"Input.RoleIds\"", html);
+            Assert.Contains("data-picker", html);                                                  // فهرست کشویی قابل جست‌وجو جایگزین چک‌باکس‌ها شده
+            Assert.Contains("data-field=\"Input.UserIds\"", html);                                  // و با همان نام فیلد ارسال می‌شود
+            Assert.Contains($"data-id=\"{memberId}\"", html);                                        // هر کاربر یک گزینه‌ی فهرست است
+            Assert.Contains("data-field=\"Input.RoleIds\"", html);
+            Assert.Contains("handler=Access", html);                                               // ثبت لحظه‌ای بدون دکمه‌ی ذخیره
             var supervision = await browser.GetStringAsync("/Admin/Applications/Supervision?id=1");
-            Assert.Contains($"name=\"UserIds\" value=\"{memberId}\"", supervision);
+            Assert.Contains("data-field=\"UserIds\"", supervision);
+            Assert.Contains($"data-id=\"{memberId}\"", supervision);
+            Assert.DoesNotContain("data-instant-url=\"/", supervision);                            // گروه نظارت با دکمه‌ی ذخیره ثبت می‌شود (قاعده‌ی حداقل یک عضو)
 
             var fields = new List<KeyValuePair<string, string>>
             {
-                new("Id", "1"), new("Input.ApplicationName", "سامانه آزمایشی"), new("Input.ApplicationCode", "PICK_TEST"), new("Input.Icon", "apps"),
+                new("Id", "1"), new("Input.ApplicationName", "سامانه آزمایشی"), new("Input.ApplicationCode", "PICK_TEST"), new("Input.BaseUrl", "https://pick.example/"), new("Input.Icon", "apps"),
                 new("Input.AccessRequestNotificationChannels", "InApp"), new("Input.RequiresLogin", "true"), new("Input.UserIds", memberId.ToString()),
                 new("__RequestVerificationToken", await Antiforgery(browser, "/Admin/Applications/Edit?id=1")),
             };

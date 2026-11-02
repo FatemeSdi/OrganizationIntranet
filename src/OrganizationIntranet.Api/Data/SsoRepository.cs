@@ -4,15 +4,18 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Data;
 
+/// <summary>پیاده‌سازی EF Core داده‌ی ورود یکپارچه: بلیت‌ها و نگاشت نام کاربری هر کاربر در هر سامانه.</summary>
 public sealed class SsoRepository(AppDbContext db) : ISsoRepository
 {
+    /// <summary>سامانه‌ی هدف بلیت؛ null اگر سامانه فعال نیست یا کاربر به آن دسترسی ندارد.</summary>
     public async Task<SsoTarget?> TargetAsync(long userId, int applicationId)
     {
         var app = await ApplicationAccessQueries.Available(db, userId).AsNoTracking()
-            .Where(a => a.ApplicationId == applicationId).Select(a => new { a.ApplicationId, a.ApplicationCode }).SingleOrDefaultAsync();
-        return app is null ? null : new(app.ApplicationId, app.ApplicationCode, userId);
+            .Where(a => a.ApplicationId == applicationId).Select(a => new { a.ApplicationId, a.ApplicationCode, a.BaseUrl }).SingleOrDefaultAsync();
+        return app is null ? null : new(app.ApplicationId, app.ApplicationCode, app.BaseUrl, userId);
     }
     public void AddTicket(SsoTicket ticket) => db.SsoTickets.Add(ticket);
+    /// <summary>بلیت را اتمیک مصرف می‌کند (UPDATE ... WHERE RedeemedAt IS NULL پس دو مصرف هم‌زمان ممکن نیست)، دسترسی را دوباره می‌سنجد و نام کاربری در سامانه را می‌دهد: نگاشت‌شده یا همان نام اینترانت (مگر نامی که به کاربر دیگری نگاشت شده باشد).</summary>
     public async Task<SsoRedeemed?> RedeemAsync(byte[] ticketHash, string applicationCode, DateTime now)
     {
         var applicationId = await db.Applications.Where(a => a.ApplicationCode == applicationCode).Select(a => (int?)a.ApplicationId).SingleOrDefaultAsync();
@@ -33,18 +36,20 @@ public sealed class SsoRepository(AppDbContext db) : ISsoRepository
         return new(user, user.Username);
     }
     public Task<User?> FindUserAsync(long userId) => db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userId);
+    /// <summary>همه‌ی سامانه‌های فعال با دسترسی فعلی کاربر و نگاشت او (برای صفحه‌ی حساب‌های سامانه‌ای).</summary>
     public async Task<List<SsoAccountRow>> AccountRowsAsync(long userId)
     {
         var granted = await ApplicationAccessQueries.Available(db, userId).AsNoTracking().Select(a => a.ApplicationId).ToListAsync();
         var mappings = await db.UserApplicationAccounts.AsNoTracking().Where(a => a.UserId == userId).ToDictionaryAsync(a => a.ApplicationId, a => a.ExternalUsername);
         var apps = await db.Applications.AsNoTracking().Where(a => a.IsActive).OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId)
-            .Select(a => new { a.ApplicationId, a.ApplicationCode, a.ApplicationName }).ToListAsync();
-        return apps.Select(a => new SsoAccountRow(a.ApplicationId, a.ApplicationCode, a.ApplicationName, granted.Contains(a.ApplicationId), mappings.GetValueOrDefault(a.ApplicationId))).ToList();
+            .Select(a => new { a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl }).ToListAsync();
+        return apps.Select(a => new SsoAccountRow(a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl, granted.Contains(a.ApplicationId), mappings.GetValueOrDefault(a.ApplicationId))).ToList();
     }
     public Task<string?> ActiveApplicationCodeAsync(int applicationId) =>
         db.Applications.AsNoTracking().Where(a => a.ApplicationId == applicationId && a.IsActive).Select(a => a.ApplicationCode).SingleOrDefaultAsync();
     public Task<UserApplicationAccount?> FindAccountAsync(long userId, int applicationId) =>
         db.UserApplicationAccounts.SingleOrDefaultAsync(a => a.UserId == userId && a.ApplicationId == applicationId);
+    /// <summary>آیا این نام در آن سامانه به کاربر دیگری می‌رسد؟ یعنی نگاشت دیگری است یا نام کاربری اینترانتِ کاربری که خودش نگاشت ندارد (بدون فرق حروف بزرگ و کوچک).</summary>
     public async Task<bool> ApplicationUsernameTakenAsync(int applicationId, string name, long exceptUserId)
     {
         var lowered = name.ToLower();
@@ -54,6 +59,7 @@ public sealed class SsoRepository(AppDbContext db) : ISsoRepository
     }
     public void AddAccount(UserApplicationAccount account) => db.UserApplicationAccounts.Add(account);
     public void RemoveAccount(UserApplicationAccount account) => db.UserApplicationAccounts.Remove(account);
+    /// <summary>بلیت‌های قدیمی‌تر از before را پاک می‌کند.</summary>
     public Task DeleteExpiredAsync(DateTime before) => db.SsoTickets.Where(t => t.ExpiresAt < before).ExecuteDeleteAsync();
     public Task SaveAsync() => db.SaveChangesAsync();
 }

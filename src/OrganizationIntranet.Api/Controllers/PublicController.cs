@@ -13,12 +13,15 @@ namespace OrganizationIntranet.Api.Controllers;
 [ApiController, Route("api/public"), AllowAnonymous, EnableRateLimiting("public")]
 public sealed class PublicController(ApplicationCatalogService applications, PublicationService publications) : ControllerBase
 {
+    /// <summary>سامانه‌های فعال و عمومی برای بازدیدکننده‌ی ناشناس.</summary>
     [HttpGet("applications")]
     public Task<List<PublicApplicationDto>> Applications() => applications.PublicAsync();
 
+    /// <summary>اخبار و اطلاعیه‌های منتشرشده‌ی عمومی (با فیلتر نوع و جست‌وجو و صفحه‌بندی).</summary>
     [HttpGet("publications")]
     public Task<PublicationListDto> Publications(string? kind = null, string? search = null, int page = 1) => publications.ListPublicAsync(kind, search, page);
 
+    /// <summary>متن کامل یک مطلب منتشرشده‌ی عمومی؛ پیش‌نویس، داخلی یا بایگانی‌شده «یافت نشد» است.</summary>
     [HttpGet("publications/{id:long}")]
     public Task<PublicationDto> Publication(long id) => publications.GetPublicAsync(id);
 

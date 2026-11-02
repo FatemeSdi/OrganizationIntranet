@@ -4,6 +4,7 @@ using OrganizationIntranet.Domain.Entities;
 
 namespace OrganizationIntranet.Api.Security;
 
+/// <summary>هش و بررسی رمز با PasswordHasher استاندارد ASP.NET Core (الگوریتم و salt درون خود هش است).</summary>
 public sealed class PasswordService : IPasswordService
 {
     private readonly PasswordHasher<User> hasher = new();

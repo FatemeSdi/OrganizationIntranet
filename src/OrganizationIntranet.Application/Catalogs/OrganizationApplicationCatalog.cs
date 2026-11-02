@@ -1,6 +1,8 @@
 namespace OrganizationIntranet.Application.Catalogs;
 
+/// <summary>تعریف یک سامانه‌ی فهرست مرجع سازمان: کد، نام، توضیح و آیکن.</summary>
 public record OrganizationApplicationDefinition(string Code, string Name, string Description, string Icon);
+/// <summary>فهرست مرجع سامانه‌های سازمان که با «وارد کردن فهرست مرجع» در پنل به کاتالوگ اضافه می‌شود.</summary>
 public static class OrganizationApplicationCatalog
 {
     public static IReadOnlyList<OrganizationApplicationDefinition> Items { get; } = [
