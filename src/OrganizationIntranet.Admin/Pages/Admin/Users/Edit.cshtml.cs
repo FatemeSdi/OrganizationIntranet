@@ -40,20 +40,29 @@ public class EditModel(ApiClient api) : PageModel
     [BindProperty]
     public List<int> SelectedRoleIds { get; set; } = new();
 
+    /// <summary>واحد کاربر در چارت سازمانی؛ خالی یعنی بدون واحد.</summary>
+    [BindProperty]
+    public int? UnitId { get; set; }
+
     public List<RoleDto> AllRoles { get; set; } = new();
+    public List<OrgUnitDto> Units { get; set; } = new();
     public string? ErrorMessage { get; set; }
     public bool IsNew => Id is null or 0;
 
 
 
-    private async Task LoadRolesAsync() => AllRoles = (await api.GetAsync<List<RoleDto>>("api/admin/roles")).Where(r => r.IsActive).ToList();
+    private async Task LoadRolesAsync()
+    {
+        AllRoles = (await api.GetAsync<List<RoleDto>>("api/admin/roles")).Where(r => r.IsActive).ToList();
+        Units = await api.GetAsync<List<OrgUnitDto>>("api/admin/org/units");
+    }
     public async Task<IActionResult> OnGetAsync()
     {
         await LoadRolesAsync();
         if (!IsNew)
         {
             var u = await api.GetAsync<UserDto>($"api/admin/users/{Id}");
-            Name = u.Name; LastName = u.LastName; Username = u.Username; NationalId = u.NationalId; MobileNumber = u.MobileNumber; Email = u.Email; IsActive = u.IsActive; SelectedRoleIds = u.SelectedRoleIds;
+            Name = u.Name; LastName = u.LastName; Username = u.Username; NationalId = u.NationalId; MobileNumber = u.MobileNumber; Email = u.Email; IsActive = u.IsActive; SelectedRoleIds = u.SelectedRoleIds; UnitId = u.UnitId;
         }
         return Page();
     }
@@ -75,7 +84,7 @@ public class EditModel(ApiClient api) : PageModel
         await LoadRolesAsync();
         try
         {
-            var result = await api.PostAsync<OperationResult>("api/admin/users", new UserEditRequest { Id = Id, Name = Name, LastName = LastName, Username = Username, NationalId = NationalId, MobileNumber = MobileNumber, Email = Email, IsActive = IsActive, NewPassword = NewPassword, SelectedRoleIds = SelectedRoleIds });
+            var result = await api.PostAsync<OperationResult>("api/admin/users", new UserEditRequest { Id = Id, Name = Name, LastName = LastName, Username = Username, NationalId = NationalId, MobileNumber = MobileNumber, Email = Email, IsActive = IsActive, NewPassword = NewPassword, SelectedRoleIds = SelectedRoleIds, UnitId = UnitId });
             TempData["SuccessMessage"] = result.Message;
             return RedirectToPage("/Admin/Users/Index");
         }

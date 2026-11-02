@@ -20,7 +20,7 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
     {
         if (value?.Length > length) throw new ArgumentException("طول مقدار واردشده بیش از حد مجاز است");
     }
-    private static UserDto Map(User u) => new(u.UserId, u.Name, u.LastName, u.Username, u.NationalId, u.MobileNumber, u.Email, u.IsActive, u.CreatedAt, u.LastLogin, string.Join("، ", u.UserRoles.Select(r => r.Role.RoleName)), u.UserRoles.Select(r => r.RoleId).ToList());
+    private static UserDto Map(User u) => new(u.UserId, u.Name, u.LastName, u.Username, u.NationalId, u.MobileNumber, u.Email, u.IsActive, u.CreatedAt, u.LastLogin, string.Join("، ", u.UserRoles.Select(r => r.Role.RoleName)), u.UserRoles.Select(r => r.RoleId).ToList(), u.UnitId);
     private static ProfileDto Profile(User u) => new(u.UserId, u.Username, u.Name, u.LastName, u.NationalId, u.MobileNumber, u.Email, u.CreatedAt, u.LastLogin,
         u.UserRoles.Count > 0 ? string.Join("، ", u.UserRoles.Select(r => r.Role.RoleName)) : "بدون نقش",
         u.UserRoles.Where(r => r.Role.IsActive).Select(r => r.Role.RoleCode).ToList(),
@@ -53,12 +53,17 @@ public sealed class IntranetService(IIntranetRepository repository, IPasswordSer
         Limit(request.NationalId, 10); Limit(request.MobileNumber, 20); Limit(request.Email, 200); Limit(request.NewPassword, 1024);
         var ids = request.SelectedRoleIds.Distinct().ToList();
         await ValidateRoles(ids);
+        var unitId = request.UnitId is null or 0 ? null : request.UnitId;
         bool isNew = request.Id is null or 0;
         await EnsureAnotherAdminRemainsAsync(isNew ? null : request.Id, request.IsActive, ids);
         var user = isNew ? new User { CreatedAt = DateTime.UtcNow } : await repository.FindUserAsync(request.Id!.Value) ?? throw new KeyNotFoundException();
         if (isNew) { Required(request.NewPassword, 1024, "رمز عبور"); repository.AddUser(user); }
         user.Name = request.Name; user.LastName = request.LastName; user.Username = request.Username;
         user.NationalId = Optional(request.NationalId); user.MobileNumber = Optional(request.MobileNumber); user.Email = Optional(request.Email); user.IsActive = request.IsActive;
+        // Keeping an inactive unit the user already has is allowed; moving a user to a unit needs it to exist and be active.
+        if (unitId is not null && unitId != user.UnitId && !await repository.ActiveUnitExistsAsync(unitId.Value))
+            throw new ArgumentException("واحد سازمانی انتخاب‌شده وجود ندارد یا غیرفعال است");
+        user.UnitId = unitId;
         if (!string.IsNullOrWhiteSpace(request.NewPassword))
         {
             AuthenticationService.ValidateNewPassword(request.NewPassword, request.NewPassword);

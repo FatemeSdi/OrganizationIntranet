@@ -24,6 +24,7 @@ public sealed class LiveMigrationStateTests
         "009_SsoTickets",
         "010_PublicationArchive",
         "011_UserApplicationAccounts",
+        "012_OrganizationChart",
     ];
 
     [LiveSchemaFact]

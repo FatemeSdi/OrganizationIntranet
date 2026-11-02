@@ -165,7 +165,7 @@
                         </a>
                     </li>
                     }
-                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview))
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.UserView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.OrgView) || User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReview))
                     {
                     <li class="slide__category">
                         <span class="category-name">کاربران و دسترسی</span>
@@ -195,6 +195,15 @@
                         <a class="@NavClass("/Admin/Permissions")" href="/Admin/Permissions">
                             <i class="ti ti-lock-access side-menu__icon"></i>
                             <span class="side-menu__label">مجوزها (Permission)</span>
+                        </a>
+                    </li>
+                    }
+                    @if (User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.OrgView))
+                    {
+                    <li class="slide">
+                        <a class="@NavClass("/Admin/Organization")" href="/Admin/Organization">
+                            <i class="ti ti-sitemap side-menu__icon"></i>
+                            <span class="side-menu__label">چارت سازمانی</span>
                         </a>
                     </li>
                     }

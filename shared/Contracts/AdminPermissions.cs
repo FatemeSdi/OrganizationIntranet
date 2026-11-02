@@ -19,6 +19,7 @@ public static class AdminPermissions
     public const string AccessRequestReview = "ACCESS_REQUEST_REVIEW";
     public const string PublicationEdit = "PUBLICATION_EDIT";
     public const string AuthenticationSettingsEdit = "AUTH_SETTINGS_EDIT";
+    public const string OrgView = "ORG_VIEW", OrgEdit = "ORG_EDIT";
 
     /// <summary>نام Policy برای [Authorize(Policy = ...)]؛ PermissionPolicyProvider آن را می‌سازد.</summary>
     public const string PolicyPrefix = "Permission:";
@@ -30,6 +31,7 @@ public static class AdminPermissions
     public const string AccessRequestReviewPolicy = PolicyPrefix + AccessRequestReview;
     public const string PublicationEditPolicy = PolicyPrefix + PublicationEdit;
     public const string AuthenticationSettingsEditPolicy = PolicyPrefix + AuthenticationSettingsEdit;
+    public const string OrgViewPolicy = PolicyPrefix + OrgView, OrgEditPolicy = PolicyPrefix + OrgEdit;
 
     /// <summary>همه‌ی مجوزهای سیستمی پنل با نام فارسی؛ همان فهرستی که migration 008 ثبت می‌کند.</summary>
     public static readonly IReadOnlyList<(string Code, string Name)> All =
@@ -42,6 +44,7 @@ public static class AdminPermissions
         (AccessRequestReview, "بررسی درخواست‌های دسترسی"),
         (PublicationEdit, "مدیریت اطلاع‌رسانی سازمانی"),
         (AuthenticationSettingsEdit, "تنظیمات ورود و امنیت"),
+        (OrgView, "مشاهده‌ی چارت سازمانی"), (OrgEdit, "ویرایش چارت سازمانی"),
     ];
 
     public static bool IsSystem(string? code) => code is not null && All.Any(p => p.Code == code);

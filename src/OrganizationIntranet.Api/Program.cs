@@ -61,6 +61,8 @@ builder.Services.AddScoped<NotificationCenterService>();
 builder.Services.AddScoped<ISsoRepository, SsoRepository>();
 builder.Services.AddSingleton<ISsoClients, OrganizationIntranet.Api.Security.ConfigurationSsoClients>();
 builder.Services.AddScoped<SsoService>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<OrganizationService>();
 OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))

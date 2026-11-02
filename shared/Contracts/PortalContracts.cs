@@ -39,7 +39,7 @@ public record ApplicationDto(int ApplicationId, string ApplicationName, string A
 /// <summary>مجوز برای فهرست پنل: سامانه، شمار نقش‌ها و شناسه‌ی نقش‌های دارنده.</summary>
 public record PermissionDto(int PermissionId, string PermissionName, string PermissionCode, string? Description, string ApplicationName, bool IsActive, int RoleCount, List<int> SelectedRoleIds);
 /// <summary>کاربر برای فهرست و فرم ویرایش پنل (بدون رمز و رازها).</summary>
-public record UserDto(long UserId, string Name, string LastName, string Username, string? NationalId, string? MobileNumber, string? Email, bool IsActive, DateTime CreatedAt, DateTime? LastLogin, string Roles, List<int> SelectedRoleIds);
+public record UserDto(long UserId, string Name, string LastName, string Username, string? NationalId, string? MobileNumber, string? Email, bool IsActive, DateTime CreatedAt, DateTime? LastLogin, string Roles, List<int> SelectedRoleIds, int? UnitId = null);
 /// <summary>پروفایل کاربر واردشده با نقش‌ها و مجوزهای مؤثر؛ UI مجوزها را از همین در Claim کوکی می‌گذارد و هر ۵ دقیقه تازه می‌کند.</summary>
 public record ProfileDto(long UserId, string Username, string Name, string LastName, string? NationalId, string? MobileNumber, string? Email, DateTime CreatedAt, DateTime? LastLogin, string RoleNames, List<string> RoleCodes, List<string> PermissionCodes)
 {
@@ -61,4 +61,6 @@ public class UserEditRequest
     public bool IsActive { get; set; } = true;
     public string? NewPassword { get; set; }
     public List<int> SelectedRoleIds { get; set; } = new();
+    /// <summary>واحد کاربر در چارت سازمانی؛ خالی یعنی بدون واحد.</summary>
+    public int? UnitId { get; set; }
 }

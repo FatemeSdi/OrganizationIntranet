@@ -27,6 +27,17 @@
             <div class="col-md-6"><label asp-for="NationalId" class="form-label">کد ملی</label><input asp-for="NationalId" class="form-control" maxlength="10" inputmode="numeric" dir="ltr" placeholder="۱۰ رقم" /></div>
             <div class="col-md-6"><label asp-for="MobileNumber" class="form-label">شماره همراه</label><input asp-for="MobileNumber" class="form-control" maxlength="11" inputmode="tel" dir="ltr" placeholder="09xxxxxxxxx" /></div>
             <div class="col-md-6"><label asp-for="Email" class="form-label">ایمیل</label><input asp-for="Email" type="email" class="form-control" dir="ltr" /></div>
+            <div class="col-md-6">
+                <label asp-for="UnitId" class="form-label">واحد سازمانی</label>
+                <select asp-for="UnitId" class="form-select">
+                    <option value="">— بدون واحد —</option>
+                    @foreach (var unit in Model.Units.Where(u => u.IsActive || u.UnitId == Model.UnitId))
+                    {
+                        <option value="@unit.UnitId">@(string.Concat(Enumerable.Repeat("— ", unit.Depth)) + unit.Title)</option>
+                    }
+                </select>
+                <div class="form-text">از «چارت سازمانی» ساخته می‌شود؛ بعداً دیدن سامانه‌ها و اعلان‌ها بر پایه‌ی آن تعیین می‌شود.</div>
+            </div>
         </div>
     </section>
 

@@ -20,6 +20,8 @@
 | `ACCESS_REQUEST_REVIEW` | بررسی درخواست‌های دسترسی | `AccessRequests/Index`، `AccessRequests/Notifications`، زنگ اعلان هدر | `api/admin/access-requests/*`، `api/admin/supervision/sms` (وضعیت و ارسال دوباره‌ی پیامک) |
 | `PUBLICATION_EDIT` | مدیریت اطلاع‌رسانی سازمانی | `Publications/*` | `api/admin/publications/*` |
 | `AUTH_SETTINGS_EDIT` | تنظیمات ورود و امنیت | `Authentication/Index` | `api/admin/authentication` |
+| `ORG_VIEW` | مشاهده‌ی چارت سازمانی | `Organization/Index`، `Organization/Edit` (GET) | `GET api/admin/org/units` (فهرست برای فرم کاربر فقط `INTRANET_ADMIN` می‌خواهد) |
+| `ORG_EDIT` | ویرایش چارت سازمانی | POST در همان دو صفحه | ساخت، ویرایش/جابه‌جایی، toggle و حذف واحد (migration 012) |
 
 منو، کارت‌های داشبورد و «دسترسی سریع» فقط مواردی را نشان می‌دهند که کاربر مجوزش را دارد؛ بدون مجوز ویرایش، دکمه‌های ثبت پنهان و سوییچ‌ها غیرفعال‌اند. این فقط برای راحتی است؛ همه‌ی قواعد در سرور (صفحه و API) بررسی می‌شوند.
 

@@ -1,0 +1,96 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "چارت سازمانی";
+    ViewData["Icon"] = "ti ti-sitemap";
+    ViewData["Subtitle"] = "ساختار درختی واحدهای سازمان؛ هر کاربر به یک واحد وصل می‌شود";
+    Layout = "_LayoutAdmin";
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.OrgEdit);
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card custom-card" data-filter-scope data-page-size="25" data-noun="واحد">
+            @if (Model.Units.Count == 0)
+            {
+                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-sitemap", "چارت سازمانی خالی است", "از فرم «افزودن واحد» واحد اصلی (ریشه) را بسازید.")' />
+            }
+            else
+            {
+                <div class="admin-toolbar" role="search">
+                    <div class="admin-toolbar__search"><i class="ti ti-search" aria-hidden="true"></i><input type="search" class="form-control" placeholder="جست‌وجوی عنوان یا مسیر واحد" aria-label="جست‌وجوی واحدها" data-filter="search" /></div>
+                    <span class="admin-toolbar__count"><span data-filter-count>@Model.Units.Count</span> واحد</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-admin">
+                        <thead><tr><th>واحد</th><th>زیرمجموعه</th><th>کاربران</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr></thead>
+                        <tbody>
+                            @foreach (var unit in Model.Units)
+                            {
+                                <tr data-row data-search="@unit.FullPath">
+                                    <td>
+                                        <div class="entity" style="padding-inline-start:@(unit.Depth * 1.5)rem">
+                                            <span class="entity__avatar entity__avatar--square bg-primary-transparent text-primary"><i class="ti @(unit.ChildCount > 0 ? "ti-sitemap" : "ti-building")"></i></span>
+                                            <span><span class="entity__name">@unit.Title</span>@if (unit.Depth > 0) { <span class="d-block text-muted fs-12">@unit.FullPath</span> }</span>
+                                        </div>
+                                    </td>
+                                    <td>@if (unit.ChildCount > 0) { <span class="fw-semibold">@unit.ChildCount</span> <span class="text-muted fs-12">واحد</span> } else { <span class="text-muted">—</span> }</td>
+                                    <td>@if (unit.UserCount > 0) { <span class="fw-semibold">@unit.UserCount</span> <span class="text-muted fs-12">کاربر</span> } else { <span class="text-muted">—</span> }</td>
+                                    <td>
+                                        <form method="post" asp-page-handler="Toggle" asp-route-unitId="@unit.UnitId" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="unit-toggle-@unit.UnitId" checked="@unit.IsActive" data-autosubmit disabled="@(!canEdit)"
+                                                       data-confirm-off="@($"واحد «{unit.Title}» و همه‌ی زیرمجموعه‌هایش غیرفعال شوند؟")" />
+                                                <label class="form-check-label" for="unit-toggle-@unit.UnitId"><span class="status-pill @(unit.IsActive ? "status-pill--success" : "status-pill--muted")">@(unit.IsActive ? "فعال" : "غیرفعال")</span></label>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="col-actions">
+                                        <a href="/Admin/Organization/Edit?id=@unit.UnitId" class="btn btn-icon btn-sm btn-primary-light" title="@(canEdit ? "ویرایش" : "جزئیات") @unit.Title" aria-label="@(canEdit ? "ویرایش" : "جزئیات") @unit.Title"><i class="ti @(canEdit ? "ti-edit" : "ti-eye")"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div data-filter-empty hidden><partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "واحدی پیدا نشد")' /></div>
+                <div class="admin-pager" data-pager hidden></div>
+            }
+        </div>
+    </div>
+
+    @if (canEdit)
+    {
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-square-rounded-plus text-primary me-1"></i>افزودن واحد</div></div>
+            <form method="post" asp-page-handler="Create" class="card-body" data-busy>
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">عنوان واحد</label>
+                    <input asp-for="Title" class="form-control" maxlength="200" placeholder="مثلاً معاونت فنی" required />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ParentId" class="form-label">زیر مجموعه‌ی</label>
+                    <select asp-for="ParentId" class="form-select" aria-label="واحد بالاتر">
+                        <option value="">— واحد اصلی (ریشه) —</option>
+                        @foreach (var unit in Model.Units.Where(u => u.IsActive))
+                        {
+                            <option value="@unit.UnitId">@(string.Concat(Enumerable.Repeat("— ", unit.Depth)) + unit.Title)</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="DisplayOrder" class="form-label">ترتیب نمایش</label>
+                    <input asp-for="DisplayOrder" type="number" class="form-control" dir="ltr" min="0" max="10000" />
+                    <div class="form-text">میان واحدهای هم‌سطح، عدد کوچک‌تر بالاتر می‌آید.</div>
+                </div>
+                <div class="card-actions"><button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-plus me-1"></i>ثبت واحد</button></div>
+            </form>
+        </div>
+    </div>
+    }
+</div>

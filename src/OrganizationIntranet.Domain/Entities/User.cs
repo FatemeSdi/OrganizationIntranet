@@ -29,6 +29,9 @@ public class User
     /// <summary>ستون نسخه برای کنترل هم‌زمانی تغییرات امنیتی حساب (جلوگیری از مصرف دوباره‌ی کد یا گام).</summary>
     public Guid AuthenticationVersion { get; set; } = Guid.NewGuid();
     public bool IsActive { get; set; } = true;
+    /// <summary>واحد کاربر در چارت سازمانی (اختیاری)؛ پایه‌ی دیدن سامانه‌ها و اعلان‌ها بر اساس واحد.</summary>
+    public int? UnitId { get; set; }
+    public OrgUnit? Unit { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
 

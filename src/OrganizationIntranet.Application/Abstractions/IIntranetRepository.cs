@@ -27,6 +27,8 @@ public interface IIntranetRepository
     Task<List<Permission>> GetPermissionsAsync();
     /// <summary>یک مجوز با سامانه و نقش‌های دارنده.</summary>
     Task<Permission?> FindPermissionAsync(int id);
+    /// <summary>آیا واحد سازمانی با این شناسه وجود دارد و فعال است؟</summary>
+    Task<bool> ActiveUnitExistsAsync(int unitId);
     /// <summary>کاربر تازه را اضافه می‌کند.</summary>
     void AddUser(User user);
     /// <summary>نقش تازه را اضافه می‌کند.</summary>

@@ -95,12 +95,13 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 | `App.Application` | ✅ پیاده‌سازی شده | |
 | `Notify.Notification` | ✅ پیاده‌سازی شده | ستون `TargetUrl` (nvarchar(500), nullable) اضافه شد؛ هنوز هیچ Notification ای واقعی آن را پر نمی‌کند چون صفحه/سرویس Notification هنوز ساخته نشده |
 | `Notify.UserNotification` | ✅ پیاده‌سازی شده | |
+| `Org.Unit` + `Sec.User.UnitId` | ✅ migration 012 (۲۰۲۶-۱۱-۰۲) | چارت سازمانی درختی (`ParentId`، `FullPath` مسیر کامل با «/»، `SourceId` برای import تکرارپذیر از ITS) و واحد اختیاری هر کاربر؛ مجوزهای `ORG_VIEW/EDIT`. مرجع: [docs/organization-chart.md](docs/organization-chart.md). دیدن سامانه‌ها و اعلان بر پایه‌ی واحد در مرحله‌ی ۲ ساخته می‌شود |
 
 ## Authorization — وضعیت فعلی
 
 مجوزدهی پنل مدیریت **Permission-based است** (P4-09، ۲۰۲۶-۱۰-۲۱). مرجع کامل (ماتریس مجوز/صفحه/endpoint، سازوکار و migration): [docs/admin-permissions.md](docs/admin-permissions.md).
 
-- کدها در `shared/Contracts/AdminPermissions.cs` (`INTRANET_ADMIN`, `USER_VIEW/EDIT`, `ROLE_VIEW/EDIT`, `PERMISSION_VIEW/EDIT`, `APPLICATION_VIEW/EDIT`, `ACCESS_REQUEST_REVIEW`, `PUBLICATION_EDIT`, `AUTH_SETTINGS_EDIT`). صفحه‌ها و کنترلرها `[Authorize(Policy = AdminPermissions.XPolicy)]` دارند؛ برای مجوزدهی پنل از `Roles = "ADMIN"` استفاده نمی‌شود. POST صفحه‌ها با `PostRequiresPermission` مجوز ویرایش می‌خواهد.
+- کدها در `shared/Contracts/AdminPermissions.cs` (`INTRANET_ADMIN`, `USER_VIEW/EDIT`, `ROLE_VIEW/EDIT`, `PERMISSION_VIEW/EDIT`, `APPLICATION_VIEW/EDIT`, `ACCESS_REQUEST_REVIEW`, `PUBLICATION_EDIT`, `AUTH_SETTINGS_EDIT`, `ORG_VIEW/EDIT`). صفحه‌ها و کنترلرها `[Authorize(Policy = AdminPermissions.XPolicy)]` دارند؛ برای مجوزدهی پنل از `Roles = "ADMIN"` استفاده نمی‌شود. POST صفحه‌ها با `PostRequiresPermission` مجوز ویرایش می‌خواهد.
 - زیرساخت Policy (`PermissionPolicyProvider`, `PermissionRequirement`, Claims handler) در `shared/Authorization` و مشترک میان API، Admin و Portal است.
 - **API مجوز را زنده از بانک می‌خواند** (`Api/Security/LivePermissions`) و `AdminClientMiddleware` شرط `INTRANET_ADMIN` زنده را دارد؛ پس گرفتن مجوز فوراً اثر دارد.
 - **UI مجوزها را در Claim کوکی نگه می‌دارد و هر ۵ دقیقه از `api/account/me` تازه می‌کند** (`UiHost`/`AccountSignIn`، Claim `claims_synced`). تصمیم قبلی «بارگذاری فقط هنگام Login» کنار گذاشته شد؛ بعد از تغییر مجوز یا نقش، Logout/Login لازم نیست. نمایش منو/دکمه‌ها با `User.HasPermission(...)` فقط برای راحتی است.

@@ -33,6 +33,7 @@ public sealed class IntranetRepository(AppDbContext db) : IIntranetRepository
         return await db.Roles.Select(r => r.RoleId).ToDictionaryAsync(id => id, id => new RoleUsage(users.GetValueOrDefault(id), permissions.GetValueOrDefault(id),
             access.GetValueOrDefault(id) + supervisors.GetValueOrDefault(id)));
     }
+    public Task<bool> ActiveUnitExistsAsync(int unitId) => db.OrgUnits.AnyAsync(u => u.UnitId == unitId && u.IsActive);
     /// <summary>همه‌ی سامانه‌ها.</summary>
     public Task<List<AppEntity>> GetApplicationsAsync() => db.Applications.ToListAsync();
     /// <summary>فهرست فقط‌خواندنی (بدون ردیابی EF)؛ شمار نقش‌ها و نقش‌های هر مجوز از همان ردیف‌های بارگذاری‌شده می‌آید.</summary>
