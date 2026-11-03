@@ -31,6 +31,7 @@
 | `010_PublicationArchive` | همین پوشه | بایگانی (حذف نرم) مطالب: ستون‌های `IsArchived` و `ArchivedAt`؛ مطلب بایگانی‌شده از پرتال و فهرست پیش‌فرض مدیر پنهان است و قابل بازگردانی می‌ماند |
 | `011_UserApplicationAccounts` | همین پوشه | نگاشت کاربر اینترانت به نام کاربری او در هر سامانه برای ورود یکپارچه، وقتی دو نام فرق دارند؛ سامانه‌ها تغییری نمی‌کنند ([docs/sso.md](../../docs/sso.md)) |
 | `012_OrganizationChart` | همین پوشه | چارت سازمانی: جدول درختی `Org.Unit`، ستون اختیاری `Sec.User.UnitId` و مجوزهای `ORG_VIEW` و `ORG_EDIT` برای ADMIN؛ داده با `tools/Import-OrganizationChartFromIts.ps1` وارد می‌شود |
+| `013_ApplicationSsoSettings` | همین پوشه | مسیر و هش کلید SSO هر سامانه در `App.Application` (`SsoPath`، `SsoKeyHash`، `SsoKeyChangedAt`)؛ از پنل «سامانه‌ها ← ورود یکپارچه» تنظیم می‌شود و دیگر در appsettings نیست ([docs/sso.md](../../docs/sso.md)) |
 
 فایل‌های 003 در ۲۰۲۶-۱۰-۲۲ از روی دیتابیس مرجع بازسازی شدند (فایل‌های اصلی هیچ‌وقت commit نشده بودند). 004 قبلاً با نام `tools/sql/003-access-workflow-*` بود و به همین پوشه منتقل شد. `tools/sql/001-publications-*` و `002-publications-integrity-*` اسکریپت‌های قدیمی‌تر جدول مطالب‌اند، در `SchemaMigration` ثبت نمی‌شوند و در خط پایه‌ی نصب تازه آمده‌اند.
 
@@ -39,7 +40,7 @@
 1. یک دیتابیس خالی بسازید (collation پیش‌فرض سرور؛ مرجع `SQL_Latin1_General_CP1_CI_AS` است) و اتصال را مثل مرحله‌ی ۳ بخش «بعد از pull» تنظیم کنید.
 2. `000_Baseline.install.sql` را اجرا کنید. ساختار را تا حالت بعد از 002 می‌سازد، 001 و 002 را ثبت می‌کند و فقط ردیف تنظیمات ورود و نقش ADMIN را می‌گذارد. روی دیتابیسی که جدول دارد اجرا نمی‌شود.
 3. 003 تا آخرین migration را به ترتیب اجرا کنید (مثل حلقه‌ی مرحله‌ی ۴ بخش «بعد از pull»، با فهرستی که از 003 شروع می‌شود).
-4. **اولین مدیر:** نصب تازه هیچ کاربری ندارد و هنوز ابزاری برای ساخت اولین مدیر با رمز نیست (در ToDo ثبت شده). تا آن موقع verify 008 خطای «هیچ کاربر فعالی به پنل دسترسی ندارد» می‌دهد.
+4. **اولین مدیر:** نصب تازه هیچ کاربری ندارد و verify 008 بدون مدیر فعال خطای «هیچ کاربر فعالی به پنل دسترسی ندارد» می‌دهد. بعد از اجرای 003 تا 007 و 008 (up) این ابزار را بزنید: `./tools/New-FirstAdmin.ps1 -Username <نام> -Name <نام> -LastName <نام خانوادگی>`؛ رمز را بدون نمایش می‌پرسد (۱۰ تا ۱۲۸ نویسه، فقط هش ذخیره می‌شود)، فقط وقتی هیچ مدیر فعالی نیست کار می‌کند و حساب موجود را ارتقا نمی‌دهد. سپس verify 008 را اجرا کنید. اتصال همان بانکی است که API به آن تنظیم شده است (`appsettings.json`، متغیر محیطی یا User Secrets).
 
 خط پایه یک بار و از روی دیتابیس مرجعِ برگشت‌داده‌شده به 002 تولید شده و با برداشت `docs/database-catalog.md` (ساختار بعد از 002) یکی است. migrationهای بعدی آن را تغییر نمی‌دهند؛ هر تغییر تازه یک migration شماره‌دار است.
 
@@ -71,7 +72,7 @@ $env:ConnectionStrings__DefaultConnection = "Server=<سرور>;Database=Organiza
 ```powershell
 $run = { param($f) powershell -NoProfile -ExecutionPolicy Bypass -File tools/Invoke-DatabaseScript.ps1 -ScriptPath $f; if ($LASTEXITCODE) { throw "failed: $f" } }
 & $run database/backup.sql
-foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart') {
+foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart','013_ApplicationSsoSettings') {
     & $run "database/migrations/$m.up.sql"
     & $run "database/migrations/$m.verify.sql"
 }

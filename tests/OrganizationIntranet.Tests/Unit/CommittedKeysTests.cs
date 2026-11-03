@@ -42,19 +42,4 @@ public class CommittedKeysTests
         Assert.Null(Str(portal, "Api", "AdminClientKey"));                       // Portal کلید مدیریتی را نمی‌داند
     }
 
-    [Fact]
-    public void Committed_sso_keys_are_valid_distinct_and_have_a_relative_landing_path()
-    {
-        var api = Load("Api");
-        var all = new List<string> { Str(api, "Api", "ClientKey")!, Str(api, "Api", "AdminClientKey")! };
-        foreach (var code in new[] { "TTMS", "ITSERVICEDESK", "ACCESSREPORT" })
-        {
-            var key = Str(api, "ApplicationIntegrations", code, "SsoKey");
-            var path = Str(api, "ApplicationIntegrations", code, "SsoPath");
-            Assert.True(!string.IsNullOrEmpty(path) && !path.Contains("//") && !path.Contains(":"), $"{code}: SsoPath must be a relative path");   // آدرس کامل از BaseUrl پنل می‌آید
-            Assert.True(key is { Length: >= 32 }, $"{code}: SsoKey is missing or shorter than 32 characters");
-            all.Add(key!);
-        }
-        Assert.Equal(all.Count, all.Distinct(StringComparer.Ordinal).Count());   // هیچ دو کلیدی یکی نیست
-    }
 }

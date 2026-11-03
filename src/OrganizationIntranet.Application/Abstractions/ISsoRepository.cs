@@ -1,13 +1,14 @@
 using OrganizationIntranet.Domain.Entities;
+using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 
 namespace OrganizationIntranet.Application.Abstractions;
 
 /// <summary>سامانه‌ای که کاربر الان به آن دسترسی دارد.</summary>
-public sealed record SsoTarget(int ApplicationId, string ApplicationCode, string? BaseUrl, long UserId);
+public sealed record SsoTarget(int ApplicationId, string ApplicationCode, string? BaseUrl, string? SsoPath, bool HasSsoKey, long UserId);
 /// <summary>نتیجه‌ی مصرف بلیت: کاربر اینترانت و نامی که باید به سامانه داده شود (نگاشت‌شده یا همان نام کاربری اینترانت).</summary>
 public sealed record SsoRedeemed(User User, string ApplicationUsername);
 /// <summary>یک سامانه‌ی فعال با وضعیت دسترسی کاربر و نام کاربری نگاشت‌شده‌اش (در صورت وجود).</summary>
-public sealed record SsoAccountRow(int ApplicationId, string ApplicationCode, string ApplicationName, string? BaseUrl, bool HasAccess, string? ExternalUsername);
+public sealed record SsoAccountRow(int ApplicationId, string ApplicationCode, string ApplicationName, string? BaseUrl, string? SsoPath, bool HasSsoKey, bool HasAccess, string? ExternalUsername);
 
 public interface ISsoRepository
 {
@@ -23,6 +24,10 @@ public interface ISsoRepository
     /// <summary>همه‌ی سامانه‌های فعال با دسترسی فعلی کاربر و نگاشت او.</summary>
     Task<List<SsoAccountRow>> AccountRowsAsync(long userId);
     Task<string?> ActiveApplicationCodeAsync(int applicationId);
+    /// <summary>سامانه با شناسه (ردیابی‌شده) برای تغییر تنظیمات SSO؛ null اگر نبود.</summary>
+    Task<AppEntity?> FindApplicationAsync(int applicationId);
+    /// <summary>آیا سامانه‌ی دیگری همین هش کلید SSO را دارد؟</summary>
+    Task<bool> SsoKeyHashTakenAsync(byte[] hash, int exceptApplicationId);
     Task<UserApplicationAccount?> FindAccountAsync(long userId, int applicationId);
     /// <summary>آیا این نام در آن سامانه به کاربر دیگری تعلق دارد؟ (نگاشت دیگران، یا نام کاربری اینترانت کاربری که نگاشت ندارد)</summary>
     Task<bool> ApplicationUsernameTakenAsync(int applicationId, string name, long exceptUserId);
@@ -30,11 +35,4 @@ public interface ISsoRepository
     void RemoveAccount(UserApplicationAccount account);
     Task DeleteExpiredAsync(DateTime before);
     Task SaveAsync();
-}
-
-/// <summary>تنظیمات SSO هر سامانه (در تنظیمات امن API، نه بانک).</summary>
-public interface ISsoClients
-{
-    /// <summary>آدرس دریافت بلیت در سامانه؛ null یعنی SSO برای این سامانه پیکربندی نشده است. baseUrl «نشانی ورود» سامانه در پنل است و برای ساختن آدرس از SsoPath به کار می‌رود.</summary>
-    string? LandingUrl(string applicationCode, string? baseUrl = null);
 }

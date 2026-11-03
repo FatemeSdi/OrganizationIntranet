@@ -11,7 +11,7 @@ namespace OrganizationIntranet.Api.Controllers;
 /// <summary>API پنل مدیریت: کاربران، نقش‌ها، مجوزها و سامانه‌ها. فقط از Admin (با کلید مدیریتی) و برای دارندگان INTRANET_ADMIN قابل فراخوانی است و هر عملیات مجوز دقیق خودش را هم زنده از بانک می‌خواهد.</summary>
 [OrganizationIntranet.Api.Security.AdminClient]
 [ApiController, Route("api/admin"), Authorize(Policy = P.IntranetAdminPolicy)]
-public sealed class AdminController(IntranetService service, ApplicationCatalogService catalog, SsoService sso, OrganizationIntranet.Api.Security.LivePermissions permissions, ILogger<AdminController> logger) : ControllerBase
+public sealed class AdminController(IntranetService service, ApplicationCatalogService catalog, SsoService sso, OrganizationIntranet.Api.Security.LivePermissions permissions, IConfiguration configuration, ILogger<AdminController> logger) : ControllerBase
 {
     /// <summary>شناسه‌ی مدیر انجام‌دهنده‌ی عملیات؛ برای ثبت در لاگ.</summary>
     private long Actor => long.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
@@ -90,6 +90,19 @@ public sealed class AdminController(IntranetService service, ApplicationCatalogS
     [HttpGet("applications")] public Task<List<ApplicationDto>> Applications() => catalog.ListAsync();
     /// <summary>ثبت سامانه‌ی تازه. «نشانی ورود» الزامی است و «ترتیب نمایش» اگر خالی باشد سامانه آخرین ردیف می‌شود.</summary>
     [HttpPost("applications"), Authorize(Policy = P.ApplicationEditPolicy)] public async Task<OperationResult> CreateApplication(ApplicationRequest request) { await catalog.CreateAsync(request); return new(true, "سامانه جدید ایجاد شد"); }
+    /// <summary>تنظیمات ورود یکپارچه‌ی یک سامانه (مسیر و وضعیت کلید؛ خود کلید هرگز برنمی‌گردد).</summary>
+    [HttpGet("applications/{id:int}/sso"), Authorize(Policy = P.ApplicationViewPolicy)] public Task<SsoSettingsDto> SsoSettings(int id) => sso.SettingsAsync(id);
+    /// <summary>ذخیره‌ی مسیر SSO و ساخت یا ثبت کلید آن. کلید ساخته‌شده فقط در همین پاسخ می‌آید. کلید نباید با کلیدهای داخلی UI یا کلید اعلان همین سامانه یکی باشد.</summary>
+    [HttpPost("applications/{id:int}/sso"), Authorize(Policy = P.ApplicationEditPolicy)]
+    public async Task<SsoSettingsResultDto> SaveSsoSettings(int id, SsoSettingsRequest request)
+    {
+        var code = (await sso.SettingsAsync(id)).ApplicationCode.ToUpperInvariant();
+        var forbidden = new[] { configuration["Api:ClientKey"], configuration["Api:AdminClientKey"], configuration[$"ApplicationIntegrations:{code}:PushKey"], configuration[$"ApplicationIntegrations:{code}:PullKey"] }
+            .Where(k => !string.IsNullOrEmpty(k)).Select(k => k!).ToArray();
+        var result = await sso.SaveSettingsAsync(id, request, forbidden);
+        logger.LogInformation("SSO settings of application {ApplicationId} changed by {ActorId} (key action: {KeyAction})", id, Actor, request.KeyAction ?? SsoKeyActions.Keep);
+        return result;
+    }
     /// <summary>فعال/غیرفعال کردن سامانه در پورتال.</summary>
     [HttpPost("applications/{id:int}/toggle"), Authorize(Policy = P.ApplicationEditPolicy)] public async Task<OperationResult> ToggleApplication(int id) { await catalog.ToggleAsync(id); return new(true); }
     /// <summary>افزودن یا برداشتن یک کاربر یا نقش از دسترسی سامانه (ثبت لحظه‌ای)، بدون ذخیره‌ی بقیه‌ی تنظیمات.</summary>

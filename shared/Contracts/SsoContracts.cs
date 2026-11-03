@@ -20,3 +20,15 @@ public record SsoAccountDto(int ApplicationId, string ApplicationCode, string Ap
 public record SsoAccountsDto(long UserId, string Username, string FullName, List<SsoAccountDto> Accounts);
 /// <summary>نام کاربری کاربر در سامانه؛ خالی = حذف نگاشت و بازگشت به نام کاربری اینترانت.</summary>
 public record SsoAccountRequest(string? ExternalUsername);
+
+/// <summary>تنظیمات SSO یک سامانه برای پنل مدیریت. کلید فقط به‌صورت هش ذخیره می‌شود؛ HasKey می‌گوید ثبت شده یا نه. Enabled یعنی هم کلید هست و هم آدرس درست ساخته می‌شود.</summary>
+public record SsoSettingsDto(int ApplicationId, string ApplicationCode, string ApplicationName, string? BaseUrl, string? SsoPath, bool HasKey, DateTime? KeyChangedAt, string? LandingUrl, bool Enabled);
+/// <summary>تغییر تنظیمات SSO. SsoPath خالی = پاک شود. KeyAction یکی از SsoKeyActions است؛ NewKey فقط با Set لازم است.</summary>
+public record SsoSettingsRequest(string? SsoPath, string? KeyAction = SsoKeyActions.Keep, string? NewKey = null);
+/// <summary>نتیجه‌ی ذخیره. GeneratedKey فقط همین یک بار و فقط بعد از Generate پر است؛ جای دیگری قابل خواندن نیست.</summary>
+public record SsoSettingsResultDto(SsoSettingsDto Settings, string? GeneratedKey);
+public static class SsoKeyActions
+{
+    public const string Keep = "keep", Generate = "generate", Set = "set", Remove = "remove";
+    public const int MinKeyLength = 32, MaxKeyLength = 200;
+}

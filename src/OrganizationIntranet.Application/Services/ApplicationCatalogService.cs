@@ -7,7 +7,7 @@ using AppEntity = OrganizationIntranet.Domain.Entities.Application;
 namespace OrganizationIntranet.Application.Services;
 
 /// <summary>کاتالوگ سامانه‌ها: ساخت و ویرایش، دسترسی کاربران و نقش‌ها، سرویس‌ها، فهرست پرتال هر کاربر و اعلان‌های او.</summary>
-public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository, ISsoClients sso)
+public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository)
 {
     private static ApplicationDto Map(AppEntity a) => new(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl,
         a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels);
@@ -122,7 +122,7 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         return apps.Select(a => new PortalApplicationDto(a.ApplicationId, a.ApplicationName, a.Description,
             SafeUrl(a.BaseUrl) ? a.BaseUrl : null, ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps",
             a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, counts.GetValueOrDefault(a.ApplicationId),
-            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList(), sso.LandingUrl(a.ApplicationCode, a.BaseUrl) is not null)).ToList();
+            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList(), SsoLanding.Url(a.BaseUrl, a.SsoPath, a.SsoKeyHash is not null) is not null)).ToList();
     }
     /// <summary>آخرین ۵۰ اعلان سامانه‌ها برای زنگ هدر؛ مقصد هر اعلان فقط اگر هم‌مبدأ سامانه باشد برمی‌گردد.</summary>
     public async Task<List<PortalNotificationDto>> NotificationsAsync(long userId) => (await repository.NotificationsAsync(userId, false, 50))

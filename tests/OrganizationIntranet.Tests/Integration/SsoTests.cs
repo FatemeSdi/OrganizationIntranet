@@ -24,8 +24,8 @@ public sealed partial class PortalSmokeTests
         using var scope = api.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var member = db.Users.Single(u => u.Username == "member");
-        var app = new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "تسک", ApplicationCode = "SSOAPP", BaseUrl = "https://tasktrack.example/", IsActive = true };
-        var other = new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "میز خدمت", ApplicationCode = "OTHERAPP", BaseUrl = "https://its.example/", IsActive = true };
+        var app = new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "تسک", ApplicationCode = "SSOAPP", BaseUrl = "https://tasktrack.example/", SsoPath = "sso?lang=fa", SsoKeyHash = OrganizationIntranet.Application.Services.SsoService.KeyHash(ApiFactory.SsoKey), IsActive = true };
+        var other = new OrganizationIntranet.Domain.Entities.Application { ApplicationName = "میز خدمت", ApplicationCode = "OTHERAPP", BaseUrl = "https://its.example/", SsoPath = "Account/Sso", SsoKeyHash = OrganizationIntranet.Application.Services.SsoService.KeyHash(ApiFactory.OtherSsoKey), IsActive = true };
         app.AccessGrants.Add(new ApplicationAccess { UserId = member.UserId, CreatedAt = DateTime.UtcNow });
         other.AccessGrants.Add(new ApplicationAccess { UserId = member.UserId, CreatedAt = DateTime.UtcNow });
         db.Applications.AddRange(app, other);
@@ -211,21 +211,6 @@ public sealed partial class PortalSmokeTests
         Assert.Contains("/Account/Login", challenge.Headers.Location!.OriginalString);
     }
 
-    [Theory]
-    [InlineData("https://tasktrack.example/sso", "sso-key-long-enough-000000000000000000000", "https://tasktrack.example/sso")]
-    [InlineData("https://tasktrack.example/sso", "too-short", null)]
-    [InlineData("https://tasktrack.example/sso", ApiFactory.ClientKey, null)]                 // کلید داخلی UI نباید کلید SSO باشد
-    [InlineData("ftp://tasktrack.example/sso", "sso-key-long-enough-000000000000000000000", null)]
-    [InlineData("https://user:pass@tasktrack.example/sso", "sso-key-long-enough-000000000000000000000", null)]
-    [InlineData("https://tasktrack.example/sso#x", "sso-key-long-enough-000000000000000000000", null)]
-    [InlineData("/relative/sso", "sso-key-long-enough-000000000000000000000", null)]
-    [InlineData(null, "sso-key-long-enough-000000000000000000000", null)]
-    public void Sso_is_enabled_only_with_a_strong_distinct_key_and_an_absolute_http_url(string? url, string key, string? expected)
-    {
-        var settings = new Dictionary<string, string?> { ["Api:ClientKey"] = ApiFactory.ClientKey, ["ApplicationIntegrations:APP:SsoKey"] = key, ["ApplicationIntegrations:APP:SsoUrl"] = url };
-        var clients = new ConfigurationSsoClients(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
-        Assert.Equal(expected, clients.LandingUrl("app"));
-    }
 
     [Theory]
     [InlineData("Security/Account/Sso", "https://host:5671/", "https://host:5671/Security/Account/Sso")]
@@ -233,6 +218,7 @@ public sealed partial class PortalSmokeTests
     [InlineData("Account/Sso", "http://localhost:62100/", "http://localhost:62100/Account/Sso")]
     [InlineData("Account/Sso", "https://host/app/", "https://host/app/Account/Sso")]                       // سامانه‌ای که زیر یک مسیر میزبانی شده
     [InlineData("Account/Sso", "https://host/?x=1", "https://host/Account/Sso")]                           // query نشانی ورود به آدرس SSO نمی‌چسبد
+    [InlineData("sso?lang=fa", "https://host/", "https://host/sso?lang=fa")]                               // query خود مسیر حفظ می‌شود
     [InlineData("Account/Sso", null, null)]                                                              // بدون نشانی ورود در پنل آدرس ساخته نمی‌شود
     [InlineData("Account/Sso", "not a url", null)]
     [InlineData("Account/Sso", "ftp://host/", null)]
@@ -242,21 +228,14 @@ public sealed partial class PortalSmokeTests
     [InlineData("a\\b", "https://host/", null)]
     [InlineData("a#b", "https://host/", null)]
     [InlineData("", "https://host/", null)]
-    public void Sso_landing_url_is_built_from_the_panel_base_url_and_a_relative_path_on_the_same_host(string path, string? baseUrl, string? expected)
-    {
-        var settings = new Dictionary<string, string?> { ["Api:ClientKey"] = ApiFactory.ClientKey, ["ApplicationIntegrations:APP:SsoKey"] = "sso-key-long-enough-000000000000000000000", ["ApplicationIntegrations:APP:SsoPath"] = path };
-        var clients = new ConfigurationSsoClients(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
-        Assert.Equal(expected, clients.LandingUrl("app", baseUrl));
-    }
+    [InlineData(null, "https://host/", null)]
+    public void Sso_landing_url_is_built_from_the_panel_base_url_and_a_relative_path_on_the_same_host(string? path, string? baseUrl, string? expected) =>
+        Assert.Equal(expected, OrganizationIntranet.Application.Services.SsoLanding.Url(baseUrl, path));
 
     [Fact]
-    public void An_explicit_sso_url_wins_over_the_path_and_an_invalid_one_does_not_fall_back()
+    public void Sso_is_enabled_only_when_a_key_is_registered()
     {
-        var key = "sso-key-long-enough-000000000000000000000";
-        ConfigurationSsoClients Make(string? url) => new(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
-            { ["ApplicationIntegrations:APP:SsoKey"] = key, ["ApplicationIntegrations:APP:SsoPath"] = "Account/Sso", ["ApplicationIntegrations:APP:SsoUrl"] = url }).Build());
-        Assert.Equal("https://fixed.example/sso", Make("https://fixed.example/sso").LandingUrl("app", "https://host/"));
-        Assert.Null(Make("ftp://fixed.example/sso").LandingUrl("app", "https://host/"));           // SsoUrl خراب = خاموش، نه برگشت به مسیر
-        Assert.Equal("https://host/Account/Sso", Make(null).LandingUrl("app", "https://host/"));
+        Assert.Equal("https://host/Account/Sso", OrganizationIntranet.Application.Services.SsoLanding.Url("https://host/", "Account/Sso", hasKey: true));
+        Assert.Null(OrganizationIntranet.Application.Services.SsoLanding.Url("https://host/", "Account/Sso", hasKey: false));
     }
 }

@@ -11,8 +11,8 @@ public sealed class SsoRepository(AppDbContext db) : ISsoRepository
     public async Task<SsoTarget?> TargetAsync(long userId, int applicationId)
     {
         var app = await ApplicationAccessQueries.Available(db, userId).AsNoTracking()
-            .Where(a => a.ApplicationId == applicationId).Select(a => new { a.ApplicationId, a.ApplicationCode, a.BaseUrl }).SingleOrDefaultAsync();
-        return app is null ? null : new(app.ApplicationId, app.ApplicationCode, app.BaseUrl, userId);
+            .Where(a => a.ApplicationId == applicationId).Select(a => new { a.ApplicationId, a.ApplicationCode, a.BaseUrl, a.SsoPath, HasKey = a.SsoKeyHash != null }).SingleOrDefaultAsync();
+        return app is null ? null : new(app.ApplicationId, app.ApplicationCode, app.BaseUrl, app.SsoPath, app.HasKey, userId);
     }
     public void AddTicket(SsoTicket ticket) => db.SsoTickets.Add(ticket);
     /// <summary>بلیت را اتمیک مصرف می‌کند (UPDATE ... WHERE RedeemedAt IS NULL پس دو مصرف هم‌زمان ممکن نیست)، دسترسی را دوباره می‌سنجد و نام کاربری در سامانه را می‌دهد: نگاشت‌شده یا همان نام اینترانت (مگر نامی که به کاربر دیگری نگاشت شده باشد).</summary>
@@ -42,11 +42,13 @@ public sealed class SsoRepository(AppDbContext db) : ISsoRepository
         var granted = await ApplicationAccessQueries.Available(db, userId).AsNoTracking().Select(a => a.ApplicationId).ToListAsync();
         var mappings = await db.UserApplicationAccounts.AsNoTracking().Where(a => a.UserId == userId).ToDictionaryAsync(a => a.ApplicationId, a => a.ExternalUsername);
         var apps = await db.Applications.AsNoTracking().Where(a => a.IsActive).OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId)
-            .Select(a => new { a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl }).ToListAsync();
-        return apps.Select(a => new SsoAccountRow(a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl, granted.Contains(a.ApplicationId), mappings.GetValueOrDefault(a.ApplicationId))).ToList();
+            .Select(a => new { a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl, a.SsoPath, HasKey = a.SsoKeyHash != null }).ToListAsync();
+        return apps.Select(a => new SsoAccountRow(a.ApplicationId, a.ApplicationCode, a.ApplicationName, a.BaseUrl, a.SsoPath, a.HasKey, granted.Contains(a.ApplicationId), mappings.GetValueOrDefault(a.ApplicationId))).ToList();
     }
     public Task<string?> ActiveApplicationCodeAsync(int applicationId) =>
         db.Applications.AsNoTracking().Where(a => a.ApplicationId == applicationId && a.IsActive).Select(a => a.ApplicationCode).SingleOrDefaultAsync();
+    public Task<Domain.Entities.Application?> FindApplicationAsync(int applicationId) => db.Applications.SingleOrDefaultAsync(a => a.ApplicationId == applicationId);
+    public Task<bool> SsoKeyHashTakenAsync(byte[] hash, int exceptApplicationId) => db.Applications.AnyAsync(a => a.ApplicationId != exceptApplicationId && a.SsoKeyHash == hash);
     public Task<UserApplicationAccount?> FindAccountAsync(long userId, int applicationId) =>
         db.UserApplicationAccounts.SingleOrDefaultAsync(a => a.UserId == userId && a.ApplicationId == applicationId);
     /// <summary>آیا این نام در آن سامانه به کاربر دیگری می‌رسد؟ یعنی نگاشت دیگری است یا نام کاربری اینترانتِ کاربری که خودش نگاشت ندارد (بدون فرق حروف بزرگ و کوچک).</summary>

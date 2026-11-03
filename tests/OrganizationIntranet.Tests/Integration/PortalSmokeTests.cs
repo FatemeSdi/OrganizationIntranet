@@ -48,11 +48,6 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ApplicationIntegrations:TEST:PushKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullUrl", "https://source.example/api/notifications");
-        // SSO فقط برای دو سامانه‌ی آزمایشی SsoTests پیکربندی می‌شود؛ سامانه‌ی TEST بدون SSO می‌ماند.
-        builder.UseSetting("ApplicationIntegrations:SSOAPP:SsoKey", SsoKey);
-        builder.UseSetting("ApplicationIntegrations:SSOAPP:SsoUrl", "https://tasktrack.example/sso?lang=fa");
-        builder.UseSetting("ApplicationIntegrations:OTHERAPP:SsoKey", OtherSsoKey);
-        builder.UseSetting("ApplicationIntegrations:OTHERAPP:SsoPath", "Account/Sso");   // آدرس از BaseUrl سامانه (https://its.example/) ساخته می‌شود
         builder.UseSetting("ConnectionStrings:DefaultConnection", "unused-in-tests");
         // آزمون‌ها هرگز نباید به درگاه پیامک واقعی برسند (حتی روی شبکه‌ی داخلی)؛ درگاه فقط در آزمون‌های اختصاصی loopback فعال می‌شود.
         builder.UseSetting("Sms:BaseUrl", "");

@@ -11,6 +11,7 @@
     var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit);
 }
 @section PageActions {
+    <a asp-page="Sso" asp-route-id="@Model.Id" class="btn btn-primary-light"><i class="ti ti-key me-1"></i>ورود یکپارچه (SSO)</a>
     <a asp-page="Supervision" asp-route-id="@Model.Id" class="btn btn-primary-light"><i class="ti ti-eye me-1"></i>گروه‌های نظارت</a>
 }
 

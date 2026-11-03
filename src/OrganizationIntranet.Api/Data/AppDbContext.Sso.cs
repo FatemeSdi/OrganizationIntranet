@@ -22,6 +22,14 @@ public partial class AppDbContext
             e.HasOne(x => x.Application).WithMany().HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.NoAction);
         });
         // نام کاربری حساب کاربر در هر سامانه؛ migration 011_UserApplicationAccounts.
+        modelBuilder.Entity<Domain.Entities.Application>(e =>
+        {
+            // تنظیمات SSO هر سامانه؛ migration 013_ApplicationSsoSettings. کلید فقط به‌صورت هش (SHA-256) و یکتا میان سامانه‌ها.
+            e.ToTable("Application", "App", t => { if (Database.IsSqlServer()) t.HasCheckConstraint("CK_Application_SsoPath", "[SsoPath] IS NULL OR LEN(LTRIM(RTRIM([SsoPath]))) > 0"); });
+            e.Property(a => a.SsoPath).HasMaxLength(200);
+            e.Property(a => a.SsoKeyHash).HasMaxLength(32).IsFixedLength();
+            e.HasIndex(a => a.SsoKeyHash).IsUnique().HasFilter("[SsoKeyHash] IS NOT NULL").HasDatabaseName("UX_Application_SsoKeyHash");
+        });
         modelBuilder.Entity<UserApplicationAccount>(e =>
         {
             e.ToTable("UserApplicationAccount", "App", t => { if (Database.IsSqlServer()) t.HasCheckConstraint("CK_UserApplicationAccount_Name", "LEN(LTRIM(RTRIM([ExternalUsername]))) > 0"); });

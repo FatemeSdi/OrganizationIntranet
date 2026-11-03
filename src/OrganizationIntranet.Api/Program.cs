@@ -42,8 +42,9 @@ if (string.IsNullOrWhiteSpace(clientKey) || clientKey.Length < 32)
 var adminClientKey = builder.Configuration["Api:AdminClientKey"];
 if (string.IsNullOrWhiteSpace(adminClientKey) || adminClientKey.Length < 32 || adminClientKey == clientKey)
     throw new InvalidOperationException("Configure a distinct Api:AdminClientKey (at least 32 characters) shared with Admin only." + environmentHint);
-var connection = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API." + environmentHint);
+var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connection))
+    throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection for the API (appsettings.json, appsettings.Development.json, user secrets or the ConnectionStrings__DefaultConnection environment variable)." + environmentHint);
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connection));
 // ثبت سرویس‌ها: هر Repository با Service همان بخش (کاربران، کاتالوگ، درخواست دسترسی، نظارت، اعلان، SSO، ورود و مطالب).
 builder.Services.AddScoped<IIntranetRepository, IntranetRepository>();
@@ -59,10 +60,10 @@ builder.Services.AddScoped<SupervisionService>();
 builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepository>();
 builder.Services.AddScoped<NotificationCenterService>();
 builder.Services.AddScoped<ISsoRepository, SsoRepository>();
-builder.Services.AddSingleton<ISsoClients, OrganizationIntranet.Api.Security.ConfigurationSsoClients>();
 builder.Services.AddScoped<SsoService>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<OrganizationService>();
+builder.Services.AddScoped<FirstAdminService>();
 OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
@@ -136,6 +137,12 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("account", context => RateLimitPartition.GetFixedWindowLimiter(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 var app = builder.Build();
+// حالت خط فرمان «ساخت اولین مدیر» (tools/New-FirstAdmin.ps1): بدون راه‌اندازی وب‌سرور بعد از کار بسته می‌شود.
+if (args.Contains(OrganizationIntranet.Api.FirstAdminCommand.Flag))
+{
+    Environment.ExitCode = await OrganizationIntranet.Api.FirstAdminCommand.RunAsync(app.Services, args);
+    return;
+}
 if (!app.Environment.IsDevelopment()) app.UseHsts();
 app.UseHttpsRedirection();
 if (app.Environment.IsDevelopment())

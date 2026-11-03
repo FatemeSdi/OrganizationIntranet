@@ -9,6 +9,11 @@ public class Application
     public string ApplicationCode { get; set; } = string.Empty;
     /// <summary>نشانی ورود سامانه: مقصد کارت پورتال، مبدأ مجاز لینک اعلان‌ها و پایه‌ی آدرس ورود یکپارچه.</summary>
     public string? BaseUrl { get; set; }
+    /// <summary>مسیر نسبی صفحه‌ی دریافت بلیت SSO در سامانه (مثل Security/Account/Sso)؛ آدرس کامل از BaseUrl ساخته می‌شود.</summary>
+    public string? SsoPath { get; set; }
+    /// <summary>هش SHA-256 کلید SSO سامانه؛ خود کلید هرگز ذخیره نمی‌شود. خالی یعنی SSO این سامانه غیرفعال است.</summary>
+    public byte[]? SsoKeyHash { get; set; }
+    public DateTime? SsoKeyChangedAt { get; set; }
     public string? Description { get; set; }
     public string? Icon { get; set; }
     /// <summary>ترتیب نمایش در پورتال (عدد کمتر جلوتر). ثبت بدون ترتیب، سامانه را آخرین ردیف می‌کند.</summary>

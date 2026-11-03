@@ -1,0 +1,92 @@
+@page
+@model SsoModel
+@using OrganizationIntranet.Helper
+@{
+    var data = Model.Data;
+    var canEdit = User.HasPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit);
+    ViewData["Title"] = "ورود یکپارچه (SSO)";
+    ViewData["Icon"] = "ti ti-key";
+    ViewData["Subtitle"] = data.ApplicationName;
+    ViewData["ParentTitle"] = "ویرایش سامانه";
+    ViewData["ParentUrl"] = "/Admin/Applications/Edit?id=" + data.ApplicationId;
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(Model.SuccessMessage, Model.ErrorMessage)' />
+
+<div class="admin-callout mb-4">
+    <i class="ti ti-info-circle" aria-hidden="true"></i>
+    <div>
+        کاربر روی کارت سامانه کلیک می‌کند، اینترانت یک بلیت یک‌بارمصرف می‌سازد و مرورگر او را به <b>صفحه‌ی SSO سامانه</b> می‌برد؛ سامانه با <b>کلید</b> خودش بلیت را از اینترانت تحویل می‌گیرد.
+        آدرس کامل از «نشانی ورود» سامانه (<span class="code-chip" dir="ltr">@(data.BaseUrl ?? "—")</span>) و «مسیر SSO» ساخته می‌شود؛ پس پورت و میزبان فقط در صفحه‌ی ویرایش سامانه نگه داشته می‌شوند.
+        کلید در بانک فقط به‌صورت <b>هش</b> ذخیره می‌شود و بعد از ساخت دیگر قابل نمایش نیست.
+    </div>
+</div>
+
+@if (Model.GeneratedKey is not null)
+{
+    <div class="card custom-card border-warning mb-4">
+        <div class="card-body">
+            <div class="fw-semibold mb-1"><i class="ti ti-alert-triangle text-warning me-1"></i>کلید تازه — فقط همین یک بار نمایش داده می‌شود</div>
+            <p class="text-muted fs-13 mb-2">آن را کپی کنید و در تنظیمات خود سامانه (IntranetSso:Key) بگذارید. تا آن زمان ورود یکپارچه‌ی این سامانه کار نمی‌کند، چون کلید قبلی دیگر معتبر نیست.</p>
+            <input class="form-control" dir="ltr" readonly value="@Model.GeneratedKey" onfocus="this.select()" aria-label="کلید ساخته‌شده" />
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-6">
+        <form method="post" class="card custom-card" data-busy>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div class="card-header"><div class="card-title"><i class="ti ti-route text-primary me-1"></i>مسیر صفحه‌ی SSO سامانه</div></div>
+            <div class="card-body">
+                <label asp-for="SsoPath" class="form-label">مسیر SSO</label>
+                <input asp-for="SsoPath" class="form-control" dir="ltr" maxlength="200" placeholder="Security/Account/Sso" readonly="@(!canEdit)" />
+                <div class="form-text">مسیر نسبی صفحه‌ای که بلیت را می‌گیرد، بدون آدرس سایت. خالی = ورود یکپارچه برای این سامانه غیرفعال.</div>
+                <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+                    <span class="status-pill @(data.Enabled ? "status-pill--success" : "status-pill--muted")">@(data.Enabled ? "ورود یکپارچه فعال است" : "ورود یکپارچه غیرفعال است")</span>
+                    @if (data.LandingUrl is not null) { <span class="code-chip" dir="ltr">@data.LandingUrl</span> }
+                    else { <span class="text-muted fs-12">@(string.IsNullOrWhiteSpace(data.BaseUrl) ? "نشانی ورود سامانه ثبت نشده است" : "مسیر ثبت نشده یا معتبر نیست")</span> }
+                </div>
+            </div>
+            @if (canEdit)
+            {
+                <div class="card-footer"><button type="submit" asp-page-handler="Save" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>ذخیره‌ی مسیر</button></div>
+            }
+        </form>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-key text-primary me-1"></i>کلید سامانه</div></div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                    <span class="status-pill @(data.HasKey ? "status-pill--success" : "status-pill--warning")">@(data.HasKey ? "کلید ثبت شده" : "کلید ثبت نشده")</span>
+                    @if (data.KeyChangedAt is not null) { <span class="text-muted fs-12">آخرین تغییر: @data.KeyChangedAt.Value.ToPersianDate()</span> }
+                </div>
+                @if (canEdit)
+                {
+                    <form method="post" class="mb-3" data-busy>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" name="SsoPath" value="@Model.SsoPath" />
+                        <label asp-for="NewKey" class="form-label">ثبت کلیدی که سامانه از قبل دارد</label>
+                        <input asp-for="NewKey" class="form-control" dir="ltr" maxlength="200" autocomplete="off" placeholder="کلید فعلی سامانه را اینجا بچسبانید" />
+                        <div class="form-text">۳۲ تا ۲۰۰ نویسه، بدون فاصله. نیازی به تغییر در خود سامانه نیست.</div>
+                        <button type="submit" asp-page-handler="SetKey" class="btn btn-primary-light mt-2"><i class="ti ti-check me-1"></i>ثبت کلید</button>
+                    </form>
+                    <hr />
+                    <form method="post" class="d-flex flex-wrap gap-2" data-busy>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" name="SsoPath" value="@Model.SsoPath" />
+                        <button type="submit" asp-page-handler="Generate" class="btn btn-primary" data-confirm="@(data.HasKey ? "کلید فعلی از همین لحظه باطل می‌شود و باید کلید تازه را در سامانه بگذارید. ادامه می‌دهید؟" : "کلید تصادفی ساخته شود؟")"><i class="ti ti-refresh me-1"></i>ساخت کلید تصادفی</button>
+                        @if (data.HasKey) { <button type="submit" asp-page-handler="RemoveKey" class="btn btn-danger-light" data-confirm="کلید حذف شود؟ ورود یکپارچه‌ی این سامانه تا ثبت کلید تازه غیرفعال می‌شود."><i class="ti ti-trash me-1"></i>حذف کلید</button> }
+                    </form>
+                }
+                else { <span class="text-muted fs-13">برای تغییر کلید مجوز «ویرایش سامانه‌ها» لازم است.</span> }
+            </div>
+        </div>
+    </div>
+</div>
