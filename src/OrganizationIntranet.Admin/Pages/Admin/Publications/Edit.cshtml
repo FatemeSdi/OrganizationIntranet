@@ -58,10 +58,21 @@
                 <label asp-for="ImageFile" class="form-label">انتخاب تصویر</label>
                 <input asp-for="ImageFile" type="file" class="form-control" accept="@PublicationImageRules.Accept" />
                 <span asp-validation-for="ImageFile" class="text-danger fs-12"></span>
+                <div class="mt-3" role="radiogroup" aria-label="تصویر پیش‌فرض">
+                    <label class="form-label">یا یکی از تصاویر پیش‌فرض را انتخاب کنید</label>
+                    <div class="default-images">
+                        <label class="default-image default-image--auto" title="انتخاب خودکار"><input type="radio" name="DefaultImage" value="" checked="checked" /><span>خودکار</span></label>
+                        @foreach (var name in PublicationDefaultImages.Names)
+                        {
+                            <label class="default-image" title="تصویر پیش‌فرض @name"><input type="radio" name="DefaultImage" value="@name" /><img src="@PublicationDefaultImages.Url(name)" alt="تصویر پیش‌فرض @name" width="112" height="63" loading="lazy" /></label>
+                        }
+                    </div>
+                    <div class="form-text">اگر تصویری بارگذاری یا انتخاب نکنید و مطلب تصویر نداشته باشد، یکی از این تصاویر خودکار انتخاب می‌شود.</div>
+                </div>
                 @if (Model.ImageVersion != 0)
                 {
                     <div class="switch-row mt-3">
-                        <div><label class="switch-row__label" for="RemoveImage">حذف تصویر فعلی</label><p class="switch-row__help">کارت با زمینه‌ی رنگی نمایش داده می‌شود.</p></div>
+                        <div><label class="switch-row__label" for="RemoveImage">حذف تصویر فعلی</label><p class="switch-row__help">یک تصویر پیش‌فرض (انتخاب‌شده یا خودکار) جایگزین آن می‌شود.</p></div>
                         <input asp-for="RemoveImage" class="form-check-input" role="switch" />
                     </div>
                 }
@@ -151,5 +162,27 @@
             bind('Input_Summary', 'previewSummary', 'خلاصه‌ی مطلب');
             bind('Input_Kind', 'previewKind', '');
         })();
+        // تصویر پیش‌فرض: انتخاب یکی، پیش‌نمایش را عوض و فایل بارگذاری‌شده را خالی می‌کند؛ انتخاب فایل، انتخاب پیش‌فرض را به «خودکار» برمی‌گرداند.
+        (function () {
+            var file = document.getElementById('ImageFile'), img = document.getElementById('imagePreview'), placeholder = document.getElementById('imagePlaceholder');
+            var remove = document.getElementById('RemoveImage'), radios = document.querySelectorAll('input[name=DefaultImage]');
+            radios.forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    if (!radio.checked || !radio.value) return;
+                    file.value = ''; if (remove) remove.checked = false;
+                    img.src = radio.parentElement.querySelector('img').src; img.hidden = false; placeholder.hidden = true;
+                });
+            });
+            file.addEventListener('change', function () { if (file.files.length) radios[0].checked = true; });
+        })();
     </script>
+    <style>
+        .default-images { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .default-image { position: relative; display: block; border-radius: .5rem; overflow: hidden; cursor: pointer; border: 2px solid transparent; line-height: 0; }
+        .default-image input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+        .default-image img { display: block; border-radius: .35rem; }
+        .default-image:has(input:checked) { border-color: var(--primary-color, #1573B8); box-shadow: 0 0 0 2px rgba(21, 115, 184, .25); }
+        .default-image:has(input:focus-visible) { outline: 2px solid var(--primary-color, #1573B8); outline-offset: 2px; }
+        .default-image--auto { display: grid; place-items: center; width: 112px; height: 63px; border: 2px dashed var(--default-border, #cfd6dd); font-size: .8rem; line-height: 1.2; color: #5C6C78; }
+    </style>
 }

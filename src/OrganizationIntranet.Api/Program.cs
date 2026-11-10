@@ -52,7 +52,6 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IntranetService>();
 builder.Services.AddScoped<IApplicationCatalogRepository, ApplicationCatalogRepository>();
 builder.Services.AddScoped<ApplicationCatalogService>();
-builder.Services.AddScoped<OrganizationCatalogImportService>();
 builder.Services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
 builder.Services.AddScoped<AccessRequestService>();
 builder.Services.AddScoped<ISupervisionRepository, SupervisionRepository>();

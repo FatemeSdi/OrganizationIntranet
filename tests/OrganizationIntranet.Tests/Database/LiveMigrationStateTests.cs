@@ -31,6 +31,7 @@ public sealed class LiveMigrationStateTests
         "016_PublicationSlider",
         "017_LibraryDocuments",
         "018_PublicApplications",
+        "019_HideHomeApplication",
     ];
 
     [LiveSchemaFact]

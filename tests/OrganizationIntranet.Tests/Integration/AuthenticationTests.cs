@@ -376,7 +376,7 @@ public sealed class AuthenticationTests : IDisposable
         }));
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal("/Account/TwoFactor", json.RootElement.GetProperty("redirectUrl").GetString());
-        Assert.DoesNotContain(response.Headers.GetValues("Set-Cookie"), c => c.StartsWith("OrganizationIntranet.UI="));
+        Assert.DoesNotContain(response.Headers.GetValues("Set-Cookie"), c => c.StartsWith($"OrganizationIntranet.UI.{name}="));
         Assert.Equal(HttpStatusCode.Redirect, (await browser.GetAsync("/Account/Profile")).StatusCode);
         csrf = await Csrf(browser, "/Account/TwoFactor");
         await Fixture(browser, name, "/Account/TwoFactor", "twofactor");
@@ -387,7 +387,7 @@ public sealed class AuthenticationTests : IDisposable
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal("/Account/Profile", response.Headers.Location!.ToString());
-        Assert.Contains(response.Headers.GetValues("Set-Cookie"), c => c.StartsWith("OrganizationIntranet.UI=") && c.Contains("expires="));
+        Assert.Contains(response.Headers.GetValues("Set-Cookie"), c => c.StartsWith($"OrganizationIntranet.UI.{name}=") && c.Contains("expires="));
         (await browser.GetAsync("/Account/Profile")).EnsureSuccessStatusCode();
     }
 

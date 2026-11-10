@@ -70,10 +70,10 @@ public static class UiHost
             client.DefaultRequestHeaders.Add("X-Intranet-Client", key);
         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false });
         var keysPath = builder.Configuration["Ui:DataProtectionKeysPath"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OrganizationIntranet", "UIKeys");
-        builder.Services.AddDataProtection().SetApplicationName("OrganizationIntranet.UI").PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+        builder.Services.AddDataProtection().SetApplicationName("OrganizationIntranet.UI." + name).PersistKeysToFileSystem(new DirectoryInfo(keysPath));
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
         {
-            options.Cookie.Name = "OrganizationIntranet.UI";
+            options.Cookie.Name = "OrganizationIntranet.UI." + name;   // کوکی جدا برای Portal و Admin: ورود در یکی، نشست دیگری را عوض نمی‌کند
             options.Cookie.HttpOnly = true;
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             options.Cookie.SameSite = SameSiteMode.Lax;

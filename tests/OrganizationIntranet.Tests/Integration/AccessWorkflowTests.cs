@@ -49,33 +49,6 @@ public sealed partial class PortalSmokeTests
     }
 
     [Fact]
-    public async Task Organization_catalog_import_is_admin_only_atomic_and_repeatable_with_exact_assignments()
-    {
-        long fatemehId; int expertId;
-        using (var scope = api.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var user = new User { Username = "fatemeh.sadeghi", Name = "فاطمه", LastName = "صادقی", IsActive = true };
-            var role = new Role { RoleCode = "EXPERT", RoleName = "کارشناس نرم‌افزار", IsActive = true };
-            db.Users.Add(user); db.Roles.Add(role); await db.SaveChangesAsync(); fatemehId = user.UserId; expertId = role.RoleId;
-        }
-        await Login("member"); Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsync("/api/admin/catalog-import", null)).StatusCode);
-        var token = await Login();
-        var preview = await client.GetFromJsonAsync<CatalogImportPreviewDto>("/api/admin/catalog-import"); Assert.Equal(12, preview!.Items.Count);
-        using var admin = Ui<AdminEntry::Program>("Admin"); using var ui = admin.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
-        ui.DefaultRequestHeaders.Add("Cookie", Cookie(admin.Services, token, true));
-        var fields = new Dictionary<string,string> { ["__RequestVerificationToken"] = await Antiforgery(ui, "/Admin/Applications/Import") };
-        Assert.Equal(HttpStatusCode.Redirect, (await ui.PostAsync("/Admin/Applications/Import", new FormUrlEncodedContent(fields))).StatusCode);
-        var second = await (await client.PostAsync("/api/admin/catalog-import", null)).Content.ReadFromJsonAsync<CatalogImportResultDto>(); Assert.Equal(0, second!.Created);
-        using var verify = api.Services.CreateScope(); var context = verify.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.Equal(13, await context.Applications.CountAsync());
-        Assert.Equal("GATEWAY", (await context.Applications.SingleAsync(a => a.IsPublic)).ApplicationCode);
-        var direct = await context.ApplicationAccessGrants.Include(g => g.Application).SingleAsync(g => g.UserId == fatemehId); Assert.Equal("PAYSLIP", direct.Application.ApplicationCode);
-        var roleGrant = await context.ApplicationAccessGrants.Include(g => g.Application).SingleAsync(g => g.RoleId == expertId); Assert.Equal("ATTENDANCE", roleGrant.Application.ApplicationCode);
-        Assert.Equal(2, await context.ApplicationAccessGrants.CountAsync()); Assert.Empty(await context.Notifications.ToListAsync());
-    }
-
-    [Fact]
     public async Task Pull_transport_rejects_redirects_and_oversized_responses_without_following_links()
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?> {

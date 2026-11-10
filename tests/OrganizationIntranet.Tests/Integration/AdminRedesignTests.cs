@@ -50,7 +50,7 @@ public sealed partial class PortalSmokeTests
                 ["/Admin/Users"] = "کاربران", ["/Admin/Users/Edit"] = "افزودن کاربر", [$"/Admin/Users/Edit?id={memberId}"] = "ویرایش کاربر",
                 ["/Admin/Roles"] = "نقش‌ها", ["/Admin/Permissions"] = "مجوزها (Permission)", [$"/Admin/Permissions/Assign?id={permissionId}"] = "اختصاص مجوز به نقش‌ها",
                 ["/Admin/Applications"] = "سامانه‌ها", ["/Admin/Applications/Edit?id=1"] = "تنظیمات سامانه", ["/Admin/Applications/Supervision?id=1"] = "گروه‌های نظارت",
-                ["/Admin/Applications/Import"] = "ثبت فهرست سامانه‌های سازمان", ["/Admin/AccessRequests"] = "درخواست‌های دسترسی",
+                ["/Admin/AccessRequests"] = "درخواست‌های دسترسی",
                 ["/Admin/AccessRequests/Notifications"] = "پیامک درخواست‌های دسترسی", ["/Admin/Publications"] = "اطلاع‌رسانی سازمانی",
                 ["/Admin/Publications/Edit"] = "افزودن محتوا", ["/Admin/Authentication"] = "ورود و امنیت",
             };
@@ -65,7 +65,7 @@ public sealed partial class PortalSmokeTests
                 var head = Regex.Match(html, "<header class=\"admin-page-head\">[\\s\\S]*?</header>").Value;
                 Assert.Single(Regex.Matches(head, Regex.Escape(title) + "(?=<)")); // عنوان در سربرگ فقط یک‌بار؛ در مسیر صفحه تکرار نمی‌شود
                 Assert.DoesNotContain("breadcrumb-item active", html);
-                Assert.Equal(path.Contains("/Edit") || path.Contains("/Assign") || path.Contains("/Supervision") || path.Contains("/Import") || path.Contains("/Notifications"),
+                Assert.Equal(path.Contains("/Edit") || path.Contains("/Assign") || path.Contains("/Supervision") || path.Contains("/Notifications"),
                     html.Contains("admin-page-head__parent"));                           // مسیر فقط در صفحه‌های فرعی و فقط تا والد
                 Assert.Matches("admin-ui\\.css\\?v=", html);
                 Assert.Matches("admin-ui\\.js\\?v=", html);

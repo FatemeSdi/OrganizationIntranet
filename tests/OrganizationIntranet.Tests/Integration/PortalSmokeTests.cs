@@ -341,9 +341,8 @@ public sealed partial class PortalSmokeTests : IDisposable
             (await ui.GetAsync("/Account/ForgotPassword")).EnsureSuccessStatusCode();
             (await ui.GetAsync("/assets/libs/bootstrap/css/bootstrap.rtl.min.css")).EnsureSuccessStatusCode();
         }
-        var cookie = Cookie(portal.Services, token, true);
-        portalClient.DefaultRequestHeaders.Add("Cookie", cookie);
-        adminClient.DefaultRequestHeaders.Add("Cookie", cookie); // Same protected cookie is valid in both UI hosts.
+        portalClient.DefaultRequestHeaders.Add("Cookie", Cookie(portal.Services, token, true));
+        adminClient.DefaultRequestHeaders.Add("Cookie", Cookie(admin.Services, token, true));   // هر UI کوکی و کلید رمزگذاری خودش را دارد (نشست‌ها جداست)
         foreach (var path in new[] { "/Portal", "/Account/Profile" }) (await portalClient.GetAsync(path)).EnsureSuccessStatusCode();
         foreach (var path in new[] { "/Admin", "/Admin/Users", "/Admin/Users/Edit", "/Admin/Users/Edit?id=1", "/Admin/Roles", "/Admin/Applications", "/Admin/Permissions", "/Account/Profile" }) (await adminClient.GetAsync(path)).EnsureSuccessStatusCode();
         (await client.PostAsJsonAsync("/api/admin/permissions", new PermissionRequest("مجوز", "VIEW", 1, null))).EnsureSuccessStatusCode();
@@ -461,7 +460,7 @@ public sealed partial class PortalSmokeTests : IDisposable
         Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("OrganizationIntranet.UI"));
     }
     [Theory]
-    [InlineData("admin", "/Admin?welcome=true")]
+    [InlineData("admin", "/Portal")]
     [InlineData("member", "/Portal")]
     public async Task Successful_UI_login_profile_password_and_logout(string username, string destination)
     {

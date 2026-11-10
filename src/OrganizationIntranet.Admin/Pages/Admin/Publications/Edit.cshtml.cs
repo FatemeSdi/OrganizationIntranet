@@ -6,13 +6,15 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
-public class EditModel(ApiClient api) : PageModel
+public class EditModel(ApiClient api, IWebHostEnvironment environment) : PageModel
 {
     [BindProperty(SupportsGet = true)] public long? Id { get; set; }
     [BindProperty] public PublicationEditRequest Input { get; set; } = new();
     /// <summary>تصویر شاخص کارت خبر؛ نوع واقعی فایل در API از روی امضای آن بررسی می‌شود.</summary>
     [BindProperty] public IFormFile? ImageFile { get; set; }
     [BindProperty] public bool RemoveImage { get; set; }
+    /// <summary>نام یکی از تصاویر پیش‌فرض (PublicationDefaultImages)؛ خالی = خودکار. فقط وقتی استفاده می‌شود که فایلی بارگذاری نشده باشد.</summary>
+    [BindProperty] public string? DefaultImage { get; set; }
     public long ImageVersion { get; set; }
     public bool IsArchived { get; set; }
     public async Task OnGetAsync()
@@ -56,7 +58,18 @@ public class EditModel(ApiClient api) : PageModel
                 await ImageFile.CopyToAsync(buffer);
                 await api.PostAsync<PublicationDto>($"api/admin/publications/{saved.PublicationId}/image", new PublicationImageUpload(Convert.ToBase64String(buffer.ToArray())));
             }
-            else if (RemoveImage) await api.PostAsync<OperationResult>($"api/admin/publications/{saved.PublicationId}/image/remove");
+            else
+            {
+                if (RemoveImage) await api.PostAsync<OperationResult>($"api/admin/publications/{saved.PublicationId}/image/remove");
+                // تصویر پیش‌فرض: اگر مدیر یکی را انتخاب کرده همان؛ وگرنه فقط وقتی مطلب بعد از ذخیره تصویر ندارد، یکی خودکار انتخاب می‌شود.
+                var hasImage = saved.ImageVersion != 0 && !RemoveImage;
+                if (PublicationDefaultImages.IsValid(DefaultImage) || !hasImage)
+                {
+                    var path = PublicationDefaultImages.PathOf(environment.WebRootPath, PublicationDefaultImages.IsValid(DefaultImage) ? DefaultImage : PublicationDefaultImages.Pick(saved.Title));
+                    if (path is not null)
+                        await api.PostAsync<PublicationDto>($"api/admin/publications/{saved.PublicationId}/image", new PublicationImageUpload(Convert.ToBase64String(await System.IO.File.ReadAllBytesAsync(path))));
+                }
+            }
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 413)
         {

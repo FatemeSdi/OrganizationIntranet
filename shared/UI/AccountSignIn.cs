@@ -32,7 +32,8 @@ public static class AccountSignIn
             new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
             new AuthenticationProperties { IsPersistent = rememberMe, ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(token.ExpiresIn), AllowRefresh = true });
         if (page.Url.IsLocalUrl(returnUrl)) return returnUrl!;
-        return canAdminister ? configuration["Sites:Admin"] + "/Admin?welcome=true" : configuration["Sites:Portal"] + "/Portal";
+        // نشست Portal و Admin جداست (کوکی مستقل)؛ پس هر UI کاربر را در همان UI نگه می‌دارد. مدیر برای پنل از منوی پورتال وارد صفحه‌ی ورود پنل می‌شود.
+        return configuration["Ui:Name"] == "Admin" ? configuration["Sites:Admin"] + "/Admin?welcome=true" : configuration["Sites:Portal"] + "/Portal";
     }
 
     private static IEnumerable<Claim> ProfileClaims(ProfileDto profile, DateTimeOffset now)
