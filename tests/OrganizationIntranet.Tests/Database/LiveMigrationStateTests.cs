@@ -30,6 +30,7 @@ public sealed class LiveMigrationStateTests
         "015_AdminNotifications",
         "016_PublicationSlider",
         "017_LibraryDocuments",
+        "018_PublicApplications",
     ];
 
     [LiveSchemaFact]
