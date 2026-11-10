@@ -7,10 +7,10 @@ namespace OrganizationIntranet.Application.Services;
 /// <summary>منطق اطلاع‌رسانی سازمانی: فهرست و جزئیات با دامنه‌ی دید (مدیر، کاربر واردشده، بازدیدکننده)، ساخت و ویرایش با کنترل هم‌زمانی (Revision)، بایگانی و تصویر شاخص.</summary>
 public sealed class PublicationService(IPublicationRepository repository)
 {
-    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0, p.IsArchived);
+    private static PublicationDto Map(Publication p) => new(p.PublicationId, p.Title, p.Summary, p.Body, p.Kind, p.IsPublished, p.CreatedAt, p.UpdatedAt, p.PublishedAt, p.Revision, p.IsPublic, p.ImageUpdatedAt?.Ticks ?? 0, p.IsArchived, p.ShowInSlider, p.SlideOrder);
     /// <summary>فهرست مطالب: فقط منتشرشده‌ها یا همه (بایگانی‌شده‌ها در هر دو نیستند).</summary>
-    public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page) =>
-        ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page);
+    public Task<PublicationListDto> ListAsync(bool publishedOnly, string? kind, string? search, int page, bool sliderOnly = false) =>
+        ListAsync(publishedOnly ? PublicationScope.Published : PublicationScope.All, kind, search, page, sliderOnly);
     /// <summary>فهرست مدیر با فیلتر وضعیت: published، draft، public، archived یا خالی (همه‌ی بایگانی‌نشده‌ها).</summary>
     public Task<PublicationListDto> ListForAdminAsync(string? status, string? kind, string? search, int page) =>
         ListAsync(status switch
@@ -19,13 +19,13 @@ public sealed class PublicationService(IPublicationRepository repository)
             _ => throw new ArgumentException("وضعیت محتوا معتبر نیست"),
         }, kind, search, page);
     /// <summary>فهرست محتوای منتشرشده‌ی عمومی برای بازدیدکننده‌ی ناشناس.</summary>
-    public Task<PublicationListDto> ListPublicAsync(string? kind, string? search, int page) => ListAsync(PublicationScope.Public, kind, search, page);
+    public Task<PublicationListDto> ListPublicAsync(string? kind, string? search, int page, bool sliderOnly = false) => ListAsync(PublicationScope.Public, kind, search, page, sliderOnly);
     /// <summary>فهرست ۲۰تایی با اعتبارسنجی ورودی (نوع، شماره‌ی صفحه، جست‌وجو حداکثر ۲۰۰ نویسه)؛ متن کامل مطالب در فهرست خالی می‌آید.</summary>
-    private async Task<PublicationListDto> ListAsync(PublicationScope scope, string? kind, string? search, int page)
+    private async Task<PublicationListDto> ListAsync(PublicationScope scope, string? kind, string? search, int page, bool sliderOnly = false)
     {
         if (kind is not null && !PublicationKinds.IsValid(kind)) throw new ArgumentException("نوع محتوا معتبر نیست");
         if (page < 1 || page > 100000 || search?.Length > 200) throw new ArgumentException("پارامترهای جست‌وجو معتبر نیستند");
-        var result = await repository.ListAsync(scope, kind, search?.Trim(), page, 20);
+        var result = await repository.ListAsync(scope, kind, search?.Trim(), page, 20, sliderOnly);
         return new(result.Items.Select(p => Map(p) with { Body = "" }).ToList(), result.Total, page, 20);
     }
     /// <summary>یک مطلب (منتشرشده یا هر وضعیت)؛ ناموجود KeyNotFoundException.</summary>
@@ -48,6 +48,7 @@ public sealed class PublicationService(IPublicationRepository repository)
         p.Title = request.Title.Trim(); p.Summary = request.Summary.Trim(); p.Body = request.Body.Trim(); p.Kind = request.Kind;
         p.PublishedAt = request.IsPublished ? p.PublishedAt ?? now : null;
         p.IsPublished = request.IsPublished; p.IsPublic = request.IsPublic; p.UpdatedAt = now; p.UpdatedBy = actor;
+        p.ShowInSlider = request.ShowInSlider; p.SlideOrder = request.SlideOrder is >= 0 and <= 10000 ? request.SlideOrder : throw new ArgumentException("ترتیب اسلایدر باید بین ۰ تا ۱۰۰۰۰ باشد");
         p.Revision = checked(p.Revision + 1);
         if (!id.HasValue) repository.Add(p);
         await repository.SaveAsync();

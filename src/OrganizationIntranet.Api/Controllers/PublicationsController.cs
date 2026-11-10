@@ -13,7 +13,7 @@ namespace OrganizationIntranet.Api.Controllers;
 public sealed class PublicationsController(PublicationService service) : ControllerBase
 {
     /// <summary>فهرست مطالب منتشرشده با فیلتر نوع، جست‌وجو و صفحه‌بندی (۲۰ مورد در هر صفحه).</summary>
-    [HttpGet] public Task<PublicationListDto> List(string? kind = null, string? search = null, int page = 1) => service.ListAsync(true, kind, search, page);
+    [HttpGet] public Task<PublicationListDto> List(string? kind = null, string? search = null, int page = 1, bool slider = false) => service.ListAsync(true, kind, search, page, slider);
     /// <summary>متن کامل یک مطلب منتشرشده.</summary>
     [HttpGet("{id:long}")] public Task<PublicationDto> Get(long id) => service.GetAsync(id, true);
     /// <summary>تصویر شاخص مطلب منتشرشده برای کاربر واردشده.</summary>

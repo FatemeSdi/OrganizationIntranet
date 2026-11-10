@@ -19,9 +19,13 @@ public sealed class PublicationEditRequest
     /// <summary>نمایش برای بازدیدکننده‌ی ناشناس؛ فقط همراه با انتشار پذیرفته می‌شود.</summary>
     public bool IsPublic { get; set; }
     [Range(0, long.MaxValue)] public long? Revision { get; set; }
+    /// <summary>نمایش در اسلایدر اخبار صفحه‌ی اصلی (فقط وقتی منتشر شده باشد دیده می‌شود).</summary>
+    public bool ShowInSlider { get; set; } = true;
+    /// <summary>جایگاه در اسلایدر، ۰ تا ۱۰۰۰۰؛ عدد کوچک‌تر جلوتر. با برابری، مطلب تازه‌تر جلوتر است.</summary>
+    [Range(0, 10000)] public int SlideOrder { get; set; }
 }
 /// <param name="ImageVersion">نسخه‌ی تصویر شاخص (برای نشانی تصویر و کش)؛ 0 یعنی مطلب تصویر ندارد.</param>
-public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt, long Revision = 0, bool IsPublic = false, long ImageVersion = 0, bool IsArchived = false)
+public record PublicationDto(long PublicationId, string Title, string Summary, string Body, string Kind, bool IsPublished, DateTime CreatedAt, DateTime UpdatedAt, DateTime? PublishedAt, long Revision = 0, bool IsPublic = false, long ImageVersion = 0, bool IsArchived = false, bool ShowInSlider = true, int SlideOrder = 0)
 {
     public bool HasImage => ImageVersion != 0;
 }

@@ -20,7 +20,7 @@
             {
                 <a class="pp-icon-btn" href="/Notifications" aria-label="@(Model.Unread > 0 ? $"اعلان‌ها، {Model.Unread} خوانده‌نشده" : "اعلان‌ها")" aria-current="@(Model.Active == "notifications" ? "page" : null)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
-                    @if (Model.Unread > 0) { <span class="pp-count" aria-hidden="true">@Model.Unread</span> }
+                    @if (Model.Unread > 0) { <span class="pp-count" aria-hidden="true">@(Model.Unread > 99 ? "99+" : Model.Unread.ToString())</span> }
                 </a>
                 <div class="pp-user">
                     <button type="button" class="pp-user-chip" id="ppUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="ppUserMenu">

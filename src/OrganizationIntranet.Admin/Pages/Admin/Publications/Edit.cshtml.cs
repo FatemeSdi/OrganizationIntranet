@@ -20,7 +20,7 @@ public class EditModel(ApiClient api) : PageModel
         if (Id.HasValue)
         {
             var p = await api.GetAsync<PublicationDto>($"api/admin/publications/{Id}");
-            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, Revision = p.Revision };
+            Input = new() { Title = p.Title, Summary = p.Summary, Body = p.Body, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, Revision = p.Revision, ShowInSlider = p.ShowInSlider, SlideOrder = p.SlideOrder };
             ImageVersion = p.ImageVersion;
             IsArchived = p.IsArchived;
         }

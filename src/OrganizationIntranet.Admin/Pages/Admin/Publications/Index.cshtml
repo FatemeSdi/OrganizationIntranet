@@ -70,6 +70,7 @@
                                 <div class="d-flex flex-wrap gap-1">
                                     <span class="status-pill @(item.IsPublished ? "status-pill--success" : "status-pill--muted")">@(item.IsArchived ? "بایگانی‌شده" : item.IsPublished ? "منتشرشده" : "پیش‌نویس")</span>
                                     @if (item.IsPublic) { <span class="status-pill status-pill--info" title="بازدیدکننده‌ی بدون ورود هم می‌بیند"><i class="ti ti-world"></i> عمومی</span> }
+                                    @if (item.IsPublished && item.ShowInSlider) { <span class="status-pill status-pill--primary" title="در اسلایدر صفحه‌ی اصلی"><i class="ti ti-slideshow"></i> اسلایدر@(item.SlideOrder > 0 ? $" · {item.SlideOrder}" : "")</span> }
                                 </div>
                             </td>
                             <td class="text-nowrap text-muted fs-12">@(item.PublishedAt.HasValue ? "انتشار: " + item.PublishedAt.ToPersianDate() : "ایجاد: " + item.CreatedAt.ToPersianDate())</td>

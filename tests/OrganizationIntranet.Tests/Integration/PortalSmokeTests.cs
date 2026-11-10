@@ -35,6 +35,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     public const string AdminClientKey = "integration-admin-only-key-0000000000000000";
     public const string ClientKey = "integration-test-only-key-0000000000000000";
     private readonly SqliteConnection connection = new("Data Source=:memory:");
+    /// <summary>پوشه‌ی موقت فایل اسناد کتابخانه برای همین نمونه؛ هرگز پوشه‌ی واقعی برنامه نیست و در پایان پاک می‌شود.</summary>
+    public string LibraryDirectory { get; } = Path.Combine(Path.GetTempPath(), "intranet-tests-library-" + Guid.NewGuid().ToString("N"));
     public ApiFactory()
     {
         connection.Open();
@@ -49,6 +51,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("ApplicationIntegrations:TEST:PullKey", IntegrationKey);
         builder.UseSetting("ApplicationIntegrations:TEST:PullUrl", "https://source.example/api/notifications");
         builder.UseSetting("ConnectionStrings:DefaultConnection", "unused-in-tests");
+        builder.UseSetting("Library:StoragePath", LibraryDirectory);
+        builder.UseSetting("Library:MaxFileBytes", "1048576");   // سقف ۱ مگابایت برای آزمون رد فایل بزرگ
         // آزمون‌ها هرگز نباید به درگاه پیامک واقعی برسند (حتی روی شبکه‌ی داخلی)؛ درگاه فقط در آزمون‌های اختصاصی loopback فعال می‌شود.
         builder.UseSetting("Sms:BaseUrl", "");
         builder.UseSetting("Sms:AppName", "");
@@ -80,7 +84,11 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         TestSeed.GrantAdminPanel(db, admin, app); // مثل migration 008: نقش ADMIN همه‌ی مجوزهای پنل را دارد
         db.SaveChanges();
     }
-    protected override void Dispose(bool disposing) { base.Dispose(disposing); if (disposing) connection.Dispose(); }
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing) { connection.Dispose(); try { if (Directory.Exists(LibraryDirectory)) Directory.Delete(LibraryDirectory, true); } catch (IOException) { } }
+    }
 }
 
 [Trait("Category", "Integration")]

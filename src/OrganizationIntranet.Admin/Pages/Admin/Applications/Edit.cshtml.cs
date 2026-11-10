@@ -13,12 +13,14 @@ public class EditModel(ApiClient api) : PageModel
     [BindProperty] public ApplicationInput Input { get; set; } = new();
     public List<UserDto> Users { get; set; } = new();
     public List<RoleDto> Roles { get; set; } = new();
+    public List<OrgUnitDto> Units { get; set; } = new();
     public string? ErrorMessage { get; set; }
     public List<ApplicationServiceSyncDto> SyncStatuses { get; set; } = new();
     private async Task LoadPrincipalsAsync()
     {
         Users = await api.GetAsync<List<UserDto>>("api/admin/users");
         Roles = await api.GetAsync<List<RoleDto>>("api/admin/roles");
+        Units = await api.GetAsync<List<OrgUnitDto>>("api/admin/org/units");
     }
     public async Task OnGetAsync()
     {
@@ -27,8 +29,8 @@ public class EditModel(ApiClient api) : PageModel
         SyncStatuses = data.SyncStatuses ?? new();
         Input = new() { ApplicationName = a.ApplicationName, ApplicationCode = a.ApplicationCode, BaseUrl = a.BaseUrl,
             Description = a.Description, DisplayOrder = a.DisplayOrder, Icon = ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps",
-            AccessRequestNotificationChannels = a.AccessRequestNotificationChannels, RequiresLogin = a.RequiresLogin, IsInternetAccessible = a.IsInternetAccessible, IsPublic = a.IsPublic,
-            UserIds = data.UserIds, RoleIds = data.RoleIds,
+            AccessRequestNotificationChannels = a.AccessRequestNotificationChannels, RequiresLogin = a.RequiresLogin, IsInternetAccessible = a.IsInternetAccessible, AccessMode = a.IsPublic ? "Public" : a.IsUnitRestricted ? "Unit" : "Request",
+            UserIds = data.UserIds, RoleIds = data.RoleIds, UnitIds = data.UnitIds ?? new(),
             Services = data.Services.Select(s => new ServiceInput { ServiceCode = s.ServiceCode, DisplayName = s.DisplayName, EndpointUrl = s.EndpointUrl, IsActive = s.IsActive }).ToList() };
         Input.Services.Add(new());
         await LoadPrincipalsAsync();
@@ -51,10 +53,10 @@ public class EditModel(ApiClient api) : PageModel
         try
         {
             var request = new ApplicationConfigurationRequest(new(Input.ApplicationName, Input.ApplicationCode, Input.BaseUrl,
-                Input.Description, Input.DisplayOrder, Input.Icon, Input.RequiresLogin, Input.IsInternetAccessible, Input.IsPublic, Input.AccessRequestNotificationChannels),
+                Input.Description, Input.DisplayOrder, Input.Icon, Input.RequiresLogin, Input.IsInternetAccessible, Input.AccessMode == "Public", Input.AccessRequestNotificationChannels, Input.AccessMode == "Unit"),
                 Input.UserIds, Input.RoleIds, Input.Services.Where(s => !s.Remove &&
                     !(string.IsNullOrWhiteSpace(s.ServiceCode) && string.IsNullOrWhiteSpace(s.DisplayName) && string.IsNullOrWhiteSpace(s.EndpointUrl)))
-                .Select(s => new ApplicationServiceRequest(s.ServiceCode ?? "", s.DisplayName ?? "", s.EndpointUrl, s.IsActive)).ToList());
+                .Select(s => new ApplicationServiceRequest(s.ServiceCode ?? "", s.DisplayName ?? "", s.EndpointUrl, s.IsActive)).ToList(), Input.UnitIds);
             var result = await api.PostAsync<OperationResult>($"api/admin/applications/{Id}", request);
             TempData["SuccessMessage"] = result.Message;
             return RedirectToPage(new { Id });
@@ -76,7 +78,9 @@ public class EditModel(ApiClient api) : PageModel
         public string Icon { get; set; } = "apps";
         public bool RequiresLogin { get; set; } = true;
         public bool IsInternetAccessible { get; set; }
-        public bool IsPublic { get; set; }
+        /// <summary>Request (با تخصیص یا درخواست)، Public (عمومی) یا Unit (بر اساس چارت سازمانی).</summary>
+        public string AccessMode { get; set; } = "Request";
+        public List<int> UnitIds { get; set; } = new();
         public List<long> UserIds { get; set; } = new();
         public List<int> RoleIds { get; set; } = new();
         public List<ServiceInput> Services { get; set; } = new();

@@ -83,6 +83,15 @@
                 <div><label class="switch-row__label" for="Input_IsPublic">نمایش عمومی</label><p class="switch-row__help">بازدیدکننده‌ی بدون ورود هم می‌بیند؛ فقط همراه با «انتشار» ممکن است. محتوای حساس یا داخلی را عمومی نکنید.</p></div>
                 <input asp-for="Input.IsPublic" class="form-check-input" role="switch" />
             </div>
+            <div class="switch-row">
+                <div><label class="switch-row__label" for="Input_ShowInSlider">نمایش در اسلایدر صفحه‌ی اصلی</label><p class="switch-row__help">فقط مطلب منتشرشده در اسلایدر می‌آید. خاموش باشد مطلب همچنان در فهرست اخبار هست ولی در اسلایدر نیست.</p></div>
+                <input asp-for="Input.ShowInSlider" class="form-check-input" role="switch" />
+            </div>
+            <div class="mt-3" style="max-width:16rem">
+                <label asp-for="Input.SlideOrder" class="form-label">جایگاه در اسلایدر</label>
+                <input asp-for="Input.SlideOrder" type="number" class="form-control" dir="ltr" min="0" max="10000" />
+                <div class="form-text">عدد کوچک‌تر جلوتر می‌آید (۰ = بدون اولویت). با عدد برابر، مطلب تازه‌تر جلوتر است.</div>
+            </div>
         </div>
     </section>
 

@@ -7,6 +7,7 @@ namespace OrganizationIntranet.Api.Data;
 public partial class AppDbContext
 {
     public DbSet<ApplicationAccess> ApplicationAccessGrants => Set<ApplicationAccess>();
+    public DbSet<ApplicationUnitAccess> ApplicationUnitAccess => Set<ApplicationUnitAccess>();
     public DbSet<ApplicationServiceRegistration> ApplicationServices => Set<ApplicationServiceRegistration>();
 
     private static void ConfigureApplicationCatalog(ModelBuilder modelBuilder)
@@ -14,6 +15,19 @@ public partial class AppDbContext
         modelBuilder.Entity<Domain.Entities.Application>().Property(a => a.RequiresLogin).HasDefaultValue(true);
         modelBuilder.Entity<Domain.Entities.Application>().Property(a => a.IsInternetAccessible).HasDefaultValue(false);
         modelBuilder.Entity<Domain.Entities.Application>().Property(a => a.IsPublic).HasDefaultValue(false);
+        modelBuilder.Entity<Domain.Entities.Application>().Property(a => a.IsUnitRestricted).HasDefaultValue(false);
+        // حالت دسترسی «عمومی» و «محدود به واحد» هم‌زمان نمی‌شوند؛ migration 014_ApplicationUnitAccess.
+        modelBuilder.Entity<Domain.Entities.Application>().ToTable("Application", "App", t => t.HasCheckConstraint("CK_Application_AccessMode", "NOT ([IsPublic] = 1 AND [IsUnitRestricted] = 1)"));
+        modelBuilder.Entity<ApplicationUnitAccess>(e =>
+        {
+            e.ToTable("ApplicationUnitAccess", "App");
+            e.HasKey(x => x.ApplicationUnitAccessId);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            e.HasIndex(x => new { x.ApplicationId, x.UnitId }).IsUnique().HasDatabaseName("UX_ApplicationUnitAccess_Application_Unit");
+            e.HasIndex(x => x.UnitId).HasDatabaseName("IX_ApplicationUnitAccess_UnitId");
+            e.HasOne(x => x.Application).WithMany(x => x.UnitAccess).HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(x => x.Unit).WithMany().HasForeignKey(x => x.UnitId).OnDelete(DeleteBehavior.NoAction);
+        });
         modelBuilder.Entity<ApplicationAccess>(e =>
         {
             e.ToTable("ApplicationAccess", "App", t => t.HasCheckConstraint("CK_ApplicationAccess_Principal",

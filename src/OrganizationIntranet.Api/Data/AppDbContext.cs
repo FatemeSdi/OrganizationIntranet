@@ -31,6 +31,8 @@ public partial class AppDbContext : DbContext
         ConfigureSupervision(modelBuilder);
         ConfigureSso(modelBuilder);
         ConfigureOrganization(modelBuilder);
+        ConfigureAdminNotifications(modelBuilder);
+        ConfigureLibrary(modelBuilder);
         modelBuilder.Entity<AuthenticationSettings>(e =>
         {
             e.ToTable("AuthenticationSettings", "Sec");
@@ -63,6 +65,7 @@ public partial class AppDbContext : DbContext
                 t.HasCheckConstraint("CK_Publication_PublishState", "([IsPublished] = 0 AND [PublishedAt] IS NULL) OR ([IsPublished] = 1 AND [PublishedAt] IS NOT NULL)");
                 t.HasCheckConstraint("CK_Publication_PublicRequiresPublished", "[IsPublic] = 0 OR [IsPublished] = 1");
                 t.HasCheckConstraint("CK_Publication_ArchivedNotPublished", "[IsArchived] = 0 OR [IsPublished] = 0");
+                t.HasCheckConstraint("CK_Publication_SlideOrder", "[SlideOrder] BETWEEN 0 AND 10000");
             });
             e.HasKey(p => p.PublicationId);
             e.Property(p => p.Title).HasMaxLength(200).IsRequired();
@@ -72,6 +75,9 @@ public partial class AppDbContext : DbContext
             e.Property(p => p.Revision).IsConcurrencyToken();
             e.Property(p => p.IsPublic).HasDefaultValue(false);
             e.Property(p => p.IsArchived).HasDefaultValue(false);
+            e.Property(p => p.ShowInSlider).HasDefaultValue(true);
+            e.Property(p => p.SlideOrder).HasDefaultValue(0);
+            e.HasIndex(p => new { p.ShowInSlider, p.SlideOrder, p.PublishedAt }).IsDescending(false, false, true).HasFilter("[IsPublished] = 1 AND [IsArchived] = 0").HasDatabaseName("IX_Publication_Slider");
             e.HasIndex(p => new { p.IsArchived, p.PublishedAt, p.PublicationId }).HasDatabaseName("IX_Publication_IsArchived");
             e.HasIndex(p => new { p.IsPublished, p.PublishedAt, p.PublicationId });
             e.HasIndex(p => new { p.IsPublic, p.PublishedAt, p.PublicationId }).HasDatabaseName("IX_Publication_IsPublic_PublishedAt");

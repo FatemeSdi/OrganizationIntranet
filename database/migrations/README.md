@@ -32,6 +32,10 @@
 | `011_UserApplicationAccounts` | همین پوشه | نگاشت کاربر اینترانت به نام کاربری او در هر سامانه برای ورود یکپارچه، وقتی دو نام فرق دارند؛ سامانه‌ها تغییری نمی‌کنند ([docs/sso.md](../../docs/sso.md)) |
 | `012_OrganizationChart` | همین پوشه | چارت سازمانی: جدول درختی `Org.Unit`، ستون اختیاری `Sec.User.UnitId` و مجوزهای `ORG_VIEW` و `ORG_EDIT` برای ADMIN؛ داده با `tools/Import-OrganizationChartFromIts.ps1` وارد می‌شود |
 | `013_ApplicationSsoSettings` | همین پوشه | مسیر و هش کلید SSO هر سامانه در `App.Application` (`SsoPath`، `SsoKeyHash`، `SsoKeyChangedAt`)؛ از پنل «سامانه‌ها ← ورود یکپارچه» تنظیم می‌شود و دیگر در appsettings نیست ([docs/sso.md](../../docs/sso.md)) |
+| `014_ApplicationUnitAccess` | همین پوشه | حالت سوم دسترسی سامانه بر پایه‌ی چارت سازمانی: ستون `App.Application.IsUnitRestricted` و جدول `App.ApplicationUnitAccess`؛ سامانه خودکار برای کاربران واحدهای انتخاب‌شده و زیرواحدهایشان باز می‌شود ([docs/organization-chart.md](../../docs/organization-chart.md)) |
+| `015_AdminNotifications` | همین پوشه | اعلان سازمانی ارسالی مدیر از پنل: ستون‌های `IsActive`، `AudienceType`، `AudienceUserId`، `AudienceUnitId`، `RecipientCount`، `ChangedAt` روی `Notify.Notification` و مجوز `NOTIFICATION_SEND` برای ADMIN ([docs/organization-chart.md](../../docs/organization-chart.md)) |
+| `016_PublicationSlider` | همین پوشه | کنترل اسلایدر اخبار صفحه‌ی اصلی: ستون‌های `ShowInSlider` و `SlideOrder` روی `Notify.Publication`؛ مطالب موجود مثل قبل همه در اسلایدرند |
+| `017_LibraryDocuments` | همین پوشه | کتابخانه‌ی اسناد و فرم‌ها: Schema تازه‌ی `Lib` با `Category` و `Document` (فایل روی دیسک سرور API، مشخصات در بانک)، دسته‌های کاتالوگ قدیمی و مجوز `LIBRARY_EDIT` برای ADMIN ([docs/library.md](../../docs/library.md)) |
 
 فایل‌های 003 در ۲۰۲۶-۱۰-۲۲ از روی دیتابیس مرجع بازسازی شدند (فایل‌های اصلی هیچ‌وقت commit نشده بودند). 004 قبلاً با نام `tools/sql/003-access-workflow-*` بود و به همین پوشه منتقل شد. `tools/sql/001-publications-*` و `002-publications-integrity-*` اسکریپت‌های قدیمی‌تر جدول مطالب‌اند، در `SchemaMigration` ثبت نمی‌شوند و در خط پایه‌ی نصب تازه آمده‌اند.
 
@@ -72,7 +76,7 @@ $env:ConnectionStrings__DefaultConnection = "Server=<سرور>;Database=Organiza
 ```powershell
 $run = { param($f) powershell -NoProfile -ExecutionPolicy Bypass -File tools/Invoke-DatabaseScript.ps1 -ScriptPath $f; if ($LASTEXITCODE) { throw "failed: $f" } }
 & $run database/backup.sql
-foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart','013_ApplicationSsoSettings') {
+foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart','013_ApplicationSsoSettings','014_ApplicationUnitAccess','015_AdminNotifications','016_PublicationSlider','017_LibraryDocuments') {
     & $run "database/migrations/$m.up.sql"
     & $run "database/migrations/$m.verify.sql"
 }

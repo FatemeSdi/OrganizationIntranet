@@ -93,9 +93,9 @@
   }
   .icon-btn:hover{background:rgba(255,255,255,.14)}
   .badge-dot{
-    position:absolute; top:6px; left:6px; min-width:16px; height:16px; padding:0 4px; border-radius:100px;
-    background:var(--danger); color:#fff; font-size:10px; font-weight:800; display:grid; place-items:center;
-    border:2px solid var(--navy-950);
+    position:absolute; top:-7px; left:-7px; box-sizing:border-box; min-width:20px; height:20px; padding:0 5px; border-radius:100px;
+    background:var(--danger); color:#fff; font-size:11px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; display:grid; place-items:center;
+    border:2px solid var(--navy-950); pointer-events:none;
   }
   .dropdown{
     position:absolute; top:calc(100% + 12px); left:0; width:360px; background:#fff; color:var(--ink-900);
@@ -373,7 +373,7 @@ else
       <div class="bell-wrap">
         <button class="icon-btn" id="bellBtn" aria-haspopup="true" aria-expanded="false" aria-label="اعلانات">
           <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
-          <span class="badge-dot" id="bellCount" style="@(Model.UnreadTotal == 0 ? "display:none" : "")">@Model.UnreadTotal</span>
+          <span class="badge-dot" id="bellCount" style="@(Model.UnreadTotal == 0 ? "display:none" : "")">@(Model.UnreadTotal > 99 ? "99+" : Model.UnreadTotal.ToString())</span>
         </button>
         <div class="dropdown" id="bellDropdown">
           <div class="dropdown-head">
@@ -570,7 +570,7 @@ else
 {
   <partial name="_AccessRequests" model="Model" />
 }
-  @* قوانین، انتشارات و فرم‌ها: پیش‌نمایش هر بخش؛ همه‌ی موارد با جست‌وجو و تفکیک در /Library (Pages/Library/LibraryCatalog.cs) *@
+  @* قوانین، انتشارات و فرم‌ها: پیش‌نمایش هر بخش؛ همه‌ی موارد با جست‌وجو و تفکیک در /Library (داده از API کتابخانه؛ مدیریت در Admin/Library) *@
   <section id="quicklinks" class="quick-links" aria-labelledby="quicklinks-title">
     <div class="container">
       <div class="section-head">
@@ -584,15 +584,17 @@ else
         </a>
       </div>
       <div class="ql-grid">
-        @foreach (var g in OrganizationIntranet.Pages.Library.LibraryCatalog.Groups)
+        @foreach (var g in OrganizationIntranet.Contracts.LibraryGroups.All)
         {
+          var categories = Model.Library.Categories.Where(c => c.GroupCode == g.Code).ToList();
           <div class="ql-col">
-            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(g.Icon)</svg> @g.Title</h3>
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(OrganizationIntranet.Pages.Library.LibraryView.Icon(g.Code))</svg> @g.Title</h3>
             <ul>
-              @foreach (var item in g.Items.Take(7))
+              @foreach (var item in categories.Take(7))
               {
-                <li><a asp-page="/Library/Index" asp-route-group="@g.Id" asp-route-q="@item.Title">@item.Title <span class="count">@OrganizationIntranet.Pages.Library.LibraryCatalog.Fa(item.Count)</span></a></li>
+                <li><a asp-page="/Library/Index" asp-route-group="@g.Code" asp-route-category="@item.CategoryId">@item.Title <span class="count">@OrganizationIntranet.Pages.Library.LibraryView.Fa(item.DocumentCount)</span></a></li>
               }
+              @if (categories.Count == 0) { <li class="count">هنوز سندی منتشر نشده است</li> }
             </ul>
           </div>
         }

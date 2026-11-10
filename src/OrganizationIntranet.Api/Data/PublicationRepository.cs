@@ -19,15 +19,17 @@ public sealed class PublicationRepository(AppDbContext db) : IPublicationReposit
         _ => query,
     };
     /// <summary>فهرست از جدیدترین (تاریخ انتشار یا ایجاد) با فیلتر نوع و جست‌وجو در عنوان و خلاصه؛ فقط ستون‌های لازم خوانده می‌شود (بدون متن کامل).</summary>
-    public async Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize)
+    public async Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize, bool sliderOnly = false)
     {
         var query = Scoped(db.Publications.AsNoTracking(), scope);
+        if (sliderOnly) query = query.Where(p => p.ShowInSlider);
         if (kind is not null) query = query.Where(p => p.Kind == kind);
         if (!string.IsNullOrEmpty(search)) query = query.Where(p => p.Title.Contains(search) || p.Summary.Contains(search));
         var count = await query.CountAsync();
-        var items = await query.OrderByDescending(p => p.PublishedAt ?? p.CreatedAt).ThenByDescending(p => p.PublicationId)
+        var ordered = sliderOnly ? query.OrderBy(p => p.SlideOrder == 0).ThenBy(p => p.SlideOrder).ThenByDescending(p => p.PublishedAt ?? p.CreatedAt) : query.OrderByDescending(p => p.PublishedAt ?? p.CreatedAt);
+        var items = await ordered.ThenByDescending(p => p.PublicationId)
             .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision, ImageUpdatedAt = p.ImageUpdatedAt, IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt }).ToListAsync();
+            .Select(p => new Publication { PublicationId = p.PublicationId, Title = p.Title, Summary = p.Summary, Kind = p.Kind, IsPublished = p.IsPublished, IsPublic = p.IsPublic, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, PublishedAt = p.PublishedAt, Revision = p.Revision, ImageUpdatedAt = p.ImageUpdatedAt, IsArchived = p.IsArchived, ArchivedAt = p.ArchivedAt, ShowInSlider = p.ShowInSlider, SlideOrder = p.SlideOrder }).ToListAsync();
         return (items, count);
     }
     public Task<Publication?> FindAsync(long id, PublicationScope scope) => Scoped(db.Publications, scope).FirstOrDefaultAsync(p => p.PublicationId == id);

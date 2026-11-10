@@ -22,6 +22,8 @@
 | `AUTH_SETTINGS_EDIT` | تنظیمات ورود و امنیت | `Authentication/Index` | `api/admin/authentication` |
 | `ORG_VIEW` | مشاهده‌ی چارت سازمانی | `Organization/Index`، `Organization/Edit` (GET) | `GET api/admin/org/units` (فهرست برای فرم کاربر فقط `INTRANET_ADMIN` می‌خواهد) |
 | `ORG_EDIT` | ویرایش چارت سازمانی | POST در همان دو صفحه | ساخت، ویرایش/جابه‌جایی، toggle و حذف واحد (migration 012) |
+| `NOTIFICATION_SEND` | ارسال و مدیریت اعلان‌های سازمانی | `Notifications/Index` | `api/admin/notifications` (ارسال، پس‌گرفتن و بازگرداندن؛ migration 015) |
+| `LIBRARY_EDIT` | مدیریت اسناد و فرم‌ها | `Library/Index`، `Library/Edit`، `Library/Categories` | `api/admin/library/*` (دسته‌بندی، آپلود، جایگزینی، فعال/غیرفعال و حذف سند؛ migration 017؛ [docs/library.md](library.md)) |
 
 منو، کارت‌های داشبورد و «دسترسی سریع» فقط مواردی را نشان می‌دهند که کاربر مجوزش را دارد؛ بدون مجوز ویرایش، دکمه‌های ثبت پنهان و سوییچ‌ها غیرفعال‌اند. این فقط برای راحتی است؛ همه‌ی قواعد در سرور (صفحه و API) بررسی می‌شوند.
 

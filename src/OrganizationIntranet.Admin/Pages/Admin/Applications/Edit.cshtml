@@ -51,12 +51,50 @@
                 <div><label class="switch-row__label" for="Input_IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">سامانه از بیرون شبکه‌ی سازمان هم قابل استفاده است. فقط برای اطلاع کاربر.</p></div>
                 <input asp-for="Input.IsInternetAccessible" class="form-check-input" role="switch" />
             </div>
-            <div class="switch-row">
-                <div><label class="switch-row__label" for="Input_IsPublic">عمومی</label><p class="switch-row__help">کارت سامانه را همه می‌بینند و نیازی به تخصیص دسترسی نیست.</p></div>
-                <input asp-for="Input.IsPublic" class="form-check-input" role="switch" />
-            </div>
+            <fieldset class="mt-3" data-access-mode>
+                <legend class="form-label">چه کسی سامانه را ببیند؟</legend>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Request" id="mode-request" />
+                    <label class="form-check-label" for="mode-request"><b>با تخصیص یا درخواست</b> — فقط کاربران و نقش‌هایی که پایین انتخاب می‌شوند؛ بقیه می‌توانند درخواست دسترسی بدهند.</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Public" id="mode-public" />
+                    <label class="form-check-label" for="mode-public"><b>عمومی</b> — همه (حتی بازدیدکننده‌ی ناشناس) کارت را می‌بینند و تخصیص لازم نیست.</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Unit" id="mode-unit" />
+                    <label class="form-check-label" for="mode-unit"><b>بر اساس چارت سازمانی</b> — فقط کاربران واحدهای انتخاب‌شده و زیرواحدهایشان؛ بقیه آن را نمی‌بینند و نمی‌توانند درخواست بدهند.</label>
+                </div>
+                <div id="unit-access" class="border rounded p-3 mt-2" @(Model.Input.AccessMode == "Unit" ? "" : "hidden")>
+                    @if (Model.Units.Count == 0)
+                    {
+                        <span class="text-muted fs-13">چارت سازمانی خالی است. <a href="/Admin/Organization">تعریف واحدها</a></span>
+                    }
+                    else
+                    {
+                        <div class="fs-12 text-muted mb-2">واحدی که انتخاب کنید، زیرواحدهایش هم شامل می‌شوند. کاربران و نقش‌های انتخاب‌شده پایین، به‌عنوان استثنا همچنان دسترسی دارند.</div>
+                        <div class="overflow-auto" style="max-height:18rem">
+                            @foreach (var unit in Model.Units.Where(u => u.IsActive || Model.Input.UnitIds.Contains(u.UnitId)))
+                            {
+                                <div class="form-check" style="padding-inline-start:@(1.75 + unit.Depth * 1.5)rem">
+                                    <input class="form-check-input" type="checkbox" name="Input.UnitIds" value="@unit.UnitId" id="unit-@unit.UnitId" checked="@Model.Input.UnitIds.Contains(unit.UnitId)" />
+                                    <label class="form-check-label" for="unit-@unit.UnitId">@unit.Title @if (!unit.IsActive) { <span class="status-pill status-pill--muted">غیرفعال</span> }</label>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </fieldset>
         </div>
     </section>
+    <script>
+        (function () {
+            var panel = document.getElementById('unit-access');
+            document.querySelectorAll('[data-access-mode] input[type=radio]').forEach(function (radio) {
+                radio.addEventListener('change', function () { panel.hidden = document.getElementById('mode-unit').checked === false; });
+            });
+        })();
+    </script>
 
     <section class="form-section">
         <div>

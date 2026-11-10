@@ -10,7 +10,7 @@ namespace OrganizationIntranet.Application.Services;
 public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository)
 {
     private static ApplicationDto Map(AppEntity a) => new(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl,
-        a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels);
+        a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels, a.IsUnitRestricted);
     /// <summary>آدرس باید مطلق، HTTP یا HTTPS و بدون نام کاربری و رمز باشد.</summary>
     private static bool SafeUrl(string? value) => Uri.TryCreate(value, UriKind.Absolute, out var uri)
         && (uri.Scheme == "http" || uri.Scheme == "https") && string.IsNullOrEmpty(uri.UserInfo);
@@ -49,6 +49,8 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         entity.RequiresLogin = request.RequiresLogin;
         entity.IsInternetAccessible = request.IsInternetAccessible;
         entity.IsPublic = request.IsPublic;
+        if (request.IsPublic && request.IsUnitRestricted) throw new ArgumentException("سامانه نمی‌تواند هم‌زمان عمومی و محدود به واحد باشد");
+        entity.IsUnitRestricted = request.IsUnitRestricted;
         if (!AccessRequestChannels.Valid(request.AccessRequestNotificationChannels)) throw new ArgumentException("روش اعلان درخواست دسترسی معتبر نیست");
         entity.AccessRequestNotificationChannels = request.AccessRequestNotificationChannels;
     }
@@ -61,7 +63,7 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         return new(Map(a), a.AccessGrants.Where(g => g.UserId.HasValue).Select(g => g.UserId!.Value).ToList(),
             a.AccessGrants.Where(g => g.RoleId.HasValue).Select(g => g.RoleId!.Value).ToList(),
             a.Services.OrderBy(s => s.ServiceCode).Select(s => new ApplicationServiceRequest(s.ServiceCode, s.DisplayName, s.EndpointUrl, s.IsActive)).ToList(),
-            a.Services.Select(s => new ApplicationServiceSyncDto(s.ServiceCode, s.LastSyncedAt, s.LastSyncError)).ToList());
+            a.Services.Select(s => new ApplicationServiceSyncDto(s.ServiceCode, s.LastSyncedAt, s.LastSyncError)).ToList(), a.UnitAccess.Select(x => x.UnitId).Order().ToList());
     }
     /// <summary>ثبت سامانه‌ی تازه (فعال است؛ ترتیب خالی = آخرین ردیف).</summary>
     public async Task CreateAsync(ApplicationRequest request)
@@ -86,8 +88,14 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
                 EndpointUrl = Url(s.EndpointUrl), IsActive = s.IsActive, CreatedAt = DateTime.UtcNow };
         }).ToArray();
         if (services.Select(s => s.ServiceCode).Distinct().Count() != services.Length) throw new ArgumentException("کد سرویس تکراری است");
+        var units = request.UnitIds?.Distinct().ToArray();
+        if (units is not null && !await repository.ActiveUnitsExistAsync(units)) throw new ArgumentException("واحد سازمانی انتخاب‌شده وجود ندارد یا غیرفعال است");
         var a = await repository.FindAsync(id) ?? throw new KeyNotFoundException();
+        // UnitIds خالی (null) یعنی واحدهای قبلی بدون تغییر؛ سامانه‌ی محدود به واحد بدون هیچ واحدی برای هیچ‌کس باز نمی‌شود، پس رد می‌شود.
+        if (request.Application.IsUnitRestricted && (units ?? a.UnitAccess.Select(x => x.UnitId).ToArray()).Length == 0)
+            throw new ArgumentException("برای سامانه‌ی محدود به واحد دست‌کم یک واحد انتخاب کنید");
         Apply(a, request.Application, await OrderAsync(request.Application.DisplayOrder, id)); repository.SetAccess(a, users, roles); repository.SetServices(a, services);
+        if (units is not null) repository.SetUnitAccess(a, units);
         await repository.SaveAsync();
     }
     /// <summary>افزودن یا برداشتن یک کاربر/نقش از دسترسی سامانه، بدون ذخیره‌ی بقیه‌ی تنظیمات؛ تکرار یک عملیات بی‌اثر است.</summary>

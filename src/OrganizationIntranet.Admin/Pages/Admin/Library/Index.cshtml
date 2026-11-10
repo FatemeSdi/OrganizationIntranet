@@ -1,0 +1,88 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Library.IndexModel
+@using OrganizationIntranet.Contracts
+@using OrganizationIntranet.Helper
+@{
+    ViewData["Title"] = "اسناد و فرم‌ها";
+    ViewData["Icon"] = "ti ti-files";
+    ViewData["Subtitle"] = "قوانین و مقررات، انتشارات و فرم‌های سازمانی که در پورتال نمایش داده می‌شود";
+    Layout = "_LayoutAdmin";
+    var filtered = !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Group) || Model.CategoryId.HasValue || !string.IsNullOrEmpty(Model.Status);
+    static string Size(long bytes) => bytes >= 1048576 ? $"{bytes / 1048576.0:0.#} مگابایت" : $"{Math.Max(1, bytes / 1024)} کیلوبایت";
+}
+@section PageActions {
+    <a asp-page="Categories" class="btn btn-primary-light"><i class="ti ti-folders me-1"></i>دسته‌بندی‌ها</a>
+    <a asp-page="Edit" class="btn btn-primary"><i class="ti ti-upload me-1"></i>سند جدید</a>
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, (TempData["ErrorMessage"] as string) ?? Model.ErrorMessage)' />
+
+<div class="card custom-card">
+    <form method="get" class="admin-toolbar" role="search">
+        <div class="admin-toolbar__search"><i class="ti ti-search" aria-hidden="true"></i><input asp-for="Search" type="search" maxlength="@LibraryRules.MaxSearchLength" class="form-control" placeholder="جست‌وجو در عنوان، توضیح و نام فایل" aria-label="جست‌وجوی اسناد" /></div>
+        <select asp-for="Group" class="form-select" aria-label="بخش">
+            <option value="">همه‌ی بخش‌ها</option>
+            @foreach (var g in LibraryGroups.All) { <option value="@g.Code">@g.Title</option> }
+        </select>
+        <select asp-for="CategoryId" class="form-select" aria-label="دسته‌بندی">
+            <option value="">همه‌ی دسته‌ها</option>
+            @foreach (var c in Model.Categories.Where(c => string.IsNullOrEmpty(Model.Group) || c.GroupCode == Model.Group)) { <option value="@c.CategoryId">@LibraryGroups.Title(c.GroupCode) ← @c.Title</option> }
+        </select>
+        <select asp-for="Status" class="form-select" aria-label="وضعیت">
+            <option value="">هر وضعیت</option>
+            <option value="active">فعال</option>
+            <option value="inactive">غیرفعال</option>
+        </select>
+        <button class="btn btn-primary" type="submit"><i class="ti ti-search me-1"></i>جست‌وجو</button>
+        @if (filtered) { <a asp-page="Index" class="btn btn-primary-light" title="پاک‌کردن فیلترها" aria-label="پاک‌کردن فیلترها"><i class="ti ti-filter-off"></i></a> }
+        <span class="admin-toolbar__count">@Model.Result.Total سند</span>
+    </form>
+
+    @if (Model.Result.Items.Count == 0)
+    {
+        <div class="card-body">
+            @if (filtered) { <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-search-off", "سندی پیدا نشد", "فیلترها یا عبارت جست‌وجو را تغییر دهید.")' /> }
+            else { <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-file-off", "هنوز سندی ثبت نشده است", "با «سند جدید» اولین سند یا فرم را بارگذاری کنید؛ بخش‌ها و دسته‌ها از قبل ساخته شده‌اند.")' /> }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-admin">
+                <thead><tr><th>سند</th><th>دسته‌بندی</th><th>فایل</th><th>آخرین تغییر</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr></thead>
+                <tbody>
+                    @foreach (var d in Model.Result.Items)
+                    {
+                        <tr>
+                            <td style="max-width:24rem">
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (d.HasPreview) { <img src="/Admin/Library/Edit?id=@d.DocumentId&handler=Preview" alt="" width="48" height="48" loading="lazy" class="rounded border flex-shrink-0" style="object-fit:cover" /> }
+                                    <div class="min-w-0">
+                                        <div class="entity__name text-truncate" title="@d.Title">@d.Title</div>
+                                        @if (!string.IsNullOrEmpty(d.Description)) { <div class="text-muted fs-12 text-truncate" title="@d.Description">@d.Description</div> }
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="text-muted fs-12">@LibraryGroups.Title(d.GroupCode)</span><div>@d.CategoryTitle</div></td>
+                            <td><span class="code-chip">@d.Extension.ToUpperInvariant()</span> <span class="text-muted fs-12">@Size(d.SizeBytes)</span></td>
+                            <td class="text-nowrap text-muted fs-12">@d.UpdatedAt.ToPersianDate()<div>@d.UpdatedBy</div></td>
+                            <td><span class="status-pill @(d.IsActive ? "status-pill--success" : "status-pill--muted")">@(d.IsActive ? "فعال" : "غیرفعال")</span></td>
+                            <td class="col-actions text-nowrap">
+                                <a asp-page="Edit" asp-route-id="@d.DocumentId" class="btn btn-icon btn-sm btn-primary-light" title="ویرایش" aria-label="ویرایش @d.Title"><i class="ti ti-edit"></i></a>
+                                <form method="post" asp-page-handler="SetActive" asp-route-id="@d.DocumentId" asp-route-active="@(!d.IsActive)" asp-route-group="@Model.Group" asp-route-categoryId="@Model.CategoryId" asp-route-status="@Model.Status" asp-route-search="@Model.Search" asp-route-pageNumber="@Model.PageNumber" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-icon btn-sm @(d.IsActive ? "btn-warning-light" : "btn-success-light")" title="@(d.IsActive ? "پنهان از پورتال" : "نمایش در پورتال")" aria-label="@(d.IsActive ? "پنهان‌کردن" : "نمایش") @d.Title"><i class="ti @(d.IsActive ? "ti-eye-off" : "ti-eye")"></i></button>
+                                </form>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@d.DocumentId" asp-route-group="@Model.Group" asp-route-categoryId="@Model.CategoryId" asp-route-status="@Model.Status" asp-route-search="@Model.Search" asp-route-pageNumber="@Model.PageNumber" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-icon btn-sm btn-danger-light" title="حذف دائمی" aria-label="حذف @d.Title" data-confirm="@($"سند «{d.Title}» و فایلش برای همیشه حذف شود؟ این کار برگشت‌پذیر نیست؛ برای پنهان‌کردن موقت از دکمه‌ی چشم استفاده کنید.")"><i class="ti ti-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Result.PageSize, Model.Result.Total, "سند", new Dictionary<string, string?> { ["group"] = Model.Group, ["categoryId"] = Model.CategoryId?.ToString(), ["status"] = Model.Status, ["search"] = Model.Search })' />
+    }
+</div>

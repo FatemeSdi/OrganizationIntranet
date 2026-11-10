@@ -10,9 +10,9 @@ public static class ApplicationCatalogOptions
 /// <summary>سرویس ثبت‌شده‌ی یک سامانه (کد، نام، نشانی و فعال بودن).</summary>
 public record ApplicationServiceRequest(string ServiceCode, string DisplayName, string? EndpointUrl, bool IsActive = true);
 /// <summary>تنظیمات کامل یک سامانه برای ذخیره: مشخصات، دسترسی‌ها (کاربر و نقش) و سرویس‌ها.</summary>
-public record ApplicationConfigurationRequest(ApplicationRequest Application, List<long> UserIds, List<int> RoleIds, List<ApplicationServiceRequest> Services);
+public record ApplicationConfigurationRequest(ApplicationRequest Application, List<long> UserIds, List<int> RoleIds, List<ApplicationServiceRequest> Services, List<int>? UnitIds = null);
 /// <summary>تنظیمات کامل یک سامانه برای فرم ویرایش، با وضعیت همگام‌سازی هر سرویس.</summary>
-public record ApplicationConfigurationDto(ApplicationDto Application, List<long> UserIds, List<int> RoleIds, List<ApplicationServiceRequest> Services, List<ApplicationServiceSyncDto>? SyncStatuses = null);
+public record ApplicationConfigurationDto(ApplicationDto Application, List<long> UserIds, List<int> RoleIds, List<ApplicationServiceRequest> Services, List<ApplicationServiceSyncDto>? SyncStatuses = null, List<int>? UnitIds = null);
 /// <summary>آخرین همگام‌سازی و خطای آن برای یک سرویس.</summary>
 public record ApplicationServiceSyncDto(string ServiceCode, DateTime? LastSyncedAt, string? LastSyncError);
 /// <summary>کارت سامانه در پورتال برای کاربر واردشده: آدرس، آیکن، شمار اعلان خوانده‌نشده و اینکه ورود یکپارچه (SSO) دارد.</summary>

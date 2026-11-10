@@ -1,0 +1,121 @@
+@page
+@model IndexModel
+@using OrganizationIntranet.Helper
+@using OrganizationIntranet.Contracts
+@{
+    ViewData["Title"] = "ارسال اعلان";
+    ViewData["Icon"] = "ti ti-bell-ringing";
+    ViewData["Subtitle"] = "پیام سازمانی برای یک کاربر، یک واحد یا همه؛ در زنگ و مرکز اعلان گیرندگان می‌آید";
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card custom-card">
+            @if (Model.Data.Items.Count == 0)
+            {
+                <partial name="_EmptyState" model='new OrganizationIntranet.Pages.Shared.EmptyState("ti ti-bell-off", "هنوز اعلانی ارسال نشده است", "از فرم «اعلان تازه» اولین اعلان را بفرستید.")' />
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-admin">
+                        <thead><tr><th>اعلان</th><th>گیرنده</th><th>خوانده‌شده</th><th>زمان</th><th>وضعیت</th></tr></thead>
+                        <tbody>
+                            @foreach (var n in Model.Data.Items)
+                            {
+                                <tr>
+                                    <td style="max-width:22rem">
+                                        <div class="entity__name text-truncate" title="@n.Title">@n.Title</div>
+                                        <div class="text-muted fs-12 text-truncate" title="@n.Message">@n.Message</div>
+                                        <div class="text-muted fs-12">ارسال‌کننده: @n.SentBy</div>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill status-pill--primary">@(n.AudienceType switch { AdminNotificationAudience.User => "کاربر", AdminNotificationAudience.Unit => "واحد و زیرواحدها", _ => "همه" })</span>
+                                        <div class="fs-12 mt-1">@n.AudienceLabel</div>
+                                    </td>
+                                    <td><span class="fw-semibold">@n.ReadCount</span> <span class="text-muted fs-12">از @n.RecipientCount</span></td>
+                                    <td>@n.CreatedAt.ToPersianDate()</td>
+                                    <td>
+                                        <form method="post" asp-page-handler="SetActive" asp-route-id="@n.NotificationId" asp-route-active="@(!n.IsActive)" asp-route-pageNumber="@Model.PageNumber" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            @if (n.IsActive)
+                                            {
+                                                <span class="status-pill status-pill--success">فعال</span>
+                                                <button type="submit" class="btn btn-sm btn-danger-light ms-1" data-confirm="@($"اعلان «{n.Title}» از فهرست همه‌ی گیرندگان محو شود؟ بعداً می‌توانید دوباره فعالش کنید.")"><i class="ti ti-eye-off me-1"></i>پس‌گرفتن</button>
+                                            }
+                                            else
+                                            {
+                                                <span class="status-pill status-pill--muted">پس گرفته شد</span>
+                                                <button type="submit" class="btn btn-sm btn-primary-light ms-1"><i class="ti ti-eye me-1"></i>بازگرداندن</button>
+                                            }
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <partial name="_ServerPager" model='new OrganizationIntranet.Pages.Shared.ServerPager(Model.PageNumber, Model.Data.PageSize, Model.Data.Total, "اعلان")' />
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-send text-primary me-1"></i>اعلان تازه</div></div>
+            <form method="post" asp-page-handler="Send" class="card-body" data-busy>
+                @Html.AntiForgeryToken()
+                <fieldset class="mb-3" data-audience>
+                    <legend class="form-label">گیرنده</legend>
+                    <div class="form-check"><input class="form-check-input" type="radio" asp-for="AudienceType" value="All" id="aud-all" /><label class="form-check-label" for="aud-all">همه‌ی کاربران فعال</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" asp-for="AudienceType" value="Unit" id="aud-unit" /><label class="form-check-label" for="aud-unit">یک واحد سازمانی (با زیرواحدها)</label></div>
+                    @if (Model.CanPickUser) { <div class="form-check"><input class="form-check-input" type="radio" asp-for="AudienceType" value="User" id="aud-user" /><label class="form-check-label" for="aud-user">یک کاربر</label></div> }
+                </fieldset>
+                <div class="mb-3" id="aud-unit-box" hidden>
+                    <label asp-for="UnitId" class="form-label">واحد</label>
+                    <select asp-for="UnitId" class="form-select">
+                        <option value="">— انتخاب واحد —</option>
+                        @foreach (var unit in Model.Units) { <option value="@unit.UnitId">@(string.Concat(Enumerable.Repeat("— ", unit.Depth)) + unit.Title)</option> }
+                    </select>
+                </div>
+                @if (Model.CanPickUser)
+                {
+                    <div class="mb-3" id="aud-user-box" hidden>
+                        <label asp-for="UserId" class="form-label">کاربر</label>
+                        <select asp-for="UserId" class="form-select">
+                            <option value="">— انتخاب کاربر —</option>
+                            @foreach (var user in Model.Users) { <option value="@user.UserId">@($"{user.Name} {user.LastName}".Trim()) (@user.Username)</option> }
+                        </select>
+                    </div>
+                }
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">عنوان <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control" maxlength="@AdminNotificationAudience.MaxTitleLength" required />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Message" class="form-label">متن <span class="text-danger">*</span></label>
+                    <textarea asp-for="Message" class="form-control" rows="5" maxlength="@AdminNotificationAudience.MaxMessageLength" required></textarea>
+                    <div class="form-text">گیرندگان در لحظه‌ی ارسال تعیین می‌شوند؛ کسی که بعداً به واحد بپیوندد این اعلان را نمی‌گیرد.</div>
+                </div>
+                <div class="card-actions"><button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-send me-1"></i>ارسال</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        function sync() {
+            var checked = document.querySelector('[data-audience] input:checked');
+            var kind = checked ? checked.value : 'All';
+            var unit = document.getElementById('aud-unit-box'), user = document.getElementById('aud-user-box');
+            if (unit) unit.hidden = kind !== 'Unit';
+            if (user) user.hidden = kind !== 'User';
+        }
+        document.querySelectorAll('[data-audience] input').forEach(function (r) { r.addEventListener('change', sync); });
+        sync();
+    })();
+</script>

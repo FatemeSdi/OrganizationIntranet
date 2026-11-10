@@ -11,7 +11,7 @@ public record ChangePasswordRequest(string CurrentPassword, string NewPassword, 
 /// <summary>ساخت یا ویرایش نقش: نام و کد (حروف بزرگ انگلیسی، رقم و _).</summary>
 public record RoleRequest(string RoleName, string RoleCode);
 /// <summary>مشخصات سامانه برای ساخت یا ویرایش. BaseUrl الزامی است؛ DisplayOrder خالی یعنی آخرین ردیف.</summary>
-public record ApplicationRequest(string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int? DisplayOrder, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp");
+public record ApplicationRequest(string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int? DisplayOrder, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp", bool IsUnitRestricted = false);
 /// <summary>افزودن یا برداشتن یک کاربر (UserId) یا یک نقش (RoleId) از فهرست دسترسی؛ فقط یکی از دو مقدار پر است. برای ثبت لحظه‌ای بدون دکمه‌ی ذخیره.</summary>
 public record AccessToggleRequest(long? UserId, int? RoleId, bool Granted);
 /// <summary>افزودن یا برداشتن یک نقش از کاربر؛ برای ثبت لحظه‌ای.</summary>
@@ -35,7 +35,7 @@ public record RolePermissionItemDto(int PermissionId, string PermissionName, str
 /// <summary>Users فقط برای دارنده‌ی USER_VIEW پر می‌شود؛ UsersHidden یعنی فهرست به دلیل نبود مجوز خالی است.</summary>
 public record RoleDetailsDto(RoleDto Role, List<RoleMemberDto> Users, List<RolePermissionItemDto> Permissions, bool UsersHidden = false);
 /// <summary>سامانه در فهرست‌های پنل و فرم‌ها (بدون دسترسی‌ها و سرویس‌ها).</summary>
-public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp");
+public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp", bool IsUnitRestricted = false);
 /// <summary>مجوز برای فهرست پنل: سامانه، شمار نقش‌ها و شناسه‌ی نقش‌های دارنده.</summary>
 public record PermissionDto(int PermissionId, string PermissionName, string PermissionCode, string? Description, string ApplicationName, bool IsActive, int RoleCount, List<int> SelectedRoleIds);
 /// <summary>کاربر برای فهرست و فرم ویرایش پنل (بدون رمز و رازها).</summary>

@@ -7,7 +7,7 @@ public enum PublicationScope { All, Published, Public, Draft, Archived, NotArchi
 
 public interface IPublicationRepository
 {
-    Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize);
+    Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize, bool sliderOnly = false);
     Task<Publication?> FindAsync(long id, PublicationScope scope);
     void Add(Publication publication);
     /// <summary>تصویر شاخص مطلب، فقط اگر خود مطلب در این دامنه‌ی دید باشد.</summary>

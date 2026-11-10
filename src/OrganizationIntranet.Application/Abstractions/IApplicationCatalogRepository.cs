@@ -26,6 +26,10 @@ public interface IApplicationCatalogRepository
     void Add(AppEntity application);
     /// <summary>دسترسی سامانه را با مجموعه‌ی کاربران و نقش‌های داده‌شده یکی می‌کند.</summary>
     void SetAccess(AppEntity application, IReadOnlyCollection<long> userIds, IReadOnlyCollection<int> roleIds);
+    /// <summary>آیا همه‌ی واحدهای داده‌شده وجود دارند و فعال‌اند؟</summary>
+    Task<bool> ActiveUnitsExistAsync(IReadOnlyCollection<int> unitIds);
+    /// <summary>واحدهای دارای دسترسی (حالت «محدود به واحد») را با مجموعه‌ی داده‌شده یکی می‌کند.</summary>
+    void SetUnitAccess(AppEntity application, IReadOnlyCollection<int> unitIds);
     /// <summary>سرویس‌های سامانه را با فهرست داده‌شده یکی می‌کند.</summary>
     void SetServices(AppEntity application, IReadOnlyCollection<ApplicationServiceRegistration> services);
     /// <summary>تغییرات را در یک تراکنش ذخیره می‌کند.</summary>

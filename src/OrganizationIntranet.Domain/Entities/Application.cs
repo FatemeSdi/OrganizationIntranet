@@ -25,6 +25,8 @@ public class Application
     public bool IsInternetAccessible { get; set; }
     /// <summary>عمومی: کارت برای همه‌ی کاربران و بازدیدکننده‌ی ناشناس نمایش داده می‌شود و تخصیص دسترسی لازم نیست.</summary>
     public bool IsPublic { get; set; }
+    /// <summary>محدود به واحد: سامانه خودکار برای کاربران واحدهای انتخاب‌شده (UnitAccess) و زیرواحدهایشان در دسترس است؛ دیگران آن را نمی‌بینند و نمی‌توانند درخواست بدهند. با IsPublic هم‌زمان نمی‌شود.</summary>
+    public bool IsUnitRestricted { get; set; }
     /// <summary>روش اطلاع‌رسانی درخواست دسترسی به ناظران: InApp (درون‌برنامه‌ای)، Sms یا Both.</summary>
     public string AccessRequestNotificationChannels { get; set; } = "InApp";
     public DateTime CreatedAt { get; set; }
@@ -32,6 +34,7 @@ public class Application
     public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public ICollection<ApplicationAccess> AccessGrants { get; set; } = new List<ApplicationAccess>();
+    public ICollection<ApplicationUnitAccess> UnitAccess { get; set; } = new List<ApplicationUnitAccess>();
     public ICollection<ApplicationServiceRegistration> Services { get; set; } = new List<ApplicationServiceRegistration>();
     public ICollection<ApplicationSupervisionGroup> SupervisionGroups { get; set; } = new List<ApplicationSupervisionGroup>();
 }

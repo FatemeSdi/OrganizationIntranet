@@ -12,8 +12,8 @@ public sealed class AccessRequestRepository(AppDbContext db) : IAccessRequestRep
 {
     /// <summary>سامانه‌های در اختیار کاربر (همان تعریف مشترک).</summary>
     private IQueryable<AppEntity> Available(long userId) => ApplicationAccessQueries.Available(db, userId);
-    /// <summary>سامانه‌های قابل درخواست: فعال، کاربر فعال، بدون دسترسی فعلی (عمومی‌ها هم دسترسی حساب می‌شوند) و بدون درخواست در انتظار.</summary>
-    private IQueryable<AppEntity> Requestable(long userId) => db.Applications.Where(a => a.IsActive
+    /// <summary>سامانه‌های قابل درخواست: فعال، غیر «محدود به واحد» (آن‌ها فقط برای واحد‌های انتخاب‌شده دیده می‌شوند)، کاربر فعال، بدون دسترسی فعلی (عمومی‌ها هم دسترسی حساب می‌شوند) و بدون درخواست در انتظار.</summary>
+    private IQueryable<AppEntity> Requestable(long userId) => db.Applications.Where(a => a.IsActive && !a.IsUnitRestricted
         && db.Users.Any(u => u.UserId == userId && u.IsActive) && !Available(userId).Any(v => v.ApplicationId == a.ApplicationId)
         && !db.ApplicationAccessRequests.Any(r => r.UserId == userId && r.ApplicationId == a.ApplicationId && r.Status == AccessRequestStatuses.Pending));
     public Task<List<AppEntity>> RequestableAsync(long userId) => Requestable(userId).AsNoTracking().OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();

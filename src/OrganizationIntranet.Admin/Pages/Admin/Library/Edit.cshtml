@@ -1,0 +1,95 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Library.EditModel
+@using OrganizationIntranet.Contracts
+@{
+    ViewData["Title"] = Model.IsNew ? "سند جدید" : "ویرایش سند";
+    ViewData["Icon"] = "ti ti-file-upload";
+    ViewData["Subtitle"] = Model.IsNew ? "یک یا چند فایل را بارگذاری کنید و دسته‌ی آن‌ها را مشخص کنید" : Model.Existing?.Title;
+    ViewData["ParentTitle"] = "اسناد و فرم‌ها";
+    ViewData["ParentUrl"] = "/Admin/Library";
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(null, Model.ErrorMessage)' />
+
+<form method="post" enctype="multipart/form-data" class="card custom-card" data-busy data-dirty-guard>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-file-description"></i>مشخصات سند</h2>
+            <p class="form-section__help">@(Model.IsNew ? "اگر چند فایل انتخاب کنید، عنوان هر سند از نام فایلش گرفته می‌شود و دسته، توضیح و وضعیت برای همه یکسان است. عنوان فقط وقتی استفاده می‌شود که یک فایل انتخاب کنید." : "عنوان و توضیح در جست‌وجوی پورتال استفاده می‌شود.")</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label asp-for="Title" class="form-label">عنوان @if (!Model.IsNew) { <span class="text-danger">*</span> }</label>
+                <input asp-for="Title" class="form-control" maxlength="@LibraryRules.MaxTitleLength" required="@(!Model.IsNew)" placeholder="@(Model.IsNew ? "اختیاری؛ خالی = نام فایل" : null)" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="CategoryId" class="form-label">دسته‌بندی <span class="text-danger">*</span></label>
+                <select asp-for="CategoryId" class="form-select" required>
+                    @foreach (var group in LibraryGroups.All)
+                    {
+                        <optgroup label="@group.Title">
+                            @foreach (var c in Model.Categories.Where(c => c.GroupCode == group.Code)) { <option value="@c.CategoryId">@c.Title@(c.IsActive ? "" : " (غیرفعال)")</option> }
+                        </optgroup>
+                    }
+                </select>
+                @if (Model.Categories.Count == 0) { <div class="form-text text-danger">دسته‌ای نیست. <a href="/Admin/Library/Categories">دسته‌بندی بسازید</a>.</div> }
+            </div>
+            <div class="col-12"><label asp-for="Description" class="form-label">توضیح</label><textarea asp-for="Description" class="form-control" rows="3" maxlength="@LibraryRules.MaxDescriptionLength"></textarea></div>
+            <div class="col-12">
+                <div class="switch-row">
+                    <div><label class="switch-row__label" for="IsActive">نمایش در پورتال</label><p class="switch-row__help">خاموش باشد سند فقط برای مدیر دیده می‌شود.</p></div>
+                    <input asp-for="IsActive" class="form-check-input" role="switch" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <div>
+            <h2 class="form-section__title"><i class="ti ti-paperclip"></i>@(Model.IsNew ? "فایل‌ها" : "فایل")</h2>
+            <p class="form-section__help">پسوندهای مجاز: @string.Join("، ", LibraryRules.Extensions). حداکثر @(Model.MaxBytes / (1024 * 1024)) مگابایت برای هر فایل@(Model.IsNew ? $" و {LibraryRules.MaxBatchFiles} فایل در هر آپلود" : ""). محتوای فایل با پسوندش سنجیده می‌شود؛ فایل نامعتبر فقط خودش رد می‌شود.</p>
+        </div>
+        <div>
+            @if (Model.Existing is { } existing)
+            {
+                <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
+                    @if (existing.HasPreview) { <img src="/Admin/Library/Edit?id=@existing.DocumentId&handler=Preview" alt="" class="rounded border" style="max-width:160px;max-height:120px;object-fit:contain" loading="lazy" /> }
+                    <span class="code-chip">@existing.Extension.ToUpperInvariant()</span><b dir="ltr">@existing.FileName</b>
+                    <a class="btn btn-sm btn-primary-light" href="/Admin/Library/Edit?id=@existing.DocumentId&handler=Download"><i class="ti ti-download me-1"></i>دانلود فایل فعلی</a>
+                </div>
+                <label asp-for="File" class="form-label">جایگزینی فایل (اختیاری)</label>
+                <input asp-for="File" type="file" class="form-control" accept="@LibraryRules.Accept" />
+            }
+            else
+            {
+                <label asp-for="Files" class="form-label">فایل‌های سند <span class="text-danger">*</span></label>
+                <input asp-for="Files" type="file" class="form-control" accept="@LibraryRules.Accept" multiple required />
+                <div class="form-text" id="files-summary" aria-live="polite">می‌توانید چند فایل را با هم (Ctrl یا Shift) انتخاب کنید.</div>
+            }
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-device-floppy me-1"></i>@(Model.IsNew ? "بارگذاری" : "ذخیره")</button>
+        <a href="/Admin/Library" class="btn btn-primary-light">انصراف</a>
+    </div>
+</form>
+
+@if (Model.IsNew)
+{
+    <script>
+        (function () {
+            var input = document.querySelector('input[type=file][multiple]'), note = document.getElementById('files-summary');
+            if (!input || !note) return;
+            input.addEventListener('change', function () {
+                var n = input.files.length, mb = 0;
+                for (var i = 0; i < n; i++) mb += input.files[i].size;
+                note.textContent = n === 0 ? 'می‌توانید چند فایل را با هم (Ctrl یا Shift) انتخاب کنید.' : n + ' فایل انتخاب شد (' + (mb / 1048576).toFixed(1) + ' مگابایت). ' + (n > 1 ? 'عنوان هر سند از نام فایلش گرفته می‌شود.' : '');
+            });
+        })();
+    </script>
+}

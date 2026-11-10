@@ -15,6 +15,8 @@ public class IndexModel(ApiClient api) : PageModel
     public string RoleNames { get; set; } = "";
     public string Initials { get; set; } = "";
     public PublicationListDto Publications { get; set; } = new([], 0, 1, 20);
+    /// <summary>دسته‌های دارای سند فعال برای بخش «قوانین، انتشارات و فرم‌ها» (از API؛ مدیریت در Admin/Library).</summary>
+    public LibraryCatalogDto Library { get; set; } = new([], [], 0);
     public List<PortalApplicationDto> Applications { get; set; } = new();
     public List<PortalNotificationDto> Notifications { get; set; } = new();
     public List<RequestableApplicationDto> RequestableApplications { get; set; } = new();
@@ -59,6 +61,12 @@ public class IndexModel(ApiClient api) : PageModel
         await api.PostAsync<OperationResult>("api/portal/supervision/alerts/read");
         return RedirectToPage();
     }
+    /// <summary>فهرست دسته‌های کتابخانه؛ خطای آن صفحه‌ی اصلی را خراب نمی‌کند و بخش خالی می‌ماند.</summary>
+    private async Task<LibraryCatalogDto> LoadLibraryAsync()
+    {
+        try { return await api.GetAsync<LibraryCatalogDto>("api/public/library"); }
+        catch (ApiException) { return new([], [], 0); }
+    }
     public async Task OnGetAsync()
     {
         if (!IsAuthenticated)
@@ -67,7 +75,8 @@ public class IndexModel(ApiClient api) : PageModel
             var publicApps = await api.GetAsync<List<PublicApplicationDto>>("api/public/applications");
             Applications = publicApps.Select(a => new PortalApplicationDto(a.ApplicationId, a.Name, a.Description, a.Url, a.Icon,
                 a.RequiresLogin, a.IsInternetAccessible, true, 0, new List<string>())).ToList();
-            Publications = await api.GetAsync<PublicationListDto>("api/public/publications");
+            Publications = await api.GetAsync<PublicationListDto>("api/public/publications?slider=true");
+            Library = await LoadLibraryAsync();
             return;
         }
         var p = await api.GetAsync<ProfileDto>("api/account/me");
@@ -79,6 +88,7 @@ public class IndexModel(ApiClient api) : PageModel
         SupervisionAlerts = await api.GetAsync<AccessRequestAlertsDto>("api/portal/supervision/alerts");
         Supervision = await api.GetAsync<SupervisionSummaryDto>("api/portal/supervision/inbox/summary");
         RequestableApplications = await api.GetAsync<List<RequestableApplicationDto>>("api/portal/access-requests/applications");
-        Publications = await api.GetAsync<PublicationListDto>("api/publications");
+        Publications = await api.GetAsync<PublicationListDto>("api/publications?slider=true");
+        Library = await LoadLibraryAsync();
     }
 }

@@ -1,0 +1,88 @@
+@page
+@model OrganizationIntranet.Pages.Admin.Library.CategoriesModel
+@using OrganizationIntranet.Contracts
+@{
+    ViewData["Title"] = "دسته‌بندی اسناد";
+    ViewData["Icon"] = "ti ti-folders";
+    ViewData["Subtitle"] = "دسته‌ها داخل سه بخش ثابت پورتال: قوانین و مقررات، انتشارات، فرم‌ها";
+    ViewData["ParentTitle"] = "اسناد و فرم‌ها";
+    ViewData["ParentUrl"] = "/Admin/Library";
+    Layout = "_LayoutAdmin";
+}
+
+<partial name="_ToastMessages" model='new OrganizationIntranet.Pages.Shared.ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        @foreach (var group in LibraryGroups.All)
+        {
+            var items = Model.Categories.Where(c => c.GroupCode == group.Code).OrderBy(c => c.DisplayOrder).ThenBy(c => c.CategoryId).ToList();
+            <div class="card custom-card">
+                <div class="card-header"><div class="card-title">@group.Title <span class="badge bg-primary-transparent ms-1">@items.Count</span></div></div>
+                @if (items.Count == 0)
+                {
+                    <div class="card-body text-muted fs-13">دسته‌ای نیست؛ از فرم کنار صفحه بسازید.</div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-admin">
+                            <thead><tr><th>عنوان</th><th>ترتیب</th><th>سند</th><th>وضعیت</th><th class="col-actions">عملیات</th></tr></thead>
+                            <tbody>
+                                @foreach (var c in items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <form id="cat-@c.CategoryId" method="post" asp-page-handler="Update" asp-route-id="@c.CategoryId" class="m-0" data-busy>
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="GroupCode" value="@c.GroupCode" />
+                                                <input name="Title" value="@c.Title" class="form-control" maxlength="@LibraryRules.MaxCategoryTitleLength" aria-label="عنوان دسته" required />
+                                            </form>
+                                        </td>
+                                        <td><input form="cat-@c.CategoryId" name="DisplayOrder" type="number" min="0" max="10000" value="@c.DisplayOrder" class="form-control" style="width:6rem" dir="ltr" aria-label="ترتیب" /></td>
+                                        <td>
+                                            @if (c.DocumentCount > 0) { <a href="/Admin/Library?categoryId=@c.CategoryId" class="fw-semibold">@c.DocumentCount</a> }
+                                            else { <span class="text-muted">۰</span> }
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch m-0">
+                                                <input form="cat-@c.CategoryId" class="form-check-input" type="checkbox" role="switch" name="IsActive" value="true" checked="@c.IsActive" id="active-@c.CategoryId" aria-label="فعال بودن دسته" />
+                                                <input form="cat-@c.CategoryId" type="hidden" name="IsActive" value="false" />
+                                            </div>
+                                        </td>
+                                        <td class="col-actions text-nowrap">
+                                            <button type="submit" form="cat-@c.CategoryId" class="btn btn-sm btn-primary-light"><i class="ti ti-device-floppy me-1"></i>ذخیره</button>
+                                            @if (c.DocumentCount == 0)
+                                            {
+                                                <form method="post" asp-page-handler="Delete" asp-route-id="@c.CategoryId" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-icon btn-sm btn-danger-light" aria-label="حذف @c.Title" title="حذف" data-confirm="@($"دسته‌ی «{c.Title}» حذف شود؟")"><i class="ti ti-trash"></i></button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-folder-plus text-primary me-1"></i>دسته‌ی تازه</div></div>
+            <form method="post" asp-page-handler="Create" class="card-body" data-busy>
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label asp-for="GroupCode" class="form-label">بخش</label>
+                    <select asp-for="GroupCode" class="form-select">@foreach (var g in LibraryGroups.All) { <option value="@g.Code">@g.Title</option> }</select>
+                </div>
+                <div class="mb-3"><label asp-for="Title" class="form-label">عنوان دسته <span class="text-danger">*</span></label><input asp-for="Title" class="form-control" maxlength="@LibraryRules.MaxCategoryTitleLength" required /></div>
+                <div class="mb-3"><label asp-for="DisplayOrder" class="form-label">ترتیب نمایش</label><input asp-for="DisplayOrder" type="number" min="0" max="10000" class="form-control" dir="ltr" /><div class="form-text">عدد کوچک‌تر بالاتر.</div></div>
+                <div class="card-actions"><button type="submit" class="btn btn-primary btn-wave"><i class="ti ti-plus me-1"></i>ثبت دسته</button></div>
+            </form>
+            <div class="card-footer text-muted fs-12">دسته‌ی بدون سند فعال در پورتال نمایش داده نمی‌شود. دسته‌ای که سند دارد حذف نمی‌شود؛ غیرفعالش کنید.</div>
+        </div>
+    </div>
+</div>

@@ -19,7 +19,9 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
     public async Task<T> PostAsync<T>(string path, object? value = null) => await SendAsync<T>(HttpMethod.Post, path, value);
     /// <summary>پاسخ دودویی (مثل تصویر شاخص مطلب)؛ UI آن را بدون تغییر به مرورگر می‌دهد.</summary>
     public async Task<ApiFile> GetFileAsync(string path) => await SendAsync<ApiFile>(HttpMethod.Get, path, null);
-    private async Task<T> SendAsync<T>(HttpMethod method, string path, object? value, string? token = null)
+    /// <summary>ارسال فرم چندبخشی (فایل + فیلدها) به API؛ همان احراز هویت و قواعد مدیریتی درخواست JSON را دارد.</summary>
+    public async Task<T> PostFormAsync<T>(string path, MultipartFormDataContent form) => await SendAsync<T>(HttpMethod.Post, path, null, null, form);
+    private async Task<T> SendAsync<T>(HttpMethod method, string path, object? value, string? token = null, HttpContent? form = null)
     {
         using var request = new HttpRequestMessage(method, path);
         if (path.StartsWith("api/admin/", StringComparison.OrdinalIgnoreCase) || path.Equals("api/admin", StringComparison.OrdinalIgnoreCase))
@@ -31,7 +33,8 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
         }
         token ??= accessor.HttpContext?.User.FindFirst("api_token")?.Value;
         if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        if (value is not null) request.Content = JsonContent.Create(value);
+        if (form is not null) request.Content = form;
+        else if (value is not null) request.Content = JsonContent.Create(value);
         try
         {
             using var response = await client.SendAsync(request, accessor.HttpContext?.RequestAborted ?? default);
@@ -42,7 +45,8 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
                 throw new ApiException(response.StatusCode, message);
             }
             if (typeof(T) == typeof(ApiFile))
-                return (T)(object)new ApiFile(await response.Content.ReadAsByteArrayAsync(), response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
+                return (T)(object)new ApiFile(await response.Content.ReadAsByteArrayAsync(), response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream",
+                    response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'));
             return (await response.Content.ReadFromJsonAsync<T>()) ?? throw new ApiException(HttpStatusCode.BadGateway, "پاسخ سرویس معتبر نیست");
         }
         catch (HttpRequestException) { throw new ApiException(HttpStatusCode.ServiceUnavailable, "ارتباط با سرویس برقرار نشد"); }
@@ -50,6 +54,6 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
     }
 }
 
-public sealed record ApiFile(byte[] Content, string ContentType);
+public sealed record ApiFile(byte[] Content, string ContentType, string? FileName = null);
 
 public record TokenResponse(string AccessToken = "", int ExpiresIn = 0, string RefreshToken = "", string? ChallengeToken = null, string[]? Methods = null);

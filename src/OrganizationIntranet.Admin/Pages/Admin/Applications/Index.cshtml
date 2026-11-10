@@ -52,9 +52,10 @@
                                     </td>
                                     <td>
                                         @if (app.IsPublic) { <span class="badge bg-success-transparent me-1" title="بدون نیاز به تخصیص دسترسی">عمومی</span> }
+                                        @if (app.IsUnitRestricted) { <span class="badge bg-info-transparent me-1" title="فقط واحدهای انتخاب‌شده و زیرواحدهایشان">بر اساس چارت</span> }
                                         @if (!app.RequiresLogin) { <span class="badge bg-warning-transparent me-1" title="بدون نیاز به ورود">بدون ورود</span> }
                                         @if (app.IsInternetAccessible) { <span class="badge bg-info-transparent me-1">اینترنتی</span> }
-                                        @if (!app.IsPublic && app.RequiresLogin && !app.IsInternetAccessible) { <span class="text-muted fs-12">داخلی · با تخصیص</span> }
+                                        @if (!app.IsPublic && !app.IsUnitRestricted && app.RequiresLogin && !app.IsInternetAccessible) { <span class="text-muted fs-12">داخلی · با تخصیص</span> }
                                     </td>
                                     <td>@app.DisplayOrder</td>
                                     <td>

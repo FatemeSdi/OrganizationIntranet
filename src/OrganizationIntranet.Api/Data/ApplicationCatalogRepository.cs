@@ -13,7 +13,7 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
     private IQueryable<AppEntity> Available(long userId) => ApplicationAccessQueries.Available(db, userId);
 
     public Task<List<AppEntity>> ListAsync() => db.Applications.OrderBy(a => a.DisplayOrder).ThenBy(a => a.ApplicationId).ToListAsync();
-    public Task<AppEntity?> FindAsync(int id) => db.Applications.Include(a => a.AccessGrants).Include(a => a.Services)
+    public Task<AppEntity?> FindAsync(int id) => db.Applications.Include(a => a.AccessGrants).Include(a => a.Services).Include(a => a.UnitAccess)
         .AsSplitQuery().FirstOrDefaultAsync(a => a.ApplicationId == id);
     public Task<List<AppEntity>> AvailableAsync(long userId) => Available(userId).AsNoTracking()
         .Include(a => a.Services.Where(s => s.IsActive)).AsSplitQuery()
@@ -46,6 +46,15 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
             application.AccessGrants.Add(new ApplicationAccess { UserId = id, CreatedAt = DateTime.UtcNow });
         foreach (var id in roleIds.Where(id => !application.AccessGrants.Any(g => g.RoleId == id)))
             application.AccessGrants.Add(new ApplicationAccess { RoleId = id, CreatedAt = DateTime.UtcNow });
+    }
+    /// <summary>آیا همه‌ی واحدهای داده‌شده وجود دارند و فعال‌اند؟</summary>
+    public async Task<bool> ActiveUnitsExistAsync(IReadOnlyCollection<int> unitIds) => await db.OrgUnits.CountAsync(u => u.IsActive && unitIds.Contains(u.UnitId)) == unitIds.Count;
+    /// <summary>واحدهای دارای دسترسی را با مجموعه‌ی داده‌شده یکی می‌کند (اضافه‌ها حذف، ناموجودها اضافه).</summary>
+    public void SetUnitAccess(AppEntity application, IReadOnlyCollection<int> unitIds)
+    {
+        db.ApplicationUnitAccess.RemoveRange(application.UnitAccess.Where(x => !unitIds.Contains(x.UnitId)).ToList());
+        foreach (var id in unitIds.Where(id => !application.UnitAccess.Any(x => x.UnitId == id)))
+            application.UnitAccess.Add(new ApplicationUnitAccess { UnitId = id, CreatedAt = DateTime.UtcNow });
     }
     /// <summary>سرویس‌های سامانه را با فهرست داده‌شده یکی می‌کند؛ با تغییر نشانی سرویس، نشانگر و خطای همگام‌سازی پاک می‌شود تا از اول همگام شود.</summary>
     public void SetServices(AppEntity application, IReadOnlyCollection<ApplicationServiceRegistration> services)

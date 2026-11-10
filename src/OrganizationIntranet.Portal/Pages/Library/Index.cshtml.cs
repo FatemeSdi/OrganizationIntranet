@@ -1,31 +1,47 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OrganizationIntranet.Contracts;
+using OrganizationIntranet.UI;
+
 namespace OrganizationIntranet.Pages.Library;
 
-/// <summary>قوانین و مقررات، انتشارات و فرم‌های سازمانی: تب بخش، جست‌وجو و نتیجه به تفکیک بخش؛ با query string و بدون نیاز به JavaScript.</summary>
+/// <summary>
+/// قوانین و مقررات، انتشارات و فرم‌های سازمانی برای همه (بدون ورود): تب بخش، دسته، جست‌وجو و دانلود. داده از API (مدیریت در پنل) می‌آید؛
+/// بدون query فقط دسته‌ها نمایش داده می‌شوند و با بخش، دسته یا جست‌وجو فهرست سندها. فیلتر با query string است و جاوااسکریپت نمی‌خواهد.
+/// </summary>
 [AllowAnonymous]
-public class IndexModel : PageModel
+public class IndexModel(ApiClient api) : PageModel
 {
     [BindProperty(SupportsGet = true)] public string? Group { get; set; }
+    [BindProperty(SupportsGet = true)] public int? Category { get; set; }
     [BindProperty(SupportsGet = true)] public string? Q { get; set; }
 
-    /// <summary>بخش‌های قابل نمایش (همه یا بخش انتخاب‌شده) با مواردِ منطبق بر جست‌وجو.</summary>
-    public IReadOnlyList<(LibraryGroup Group, IReadOnlyList<LibraryItem> Items)> Results { get; private set; } = [];
-    public int Total => Results.Sum(r => r.Items.Count);
-    /// <summary>تب «همه» بدون جست‌وجو فقط پیش‌نمایش هر بخش را نشان می‌دهد تا با بخش‌های بزرگ شلوغ نشود؛ بقیه در تب همان بخش.</summary>
-    public const int PreviewLimit = 6;
-    public bool IsPreview => Group is null && Q is null;
-    public IEnumerable<LibraryItem> Visible(IReadOnlyList<LibraryItem> items) => IsPreview ? items.Take(PreviewLimit) : items;
-    public int Count(LibraryGroup group) => group.Items.Count(i => LibraryCatalog.Matches(i, Q));
-    public int CountAll => LibraryCatalog.Groups.Sum(Count);
+    /// <summary>همه‌ی سندهای منطبق با جست‌وجو (پیش از فیلتر بخش و دسته)؛ شمار تب‌ها از همین می‌آید.</summary>
+    private LibraryCatalogDto catalog = new([], [], 0);
+    public bool HasAnyContent { get; private set; }
+    public bool ApiUnavailable { get; private set; }
+    /// <summary>بدون هیچ فیلتری فقط دسته‌ها نشان داده می‌شود، نه سندها.</summary>
+    public bool IsOverview => Group is null && Category is null && Q is null;
+    public IReadOnlyList<LibraryCategoryDto> Categories => catalog.Categories;
+    public int CountAll => catalog.Total;
+    public int Count(string group) => catalog.Categories.Where(c => c.GroupCode == group).Sum(c => c.DocumentCount);
 
-    public void OnGet()
+    /// <summary>سندهای فیلترشده‌ی بخش و دسته، به ترتیب بخش و دسته.</summary>
+    public IReadOnlyList<LibraryDocumentDto> Documents { get; private set; } = [];
+    public IEnumerable<IGrouping<string, LibraryDocumentDto>> DocumentsByGroup => Documents.GroupBy(d => d.GroupCode);
+
+    public async Task OnGetAsync()
     {
-        if (LibraryCatalog.Find(Group) is null) Group = null;
-        Q = string.IsNullOrWhiteSpace(Q) ? null : Q.Trim()[..Math.Min(Q.Trim().Length, 100)];
-        Results = LibraryCatalog.Groups.Where(g => Group is null || g.Id == Group)
-            .Select(g => (g, (IReadOnlyList<LibraryItem>)g.Items.Where(i => LibraryCatalog.Matches(i, Q)).ToList()))
-            .Where(r => r.Item2.Count > 0).ToList();
+        Q = string.IsNullOrWhiteSpace(Q) ? null : Q.Trim()[..Math.Min(Q.Trim().Length, LibraryRules.MaxSearchLength)];
+        if (!LibraryGroups.IsValid(Group)) Group = null;
+        try
+        {
+            catalog = await api.GetAsync<LibraryCatalogDto>("api/public/library?documents=true" + (Q is null ? "" : "&q=" + Uri.EscapeDataString(Q)));
+        }
+        catch (ApiException) { ApiUnavailable = true; return; }
+        if (Category is { } id && catalog.Categories.All(c => c.CategoryId != id)) Category = null;
+        HasAnyContent = catalog.Total > 0;
+        Documents = catalog.Documents.Where(d => (Group is null || d.GroupCode == Group) && (Category is null || d.CategoryId == Category)).ToList();
     }
 }

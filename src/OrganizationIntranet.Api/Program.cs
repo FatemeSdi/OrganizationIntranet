@@ -64,6 +64,11 @@ builder.Services.AddScoped<SsoService>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<FirstAdminService>();
+builder.Services.AddScoped<IAdminNotificationRepository, AdminNotificationRepository>();
+builder.Services.AddScoped<AdminNotificationService>();
+builder.Services.AddScoped<ILibraryRepository, LibraryRepository>();
+builder.Services.AddSingleton<ILibraryFileStore, OrganizationIntranet.Api.Integrations.DiskLibraryFileStore>();
+builder.Services.AddScoped<LibraryService>();
 OrganizationIntranet.Api.Integrations.InternalSmsGatewayRegistration.AddInternalSmsGateway(builder.Services);
 builder.Services.AddScoped<IAccessRequestSmsSender, OrganizationIntranet.Api.Integrations.AccessRequestSmsSender>();
 builder.Services.AddHttpClient("access-request-sms", client => client.Timeout = TimeSpan.FromSeconds(15))
@@ -141,6 +146,12 @@ var app = builder.Build();
 if (args.Contains(OrganizationIntranet.Api.FirstAdminCommand.Flag))
 {
     Environment.ExitCode = await OrganizationIntranet.Api.FirstAdminCommand.RunAsync(app.Services, args);
+    return;
+}
+// حالت خط فرمان «وارد کردن فایل‌ها به کتابخانه‌ی اسناد»: آزمایشی مگر با --apply؛ از همان سرویس آپلود پنل می‌گذرد.
+if (args.Contains(OrganizationIntranet.Api.LibraryImportCommand.Flag))
+{
+    Environment.ExitCode = await OrganizationIntranet.Api.LibraryImportCommand.RunAsync(app.Services, args);
     return;
 }
 if (!app.Environment.IsDevelopment()) app.UseHsts();

@@ -20,5 +20,9 @@ public sealed class Publication
     public DateTime? ImageUpdatedAt { get; set; }
     /// <summary>بایگانی (حذف نرم): مطلب از پرتال و فهرست پیش‌فرض مدیر پنهان است ولی در بانک می‌ماند و قابل بازگردانی است. بایگانی همیشه مطلب را از انتشار درمی‌آورد (قید CK_Publication_ArchivedNotPublished).</summary>
     public bool IsArchived { get; set; }
+    /// <summary>اجازه‌ی نمایش در اسلایدر اخبار صفحه‌ی اصلی (فقط مطلب منتشرشده در آن دیده می‌شود).</summary>
+    public bool ShowInSlider { get; set; } = true;
+    /// <summary>جایگاه در اسلایدر: ۱ و بیشتر به ترتیب عدد (کوچک‌تر جلوتر)؛ ۰ یعنی بدون اولویت و بعد از آن‌ها به ترتیب تازگی. با برابری، تازه‌تر جلوتر است.</summary>
+    public int SlideOrder { get; set; }
     public DateTime? ArchivedAt { get; set; }
 }
