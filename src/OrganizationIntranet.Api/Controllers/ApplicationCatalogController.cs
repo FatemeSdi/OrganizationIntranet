@@ -21,6 +21,8 @@ public sealed class ApplicationCatalogController(ApplicationCatalogService servi
         logger.LogInformation("SSO ticket issued for application {ApplicationId} to user {UserId}", id, UserId);
         return result;
     }
+    /// <summary>تصویر کارت سامانه‌ای که همین لحظه در دسترس کاربر است؛ برای هر سامانه‌ی دیگر «یافت نشد».</summary>
+    [HttpGet("applications/{id:int}/image")] public async Task<IActionResult> Image(int id) => ApplicationImages.File(this, await service.GetAvailableImageAsync(UserId, id));
     /// <summary>اعلان‌های سامانه‌ها برای کاربر (آخرین ۵۰ مورد؛ برای زنگ هدر).</summary>
     [HttpGet("notifications")] public Task<List<PortalNotificationDto>> Notifications() => service.NotificationsAsync(UserId);
     /// <summary>مرکز اعلان‌ها: همه‌ی اعلان‌ها (سامانه‌ها و هشدار درخواست) با صفحه‌بندی سمت سرور. فیلترها: kind=system|request، status=unread|read، days=1|7|30|90.</summary>
@@ -31,4 +33,16 @@ public sealed class ApplicationCatalogController(ApplicationCatalogService servi
     /// <summary>همه‌ی اعلان‌های کاربر را خوانده‌شده می‌کند.</summary>
     [HttpPost("notifications/read")] public async Task<OperationResult> ReadNotifications()
     { await service.MarkNotificationsReadAsync(UserId); return new(true); }
+}
+
+/// <summary>ابزار مشترک پاسخ تصویر کارت سامانه برای کنترلرهای کاربر، عمومی و مدیر.</summary>
+internal static class ApplicationImages
+{
+    /// <summary>نشانی تصویر نسخه‌دار است (?v=)، پس کش خصوصی مرورگر امن است؛ nosniff جلوی تفسیر بایت‌ها به‌عنوان نوع دیگر را می‌گیرد.</summary>
+    public static IActionResult File(ControllerBase controller, OrganizationIntranet.Domain.Entities.ApplicationImage image)
+    {
+        controller.Response.Headers.CacheControl = "private, max-age=86400";
+        controller.Response.Headers.XContentTypeOptions = "nosniff";
+        return controller.File(image.Data, image.ContentType);
+    }
 }

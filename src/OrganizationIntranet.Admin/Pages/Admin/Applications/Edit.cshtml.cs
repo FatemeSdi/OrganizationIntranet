@@ -17,6 +17,13 @@ public class EditModel(ApiClient api) : PageModel
     public List<OrgUnitDto> Units { get; set; } = new();
     public string? ErrorMessage { get; set; }
     public List<ApplicationServiceSyncDto> SyncStatuses { get; set; } = new();
+    /// <summary>تصویر کارت که در فرم بارگذاری می‌شود؛ نوع از امضای فایل در API تشخیص داده می‌شود.</summary>
+    [BindProperty] public IFormFile? ImageFile { get; set; }
+    /// <summary>حذف تصویر فعلی کارت (کارت دوباره آیکن را نشان می‌دهد).</summary>
+    [BindProperty] public bool RemoveImage { get; set; }
+    /// <summary>نسخه‌ی تصویر فعلی برای نشانی پیش‌نمایش؛ ۰ یعنی تصویر ندارد.</summary>
+    public long ImageVersion { get; set; }
+    private async Task LoadImageVersionAsync() => ImageVersion = (await api.GetAsync<ApplicationConfigurationDto>($"api/admin/applications/{Id}")).Application.ImageVersion;
     private async Task LoadPrincipalsAsync()
     {
         Users = await api.GetAsync<List<UserDto>>("api/admin/users");
@@ -28,6 +35,7 @@ public class EditModel(ApiClient api) : PageModel
         var data = await api.GetAsync<ApplicationConfigurationDto>($"api/admin/applications/{Id}");
         var a = data.Application;
         SyncStatuses = data.SyncStatuses ?? new();
+        ImageVersion = a.ImageVersion;
         Input = new() { ApplicationName = a.ApplicationName, ApplicationCode = a.ApplicationCode, BaseUrl = a.BaseUrl,
             Description = a.Description, DisplayOrder = a.DisplayOrder, Icon = ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps",
             AccessRequestNotificationChannels = a.AccessRequestNotificationChannels, RequiresLogin = a.RequiresLogin, IsInternetAccessible = a.IsInternetAccessible, AccessMode = a.IsPublic ? "Public" : a.IsUnitRestricted ? "Unit" : "Request",
@@ -50,7 +58,8 @@ public class EditModel(ApiClient api) : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid) { ErrorMessage = "مقادیر واردشده معتبر نیست"; await LoadPrincipalsAsync(); return Page(); }
+        if (ImageFile is { Length: > ApplicationImageRules.MaxBytes }) ModelState.AddModelError(nameof(ImageFile), "حجم تصویر باید حداکثر ۲ مگابایت باشد");
+        if (!ModelState.IsValid) { ErrorMessage = "مقادیر واردشده معتبر نیست"; await LoadPrincipalsAsync(); await LoadImageVersionAsync(); return Page(); }
         try
         {
             var request = new ApplicationConfigurationRequest(new(Input.ApplicationName, Input.ApplicationCode, Input.BaseUrl,
@@ -60,10 +69,22 @@ public class EditModel(ApiClient api) : PageModel
                 .Select(s => new ApplicationServiceRequest(s.ServiceCode ?? "", s.DisplayName ?? "", s.EndpointUrl, s.IsActive)).ToList(), Input.UnitIds);
             var result = await api.PostAsync<OperationResult>($"api/admin/applications/{Id}", request);
             TempData["SuccessMessage"] = result.Message;
+            // تصویر بعد از تنظیمات ذخیره می‌شود؛ رد شدن تصویر تنظیمات ذخیره‌شده را برنمی‌گرداند و پیام جدا می‌دهد.
+            try
+            {
+                if (ImageFile is { Length: > 0 })
+                {
+                    using var buffer = new MemoryStream();
+                    await ImageFile.CopyToAsync(buffer);
+                    await api.PostAsync<OperationResult>($"api/admin/applications/{Id}/image", new ApplicationImageUpload(Convert.ToBase64String(buffer.ToArray())));
+                }
+                else if (RemoveImage) await api.PostAsync<OperationResult>($"api/admin/applications/{Id}/image/remove");
+            }
+            catch (ApiException ex) when ((int)ex.Status is 400 or 413) { TempData["ImageError"] = $"تنظیمات ذخیره شد، اما تصویر پذیرفته نشد: {ex.Message}"; }
             return RedirectToPage(new { Id });
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 409)
-        { ErrorMessage = ex.Message; await LoadPrincipalsAsync(); return Page(); }
+        { ErrorMessage = ex.Message; await LoadPrincipalsAsync(); await LoadImageVersionAsync(); return Page(); }
     }
 
     /// <summary>بدنه‌ی درخواست ثبت لحظه‌ای دسترسی (کاربر یا نقش) از انتخاب‌گر admin-pickers.js.</summary>

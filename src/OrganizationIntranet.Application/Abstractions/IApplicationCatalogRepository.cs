@@ -32,6 +32,16 @@ public interface IApplicationCatalogRepository
     void SetUnitAccess(AppEntity application, IReadOnlyCollection<int> unitIds);
     /// <summary>سرویس‌های سامانه را با فهرست داده‌شده یکی می‌کند.</summary>
     void SetServices(AppEntity application, IReadOnlyCollection<ApplicationServiceRegistration> services);
+    /// <summary>تصویر کارت یک سامانه برای مدیر (هر وضعیتی)؛ ندارد: null.</summary>
+    Task<ApplicationImage?> FindImageAsync(int applicationId);
+    /// <summary>تصویر کارت فقط اگر سامانه فعال و عمومی باشد (بازدیدکننده‌ی ناشناس).</summary>
+    Task<ApplicationImage?> FindPublicImageAsync(int applicationId);
+    /// <summary>تصویر کارت فقط اگر سامانه در فهرست سامانه‌های در اختیار همین کاربر باشد.</summary>
+    Task<ApplicationImage?> FindAvailableImageAsync(long userId, int applicationId);
+    /// <summary>ردیف تصویر تازه را اضافه می‌کند.</summary>
+    void AddImage(ApplicationImage image);
+    /// <summary>ردیف تصویر را برمی‌دارد.</summary>
+    void RemoveImage(ApplicationImage image);
     /// <summary>تغییرات را در یک تراکنش ذخیره می‌کند.</summary>
     Task SaveAsync();
 }

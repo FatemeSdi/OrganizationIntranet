@@ -123,6 +123,24 @@ public sealed class AdminController(IntranetService service, ApplicationCatalogS
         logger.LogInformation("Application {ApplicationId} configuration saved by {UserId}", id, Actor);
         return new(true, "تنظیمات و دسترسی‌های سامانه ذخیره شد");
     }
+    /// <summary>تصویر کارت سامانه برای پیش‌نمایش در فرم ویرایش.</summary>
+    [HttpGet("applications/{id:int}/image"), Authorize(Policy = P.ApplicationViewPolicy)] public async Task<IActionResult> ApplicationImage(int id) => ApplicationImages.File(this, await catalog.GetImageAsync(id));
+    /// <summary>جایگزینی تصویر کارت سامانه (۲ مگابایت Base64 به‌اضافه‌ی حاشیه).</summary>
+    [HttpPost("applications/{id:int}/image"), Authorize(Policy = P.ApplicationEditPolicy), RequestSizeLimit(3_200_000)]
+    public async Task<OperationResult> SetApplicationImage(int id, ApplicationImageUpload request)
+    {
+        await catalog.SetImageAsync(id, request.Base64);
+        logger.LogInformation("Application {ApplicationId} image replaced by {UserId}", id, Actor);
+        return new(true, "تصویر سامانه ذخیره شد");
+    }
+    /// <summary>حذف تصویر کارت سامانه؛ کارت دوباره آیکن را نشان می‌دهد.</summary>
+    [HttpPost("applications/{id:int}/image/remove"), Authorize(Policy = P.ApplicationEditPolicy)]
+    public async Task<OperationResult> RemoveApplicationImage(int id)
+    {
+        await catalog.RemoveImageAsync(id);
+        logger.LogInformation("Application {ApplicationId} image removed by {UserId}", id, Actor);
+        return new(true, "تصویر سامانه حذف شد");
+    }
     /// <summary>فهرست مجوزها با شمار نقش‌های دارنده.</summary>
     [HttpGet("permissions"), Authorize(Policy = P.PermissionViewPolicy)] public Task<List<PermissionDto>> Permissions() => service.PermissionsAsync();
     /// <summary>یک مجوز با شناسه‌ی نقش‌های دارنده‌اش؛ اگر نبود ۴۰۴.</summary>

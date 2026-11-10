@@ -266,6 +266,7 @@ a.stat-tile:hover { transform: translateY(-2px); border-color: rgba(var(--primar
 .publication-card-preview__media { aspect-ratio: 16 / 9; background: linear-gradient(135deg, #0D2C48, #1573B8); display: grid; place-items: center; }
 .publication-card-preview__media[data-kind="Announcement"] { background: linear-gradient(135deg, #8A6320, #D6A24C); }
 .publication-card-preview__media[data-kind="Circular"] { background: linear-gradient(135deg, #123A5C, #17A6B6); }
+.publication-card-preview__media--app-card { aspect-ratio: 25 / 12; }
 .publication-card-preview__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .publication-card-preview__placeholder { color: rgba(255, 255, 255, .7); font-size: 2.25rem; }
 .publication-card-preview figcaption { display: grid; gap: .25rem; padding: .75rem .875rem; font-size: .8125rem; }

@@ -17,7 +17,19 @@ public record ApplicationConfigurationDto(ApplicationDto Application, List<long>
 public record ApplicationServiceSyncDto(string ServiceCode, DateTime? LastSyncedAt, string? LastSyncError);
 /// <summary>کارت سامانه در پورتال برای کاربر واردشده: آدرس، آیکن، شمار اعلان خوانده‌نشده و اینکه ورود یکپارچه (SSO) دارد.</summary>
 public record PortalApplicationDto(int ApplicationId, string Name, string? Description, string? Url, string Icon,
-    bool RequiresLogin, bool IsInternetAccessible, bool IsPublic, int UnreadCount, List<string> Services, bool SingleSignOn = false);
+    bool RequiresLogin, bool IsInternetAccessible, bool IsPublic, int UnreadCount, List<string> Services, bool SingleSignOn = false, long ImageVersion = 0)
+{
+    /// <summary>آیا سامانه تصویر کارت دارد؟ اگر دارد، کارت پورتال به‌جای آیکن تصویر را نشان می‌دهد.</summary>
+    public bool HasImage => ImageVersion != 0;
+}
+/// <summary>بارگذاری تصویر کارت سامانه؛ نوع فایل از امضای خود فایل تشخیص داده می‌شود.</summary>
+public sealed record ApplicationImageUpload(string Base64);
+/// <summary>قواعد تصویر کارت سامانه: حداکثر ۲ مگابایت و فقط JPEG، PNG یا WebP؛ تصویر افقی تقریباً ۲ به ۱ (مثلاً ۱۲۰۰×۵۷۶) و بدون متن، متناسب کارت پورتال است.</summary>
+public static class ApplicationImageRules
+{
+    public const int MaxBytes = 2 * 1024 * 1024;
+    public const string Accept = "image/jpeg,image/png,image/webp";
+}
 /// <summary>اعلان سامانه برای زنگ هدر؛ TargetUrl فقط اگر هم‌مبدأ سامانه باشد پر می‌شود.</summary>
 public record PortalNotificationDto(long Id, string System, string Title, DateTime CreatedAt, bool Unread, string? TargetUrl = null);
 /// <summary>مقصد امن باز کردن یک اعلان.</summary>

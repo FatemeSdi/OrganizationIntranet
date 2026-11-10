@@ -314,6 +314,7 @@
 | 008 | مجوزهای پنل مدیریت |
 | 009، 011، 013 | ورود یکپارچه: `Sec.SsoTicket`، `App.UserApplicationAccount`، و ستون‌های `SsoPath`/`SsoKeyHash`/`SsoKeyChangedAt` روی `App.Application` |
 | 012 | `Org.Unit` (چارت سازمانی) و `Sec.User.UnitId` |
+| 020 | تصویر کارت سامانه: `App.ApplicationImage` و ستون `ImageUpdatedAt` روی `App.Application` |
 | 014 | `App.ApplicationUnitAccess` و `App.Application.IsUnitRestricted` |
 | 015 | ستون‌های `IsActive`، `AudienceType`، `AudienceUserId`، `AudienceUnitId`، `RecipientCount`، `ChangedAt` روی `Notify.Notification` |
 | 016 | `Notify.Publication.ShowInSlider` و `SlideOrder` |

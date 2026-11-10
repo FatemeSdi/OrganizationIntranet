@@ -17,7 +17,9 @@
 
 <partial name="_ToastMessages" model='new ToastMessages(TempData["SuccessMessage"] as string, Model.ErrorMessage)' />
 
-<form method="post" class="card custom-card" data-busy data-dirty-guard>
+<partial name="_ToastMessages" model='new ToastMessages(null, TempData["ImageError"] as string)' />
+
+<form method="post" enctype="multipart/form-data" class="card custom-card" data-busy data-dirty-guard>
     <input type="hidden" asp-for="Id" />
 
     <section class="form-section">
@@ -34,8 +36,48 @@
             <div class="col-md-4"><label asp-for="Input.Icon" class="form-label">آیکن</label><select asp-for="Input.Icon" class="form-select" data-icon-picker>
                 @foreach (var icon in OrganizationIntranet.Contracts.ApplicationCatalogOptions.Icons) { <option value="@icon">@AdminLabels.Icon(icon)</option> }
             </select></div>
+            <div class="col-12">
+                <label asp-for="ImageFile" class="form-label">تصویر کارت سامانه</label>
+                <div class="publication-image-editor">
+                    <figure class="publication-card-preview" aria-label="پیش‌نمایش تصویر کارت در پورتال">
+                        <div class="publication-card-preview__media publication-card-preview__media--app-card">
+                            <img id="appImagePreview" alt="" src="@(Model.ImageVersion != 0 ? $"/Admin/Applications/Image?id={Model.Id}&v={Model.ImageVersion}" : "")" hidden="@(Model.ImageVersion == 0)" />
+                            <span class="publication-card-preview__placeholder" id="appImagePlaceholder" hidden="@(Model.ImageVersion != 0)"><i class="ti ti-photo"></i></span>
+                        </div>
+                    </figure>
+                    <div>
+                        <input asp-for="ImageFile" type="file" class="form-control" accept="@OrganizationIntranet.Contracts.ApplicationImageRules.Accept" />
+                        <span asp-validation-for="ImageFile" class="text-danger fs-12"></span>
+                        <div class="form-text">اگر تصویر بگذارید، کارت سامانه در پورتال به‌جای آیکن، این تصویر را نشان می‌دهد و نام و خلاصه‌ی سامانه در نوار پایین کارت می‌آید؛ پس تصویر را بدون متن بسازید. JPEG، PNG یا WebP تا ۲ مگابایت؛ تصویر افقی تقریباً ۲ به ۱ (مثلاً ۱۲۰۰×۵۷۶) با عناصر اصلی در میانه، متناسب کارت است و بزرگ‌تر از کارت نمی‌شود (لبه‌های بالا و پایین ممکن است کمی بریده شود).</div>
+                        @if (Model.ImageVersion != 0)
+                        {
+                            <div class="switch-row mt-3">
+                                <div><label class="switch-row__label" for="RemoveImage">حذف تصویر فعلی</label><p class="switch-row__help">کارت دوباره آیکن انتخاب‌شده را نشان می‌دهد.</p></div>
+                                <input asp-for="RemoveImage" class="form-check-input" role="switch" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
+    <script>
+        // پیش‌نمایش تصویر انتخاب‌شده (بدون بارگذاری) و حذف تصویر فعلی.
+        (function () {
+            var file = document.getElementById('ImageFile'), img = document.getElementById('appImagePreview'), placeholder = document.getElementById('appImagePlaceholder');
+            var remove = document.getElementById('RemoveImage'), original = img.getAttribute('src');
+            var max = @OrganizationIntranet.Contracts.ApplicationImageRules.MaxBytes;
+            function show(src) { img.hidden = !src; placeholder.hidden = !!src; if (src) img.src = src; }
+            file.addEventListener('change', function () {
+                var f = file.files[0];
+                if (!f) { show(remove && remove.checked ? '' : original); return; }
+                if (f.size > max) { showToast('حجم تصویر باید حداکثر ۲ مگابایت باشد', 'danger'); file.value = ''; show(original); return; }
+                show(URL.createObjectURL(f));
+                if (remove) remove.checked = false;
+            });
+            if (remove) remove.addEventListener('change', function () { if (remove.checked) { file.value = ''; show(''); } else show(original); });
+        })();
+    </script>
 
     <section class="form-section">
         <div>

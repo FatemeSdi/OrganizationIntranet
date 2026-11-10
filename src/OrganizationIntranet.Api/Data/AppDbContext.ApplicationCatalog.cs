@@ -9,6 +9,7 @@ public partial class AppDbContext
     public DbSet<ApplicationAccess> ApplicationAccessGrants => Set<ApplicationAccess>();
     public DbSet<ApplicationUnitAccess> ApplicationUnitAccess => Set<ApplicationUnitAccess>();
     public DbSet<ApplicationServiceRegistration> ApplicationServices => Set<ApplicationServiceRegistration>();
+    public DbSet<ApplicationImage> ApplicationImages => Set<ApplicationImage>();
 
     private static void ConfigureApplicationCatalog(ModelBuilder modelBuilder)
     {
@@ -39,6 +40,17 @@ public partial class AppDbContext
             e.HasOne(x => x.Application).WithMany(x => x.AccessGrants).HasForeignKey(x => x.ApplicationId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId).OnDelete(DeleteBehavior.NoAction);
+        });
+        // تصویر کارت سامانه؛ migration 020_ApplicationImages.
+        modelBuilder.Entity<ApplicationImage>(e =>
+        {
+            // قید اندازه (CK_ApplicationImage_Size) فقط در migration است؛ DATALENGTH در SQLite آزمون‌ها وجود ندارد و سرویس هم اندازه را می‌سنجد.
+            e.ToTable("ApplicationImage", "App", t => t.HasCheckConstraint("CK_ApplicationImage_ContentType", "[ContentType] IN ('image/jpeg', 'image/png', 'image/webp')"));
+            e.HasKey(i => i.ApplicationId);
+            e.Property(i => i.ApplicationId).ValueGeneratedNever();
+            e.Property(i => i.ContentType).HasMaxLength(20).IsUnicode(false).IsRequired();
+            e.Property(i => i.Data).IsRequired();
+            e.HasOne<Domain.Entities.Application>().WithOne().HasForeignKey<ApplicationImage>(i => i.ApplicationId).OnDelete(DeleteBehavior.NoAction);
         });
         modelBuilder.Entity<ApplicationServiceRegistration>(e =>
         {

@@ -35,7 +35,11 @@ public record RolePermissionItemDto(int PermissionId, string PermissionName, str
 /// <summary>Users فقط برای دارنده‌ی USER_VIEW پر می‌شود؛ UsersHidden یعنی فهرست به دلیل نبود مجوز خالی است.</summary>
 public record RoleDetailsDto(RoleDto Role, List<RoleMemberDto> Users, List<RolePermissionItemDto> Permissions, bool UsersHidden = false);
 /// <summary>سامانه در فهرست‌های پنل و فرم‌ها (بدون دسترسی‌ها و سرویس‌ها).</summary>
-public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp", bool IsUnitRestricted = false);
+public record ApplicationDto(int ApplicationId, string ApplicationName, string ApplicationCode, string? BaseUrl, string? Description, int DisplayOrder, bool IsActive, string? Icon = "apps", bool RequiresLogin = true, bool IsInternetAccessible = false, bool IsPublic = false, string AccessRequestNotificationChannels = "InApp", bool IsUnitRestricted = false, long ImageVersion = 0)
+{
+    /// <summary>آیا سامانه تصویر کارت دارد؟</summary>
+    public bool HasImage => ImageVersion != 0;
+}
 /// <summary>مجوز برای فهرست پنل: سامانه، شمار نقش‌ها و شناسه‌ی نقش‌های دارنده.</summary>
 public record PermissionDto(int PermissionId, string PermissionName, string PermissionCode, string? Description, string ApplicationName, bool IsActive, int RoleCount, List<int> SelectedRoleIds);
 /// <summary>کاربر برای فهرست و فرم ویرایش پنل (بدون رمز و رازها).</summary>

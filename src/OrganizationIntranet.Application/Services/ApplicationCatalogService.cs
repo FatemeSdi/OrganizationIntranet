@@ -10,7 +10,7 @@ namespace OrganizationIntranet.Application.Services;
 public sealed class ApplicationCatalogService(IApplicationCatalogRepository repository)
 {
     private static ApplicationDto Map(AppEntity a) => new(a.ApplicationId, a.ApplicationName, a.ApplicationCode, a.BaseUrl,
-        a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels, a.IsUnitRestricted);
+        a.Description, a.DisplayOrder, a.IsActive, a.Icon, a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, a.AccessRequestNotificationChannels, a.IsUnitRestricted, a.ImageUpdatedAt?.Ticks ?? 0);
     /// <summary>آدرس باید مطلق، HTTP یا HTTPS و بدون نام کاربری و رمز باشد.</summary>
     private static bool SafeUrl(string? value) => Uri.TryCreate(value, UriKind.Absolute, out var uri)
         && (uri.Scheme == "http" || uri.Scheme == "https") && string.IsNullOrEmpty(uri.UserInfo);
@@ -121,7 +121,7 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
     /// <summary>سامانه‌های فعال و عمومی برای بازدیدکننده‌ی ناشناس؛ فقط داده‌ی نمایشی و آدرس ایمن.</summary>
     public async Task<List<PublicApplicationDto>> PublicAsync() => (await repository.PublicAsync())
         .Select(a => new PublicApplicationDto(a.ApplicationId, a.ApplicationName, a.Description, SafeUrl(a.BaseUrl) ? a.BaseUrl : null,
-            ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps", a.RequiresLogin, a.IsInternetAccessible)).ToList();
+            ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps", a.RequiresLogin, a.IsInternetAccessible, a.ImageUpdatedAt?.Ticks ?? 0)).ToList();
     /// <summary>سامانه‌های در اختیار کاربر برای پورتال با شمار اعلان خوانده‌نشده‌ی هر سامانه و اینکه ورود یکپارچه دارد یا نه.</summary>
     public async Task<List<PortalApplicationDto>> AvailableAsync(long userId)
     {
@@ -130,8 +130,40 @@ public sealed class ApplicationCatalogService(IApplicationCatalogRepository repo
         return apps.Select(a => new PortalApplicationDto(a.ApplicationId, a.ApplicationName, a.Description,
             SafeUrl(a.BaseUrl) ? a.BaseUrl : null, ApplicationCatalogOptions.Icons.Contains(a.Icon) ? a.Icon! : "apps",
             a.RequiresLogin, a.IsInternetAccessible, a.IsPublic, counts.GetValueOrDefault(a.ApplicationId),
-            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList(), SsoLanding.Url(a.BaseUrl, a.SsoPath, a.SsoKeyHash is not null) is not null)).ToList();
+            a.Services.Where(s => s.IsActive).OrderBy(s => s.ServiceCode).Select(s => s.ServiceCode).ToList(), SsoLanding.Url(a.BaseUrl, a.SsoPath, a.SsoKeyHash is not null) is not null, a.ImageUpdatedAt?.Ticks ?? 0)).ToList();
     }
+    /// <summary>جایگزینی تصویر کارت: Base64 تا ۲ مگابایت، نوع از امضای فایل (نه نوع اعلام‌شده‌ی مرورگر). فقط JPEG، PNG و WebP؛ SVG عمداً پذیرفته نمی‌شود چون اسکریپت می‌تواند داشته باشد.</summary>
+    public async Task SetImageAsync(int id, string? base64)
+    {
+        byte[] data;
+        try { data = Convert.FromBase64String(base64 ?? ""); }
+        catch (FormatException) { throw new ArgumentException("فایل تصویر معتبر نیست"); }
+        if (data.Length == 0 || data.Length > ApplicationImageRules.MaxBytes) throw new ArgumentException("حجم تصویر باید حداکثر ۲ مگابایت باشد");
+        var type = PublicationService.DetectImageType(data) ?? throw new ArgumentException("فقط تصویر JPEG، PNG یا WebP پذیرفته می‌شود");
+        var a = await repository.FindAsync(id) ?? throw new KeyNotFoundException();
+        var now = DateTime.UtcNow;
+        var image = await repository.FindImageAsync(id);
+        if (image is null) repository.AddImage(image = new ApplicationImage { ApplicationId = id });
+        image.ContentType = type; image.Data = data; image.UpdatedAt = now;
+        a.ImageUpdatedAt = now;
+        await repository.SaveAsync();
+    }
+    /// <summary>حذف تصویر کارت؛ بدون تصویر بی‌اثر است و کارت دوباره آیکن را نشان می‌دهد.</summary>
+    public async Task RemoveImageAsync(int id)
+    {
+        var a = await repository.FindAsync(id) ?? throw new KeyNotFoundException();
+        var image = await repository.FindImageAsync(id);
+        if (image is null && a.ImageUpdatedAt is null) return;
+        if (image is not null) repository.RemoveImage(image);
+        a.ImageUpdatedAt = null;
+        await repository.SaveAsync();
+    }
+    /// <summary>تصویر کارت برای مدیر؛ ندارد: «یافت نشد».</summary>
+    public async Task<ApplicationImage> GetImageAsync(int id) => await repository.FindImageAsync(id) ?? throw new KeyNotFoundException();
+    /// <summary>تصویر کارت برای بازدیدکننده‌ی ناشناس: فقط سامانه‌ی فعال و عمومی؛ وجود سامانه‌های دیگر لو نمی‌رود («یافت نشد»).</summary>
+    public async Task<ApplicationImage> GetPublicImageAsync(int id) => await repository.FindPublicImageAsync(id) ?? throw new KeyNotFoundException();
+    /// <summary>تصویر کارت برای کاربر واردشده: فقط سامانه‌ای که همین لحظه در دسترس اوست.</summary>
+    public async Task<ApplicationImage> GetAvailableImageAsync(long userId, int id) => await repository.FindAvailableImageAsync(userId, id) ?? throw new KeyNotFoundException();
     /// <summary>آخرین ۵۰ اعلان سامانه‌ها برای زنگ هدر؛ مقصد هر اعلان فقط اگر هم‌مبدأ سامانه باشد برمی‌گردد.</summary>
     public async Task<List<PortalNotificationDto>> NotificationsAsync(long userId) => (await repository.NotificationsAsync(userId, false, 50))
         .Select(n => new PortalNotificationDto(n.UserNotificationId, n.Notification.Application.ApplicationName, n.Notification.Title, n.CreatedAt, !n.IsRead,

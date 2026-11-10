@@ -244,6 +244,15 @@
     background:linear-gradient(135deg, var(--navy-900), var(--blue-600)); color:#fff; flex-shrink:0;
   }
   .sys-icon svg{width:23px; height:23px}
+  /* کارت دارای تصویر: تصویر تمام بالای کارت را پر می‌کند (بدون متن) و نام و توضیح به‌جای «ورود به سامانه» پایین کارت می‌آید؛ قد کارت با کارت‌های بدون تصویر یکی می‌ماند */
+  .sys-card--image{padding:0; gap:0; min-height:253px}
+  .sys-media{flex:1; min-height:150px; background:var(--navy-900); position:relative; overflow:hidden}
+  .sys-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+  .sys-unread--over{position:absolute; top:12px; inset-inline-start:12px; box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .sys-card .sys-caption{margin-top:0; padding:11px 18px 13px; border-top:1px solid var(--line); background:var(--card)}
+  .sys-caption__text{min-width:0; display:flex; flex-direction:column; gap:1px}
+  .sys-card--image h3{font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .sys-card--image p{font-size:12.5px; line-height:1.7; min-height:0; flex:none; -webkit-line-clamp:1; font-weight:400}
   .sys-unread{
     background:var(--danger); color:#fff; font-size:11px; font-weight:800; border-radius:100px; padding:2px 8px; height:fit-content;
   }
@@ -538,13 +547,28 @@ else
       <div class="systems-grid" id="systemsGrid">
         @foreach (var app in Model.Applications)
         {
-          <a class="sys-card" href="@app.Url" target="@(app.Url is null ? null : "_blank")" rel="@(app.Url is null ? null : "noopener")" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+          <a class="sys-card@(app.HasImage ? " sys-card--image" : "")" href="@app.Url" target="@(app.Url is null ? null : "_blank")" rel="@(app.Url is null ? null : "noopener")" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+            @if (app.HasImage)
+            {
+              @* تصویر کارت جای آیکن را می‌گیرد؛ شمار اعلان روی گوشه‌ی تصویر می‌نشیند و نام و توضیح به‌جای «ورود به سامانه» در نوار پایین کارت است. *@
+              <div class="sys-media">
+                <img src="/Applications/Image/@app.ApplicationId?v=@app.ImageVersion" alt="" loading="lazy" />
+                @if (app.UnreadCount > 0) { <span class="sys-unread sys-unread--over">@app.UnreadCount جدید</span> }
+              </div>
+              <div class="go sys-caption">
+                <div class="sys-caption__text"><h3>@app.Name</h3><p>@app.Description</p></div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </div>
+            }
+            else
+            {
             <div class="sys-top">
               <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
               @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }
             </div>
             <h3>@app.Name</h3><p>@app.Description</p>
             <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : "ورود به سامانه")<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            }
           </a>
         }
 @if (Model.IsAuthenticated)

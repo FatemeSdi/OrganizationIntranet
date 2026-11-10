@@ -71,5 +71,12 @@ public sealed class ApplicationCatalogRepository(AppDbContext db) : IApplication
             }
         }
     }
+    public Task<ApplicationImage?> FindImageAsync(int applicationId) => db.ApplicationImages.FirstOrDefaultAsync(i => i.ApplicationId == applicationId);
+    public Task<ApplicationImage?> FindPublicImageAsync(int applicationId) => db.ApplicationImages
+        .Where(i => i.ApplicationId == applicationId && db.Applications.Any(a => a.ApplicationId == i.ApplicationId && a.IsActive && a.IsPublic)).FirstOrDefaultAsync();
+    public Task<ApplicationImage?> FindAvailableImageAsync(long userId, int applicationId) => db.ApplicationImages
+        .Where(i => i.ApplicationId == applicationId && Available(userId).Any(a => a.ApplicationId == i.ApplicationId)).FirstOrDefaultAsync();
+    public void AddImage(ApplicationImage image) => db.ApplicationImages.Add(image);
+    public void RemoveImage(ApplicationImage image) => db.ApplicationImages.Remove(image);
     public async Task SaveAsync() => await db.SaveChangesAsync();
 }

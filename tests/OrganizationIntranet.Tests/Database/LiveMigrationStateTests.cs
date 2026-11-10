@@ -32,6 +32,7 @@ public sealed class LiveMigrationStateTests
         "017_LibraryDocuments",
         "018_PublicApplications",
         "019_HideHomeApplication",
+        "020_ApplicationImages",
     ];
 
     [LiveSchemaFact]

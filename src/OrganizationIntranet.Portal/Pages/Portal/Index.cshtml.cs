@@ -75,7 +75,7 @@ public class IndexModel(ApiClient api) : PageModel
             // بازدیدکننده‌ی ناشناس: فقط سامانه‌ها و مطالب عمومی. شمارنده و دسترسی اختصاصی ندارد.
             var publicApps = await api.GetAsync<List<PublicApplicationDto>>("api/public/applications");
             Applications = publicApps.Select(a => new PortalApplicationDto(a.ApplicationId, a.Name, a.Description, a.Url, a.Icon,
-                a.RequiresLogin, a.IsInternetAccessible, true, 0, new List<string>())).ToList();
+                a.RequiresLogin, a.IsInternetAccessible, true, 0, new List<string>(), false, a.ImageVersion)).ToList();
             Publications = await api.GetAsync<PublicationListDto>("api/public/publications?slider=true");
             Library = await LoadLibraryAsync();
             return;

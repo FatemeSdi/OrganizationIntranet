@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>سامانه مدیریت وظایف</title>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient>
+</defs>
+<rect width="1200" height="576" fill="url(#bg)"/>
+<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
+<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14">
+<line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/>
+</g>
+<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/>
+<rect x="540" y="52" width="120" height="46" rx="16" fill="#D6A24C" stroke="#0A2036" stroke-width="8"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="492" cy="178" r="25" fill="#1573B8"/><polyline points="480,178 489,187 505,169" stroke="#FFFFFF" stroke-width="7"/>
+<circle cx="492" cy="258" r="25" fill="#1573B8"/><polyline points="480,258 489,267 505,249" stroke="#FFFFFF" stroke-width="7"/>
+<circle cx="492" cy="338" r="25" fill="#1573B8"/><polyline points="480,338 489,347 505,329" stroke="#FFFFFF" stroke-width="7"/>
+<circle cx="492" cy="418" r="22" stroke="#9AA7B1" stroke-width="6"/>
+</g>
+<g fill="#D9D4C4">
+<rect x="538" y="168" width="170" height="20" rx="10"/><rect x="538" y="248" width="140" height="20" rx="10"/>
+<rect x="538" y="328" width="160" height="20" rx="10"/><rect x="538" y="408" width="112" height="20" rx="10"/>
+</g>
+<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
+<path d="M198 265.4 A66 66 0 0 1 322 265.4" fill="none" stroke="#0A2036" stroke-width="12" stroke-linecap="round"/>
+<polygon points="328.5,283.3 335.2,260.6 308.8,270.2" fill="#0A2036"/>
+<path d="M322 310.6 A66 66 0 0 1 198 310.6" fill="none" stroke="#0A2036" stroke-width="12" stroke-linecap="round"/>
+<polygon points="191.5,292.7 184.8,315.4 211.2,305.8" fill="#0A2036"/>
+<polyline points="232,288 252,308 292,262" fill="none" stroke="#0A2036" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(940 288) scale(2.3)">
+<path d="M0 -52 L40 -38 V4 C40 34 16 50 0 58 C-16 50 -40 34 -40 4 V-38 Z" fill="#1573B8" stroke="#D6A24C" stroke-width="3.5" stroke-linejoin="round"/>
+<polyline points="-15,4 -4,15 18,-11" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

@@ -16,6 +16,8 @@ public class Application
     public DateTime? SsoKeyChangedAt { get; set; }
     public string? Description { get; set; }
     public string? Icon { get; set; }
+    /// <summary>زمان آخرین تغییر تصویر کارت (ApplicationImage)؛ null یعنی سامانه تصویر ندارد. برای نسخه‌گذاری نشانی تصویر و کش هم استفاده می‌شود.</summary>
+    public DateTime? ImageUpdatedAt { get; set; }
     /// <summary>ترتیب نمایش در پورتال (عدد کمتر جلوتر). ثبت بدون ترتیب، سامانه را آخرین ردیف می‌کند.</summary>
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;

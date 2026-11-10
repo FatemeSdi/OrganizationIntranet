@@ -17,6 +17,10 @@ public sealed class PublicController(ApplicationCatalogService applications, Pub
     [HttpGet("applications")]
     public Task<List<PublicApplicationDto>> Applications() => applications.PublicAsync();
 
+    /// <summary>تصویر کارت فقط برای سامانه‌ی فعال و عمومی؛ برای هر سامانه‌ی دیگر «یافت نشد».</summary>
+    [HttpGet("applications/{id:int}/image"), EnableRateLimiting("public-media")]
+    public async Task<IActionResult> ApplicationImage(int id) => ApplicationImages.File(this, await applications.GetPublicImageAsync(id));
+
     /// <summary>اخبار و اطلاعیه‌های منتشرشده‌ی عمومی (با فیلتر نوع و جست‌وجو و صفحه‌بندی؛ slider=true فقط مطالب اسلایدر صفحه‌ی اصلی را به ترتیب اسلایدر می‌دهد).</summary>
     [HttpGet("publications")]
     public Task<PublicationListDto> Publications(string? kind = null, string? search = null, int page = 1, bool slider = false) => publications.ListPublicAsync(kind, search, page, slider);
