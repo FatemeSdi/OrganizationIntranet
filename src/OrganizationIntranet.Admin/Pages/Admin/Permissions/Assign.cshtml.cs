@@ -7,6 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Permissions;
+/// <summary>اختصاص یک مجوز به نقش‌ها؛ هر تغییر همان لحظه ثبت و فوراً اعمال می‌شود. مجوز سیستمی از ADMIN گرفته نمی‌شود.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PermissionViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionEdit)]
 public class AssignModel(ApiClient api) : PageModel
 {
@@ -45,6 +46,7 @@ public class AssignModel(ApiClient api) : PageModel
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 404 or 409) { return new JsonResult(new { ok = false, message = ex.Message }) { StatusCode = 400 }; }
     }
+    /// <summary>بدنه‌ی درخواست افزودن یا برداشتن یک نقش از مجوز (ثبت لحظه‌ای از admin-pickers.js).</summary>
     public sealed record RoleToggleBody(string Kind, long Id, bool Granted);
 
     public async Task<IActionResult> OnPostAsync()

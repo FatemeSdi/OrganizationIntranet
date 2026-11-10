@@ -7,6 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Roles;
+/// <summary>فهرست و ساخت نقش‌ها و فعال/غیرفعال کردن آن‌ها؛ نقش ADMIN غیرفعال نمی‌شود.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.RoleViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.RoleEdit)]
 public class IndexModel(ApiClient api) : PageModel
 {

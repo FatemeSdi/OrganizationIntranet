@@ -6,6 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Publications;
 // ناشناس فقط مطالب منتشرشده‌ی «عمومی» را می‌بیند؛ کاربر واردشده همه‌ی مطالب منتشرشده را. تفکیک در API اعمال می‌شود.
+/// <summary>فهرست اخبار، اطلاعیه‌ها و بخشنامه‌ها با تب نوع، جست‌وجو و صفحه‌بندی (ناشناس فقط مطالب عمومی).</summary>
 [AllowAnonymous]
 public class IndexModel(ApiClient api) : PageModel
 {

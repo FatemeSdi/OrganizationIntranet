@@ -4,6 +4,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 namespace OrganizationIntranet.Pages.Account;
 // تغییر رمز عبور به «تنظیمات حساب» (Account/Settings) منتقل شد.
+/// <summary>پروفایل کاربر واردشده در پورتال: نام، نقش‌ها و اطلاعات حساب (فقط‌خواندنی؛ از api/account/me).</summary>
 [Authorize]
 public class ProfileModel(ApiClient api) : PageModel
 {

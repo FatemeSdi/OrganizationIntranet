@@ -1,5 +1,6 @@
 namespace OrganizationIntranet.Domain.Entities;
 
+/// <summary>مطلب اطلاع‌رسانی (جدول Notify.Publication): خبر، اطلاعیه یا بخشنامه با وضعیت انتشار، عمومی بودن، بایگانی، تصویر شاخص و جایگاه در اسلایدر.</summary>
 public sealed class Publication
 {
     public long PublicationId { get; set; }

@@ -6,6 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.AccessRequests;
 
+/// <summary>وضعیت پیامک‌های اطلاع‌رسانی درخواست‌های دسترسی و ارسال دوباره‌ی پیامک ناموفق؛ مجوز ACCESS_REQUEST_REVIEW.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)]
 public class NotificationsModel(ApiClient api) : PageModel
 {

@@ -5,6 +5,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Publications;
 // تصویر شاخص: ناشناس فقط تصویر مطلب عمومی و کاربر واردشده تصویر هر مطلب منتشرشده را می‌گیرد؛ تفکیک در API است.
+/// <summary>تصویر شاخص مطلب با همان دامنه‌ی دید مطلب؛ از API می‌گیرد، با nosniff و کش خصوصی.</summary>
 [AllowAnonymous]
 public class ImageModel(ApiClient api) : PageModel
 {

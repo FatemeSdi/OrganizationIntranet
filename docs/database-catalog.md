@@ -301,3 +301,21 @@
 | --- | --- | --- | --- | --- |
 | OrganizationIntranet | ROWS | 8 | False | 8192 |
 | OrganizationIntranet_log | LOG | 8 | False | 8192 |
+
+## جدول‌ها و ستون‌های افزوده‌شده بعد از این برداشت (migration 003 تا 019)
+
+برداشت بالا تاریخی است (۲۰۲۶-۰۹-۱۷). ساختار فعلی را از migrationهای `database/migrations` و مدل EF (`src/OrganizationIntranet.Api/Data`) بخوانید. فهرست تغییرها:
+
+| Migration | افزوده |
+|---|---|
+| 003 تا 004 | کاتالوگ سامانه‌ها (`App.ApplicationAccess`، `ApplicationService`)، درخواست دسترسی و نظارت (`ApplicationAccessRequest`، `ApplicationSupervisionGroup`، `ApplicationSupervisor`، `Notify.AccessRequestAlert`) |
+| 005، 007، 010 | مطالب عمومی، تصویر شاخص (`Notify.PublicationImage`) و بایگانی (`IsArchived`) |
+| 006 | ورود با کد ملی |
+| 008 | مجوزهای پنل مدیریت |
+| 009، 011، 013 | ورود یکپارچه: `Sec.SsoTicket`، `App.UserApplicationAccount`، و ستون‌های `SsoPath`/`SsoKeyHash`/`SsoKeyChangedAt` روی `App.Application` |
+| 012 | `Org.Unit` (چارت سازمانی) و `Sec.User.UnitId` |
+| 014 | `App.ApplicationUnitAccess` و `App.Application.IsUnitRestricted` |
+| 015 | ستون‌های `IsActive`، `AudienceType`، `AudienceUserId`، `AudienceUnitId`، `RecipientCount`، `ChangedAt` روی `Notify.Notification` |
+| 016 | `Notify.Publication.ShowInSlider` و `SlideOrder` |
+| 017 | Schema `Lib`: `Lib.Category` و `Lib.Document` (فایل روی دیسک، نه در بانک) |
+| 018، 019 | داده: ده سامانه‌ی عمومی و غیرفعال‌کردن `INTERANET` |

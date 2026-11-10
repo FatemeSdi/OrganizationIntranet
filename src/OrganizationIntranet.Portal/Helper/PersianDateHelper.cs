@@ -1,5 +1,6 @@
 ﻿namespace OrganizationIntranet.Helper
 {
+    /// <summary>تبدیل تاریخ و زمان میلادی به متن شمسی برای نمایش.</summary>
     public static class PersianDateHelper
     {
         // برای DateTime (غیر nullable)

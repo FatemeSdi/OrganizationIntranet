@@ -6,6 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.AccessRequests;
 
+/// <summary>فهرست درخواست‌های دسترسی با فیلتر وضعیت و تأیید یا رد (با Revision برای جلوگیری از تصمیم هم‌زمان)؛ مجوز ACCESS_REQUEST_REVIEW.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AccessRequestReviewPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {

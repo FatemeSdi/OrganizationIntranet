@@ -7,6 +7,10 @@
  <ProjectReference Include="../OrganizationIntranet.Application/OrganizationIntranet.Application.csproj" />
  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10"><PrivateAssets>all</PrivateAssets></PackageReference>
+ <!-- Transitive packages of SqlClient with known advisories (GHSA-wvxc-855f-jvrv, GHSA-x674-v45j-fwxw, GHSA-447r-wph3-92pm): pinned to patched versions. -->
+ <PackageReference Include="Azure.Identity" Version="1.13.2" />
+ <PackageReference Include="Microsoft.Identity.Client" Version="4.67.2" />
+ <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
  </ItemGroup>
  <!-- Local development keys stay on the developer machine: never part of a publish/deployment. -->
  <ItemGroup><Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" /></ItemGroup>

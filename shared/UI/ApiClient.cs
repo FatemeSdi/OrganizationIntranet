@@ -8,11 +8,13 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>خطای فراخوانی API با کد وضعیت و پیام فارسی قابل نمایش.</summary>
 public sealed class ApiException(HttpStatusCode status, string message) : Exception(message)
 {
     public HttpStatusCode Status { get; } = status;
 }
 
+/// <summary>کلاینت HTTP سمت سرور UI به API: توکن کاربر را از کوکی می‌فرستد، برای مسیرهای api/admin کلید مدیریتی را فقط از UI مدیریت و برای دارنده‌ی INTRANET_ADMIN می‌گذارد و پیام خطای API را به ApiException تبدیل می‌کند.</summary>
 public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, IConfiguration configuration)
 {
     public async Task<T> GetAsync<T>(string path, string? token = null) => await SendAsync<T>(HttpMethod.Get, path, null, token);
@@ -54,6 +56,8 @@ public sealed class ApiClient(HttpClient client, IHttpContextAccessor accessor, 
     }
 }
 
+/// <summary>پاسخ دودویی API (فایل یا تصویر) با نوع محتوا و نام فایل.</summary>
 public sealed record ApiFile(byte[] Content, string ContentType, string? FileName = null);
 
+/// <summary>پاسخ توکن ورود API: توکن دسترسی، مدت اعتبار، توکن تمدید و (در ورود دومرحله‌ای) نشانه‌ی چالش و روش‌ها.</summary>
 public record TokenResponse(string AccessToken = "", int ExpiresIn = 0, string RefreshToken = "", string? ChallengeToken = null, string[]? Methods = null);

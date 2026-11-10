@@ -7,6 +7,7 @@ namespace OrganizationIntranet.ViewComponents;
 /// <summary>هدر صفحه‌های داخلی پورتال (_LayoutPortal): نام کاربر، منوی حساب و شمار اعلان‌های خوانده‌نشده؛ برای بازدیدکننده‌ی ناشناس فقط دکمه‌ی ورود.</summary>
 public sealed record PortalHeaderModel(bool IsAuthenticated, string DisplayName, string Initials, string RoleNames, bool IsAdmin, int Unread, string? Active, string ReturnUrl, bool IsSupervisor = false);
 
+/// <summary>هدر مشترک صفحه‌های پورتال: منو، زنگ اعلان با شمار خوانده‌نشده و منوی کاربر (برای ناشناس دکمه‌ی ورود).</summary>
 public class PortalHeaderViewComponent(ApiClient api) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync(string? active)

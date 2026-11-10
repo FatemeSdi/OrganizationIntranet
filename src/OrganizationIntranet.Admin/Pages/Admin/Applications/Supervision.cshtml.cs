@@ -6,6 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Applications;
 
+/// <summary>گروه‌های نظارت یک سامانه (ناظران درخواست‌های دسترسی: کاربر یا نقش) و روش اطلاع‌رسانی؛ مجوز APPLICATION_VIEW و APPLICATION_EDIT.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.ApplicationViewPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.UserViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit)]
 public class SupervisionModel(ApiClient api) : PageModel
 {

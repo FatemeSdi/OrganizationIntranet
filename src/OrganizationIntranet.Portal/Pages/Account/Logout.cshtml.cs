@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace OrganizationIntranet.Pages.Account
 {
+    /// <summary>خروج از پورتال: فقط نشست (کوکی) پورتال بسته می‌شود، نه نشست پنل مدیریت.</summary>
     public class LogoutModel : PageModel
     {
         public async Task<IActionResult> OnGetAsync() => await SignOutAndRedirectAsync();

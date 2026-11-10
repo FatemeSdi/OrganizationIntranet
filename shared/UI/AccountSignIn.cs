@@ -8,8 +8,10 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>ورود نیمه‌کاره‌ی کاربر (چالش دومرحله‌ای): نشانه‌ی چالش، روش‌های ممکن، مانا بودن نشست و آدرس بازگشت.</summary>
 public record PendingLogin(string ChallengeToken, string[] Methods, bool RememberMe, string? ReturnUrl);
 
+/// <summary>ساخت نشست UI بعد از ورود موفق: Claimهای کاربر، نقش و مجوز را در کوکی می‌گذارد، هر ۵ دقیقه آن‌ها را از API تازه می‌کند و مقصد بعد از ورود را تعیین می‌کند.</summary>
 public static class AccountSignIn
 {
     /// <summary>زمان آخرین همگام‌سازی نقش‌ها و مجوزها با API (ثانیه‌ی یونیکس).</summary>

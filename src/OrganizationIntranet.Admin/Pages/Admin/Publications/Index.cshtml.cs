@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
+/// <summary>فهرست مطالب اطلاع‌رسانی با فیلتر وضعیت، نوع و جست‌وجو؛ بایگانی و بازگردانی.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {

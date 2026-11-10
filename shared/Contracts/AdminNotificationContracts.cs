@@ -12,6 +12,7 @@ public static class AdminNotificationAudience
 public record AdminNotificationRequest(string? Title, string? Message, string? AudienceType, long? UserId = null, int? UnitId = null);
 /// <summary>یک اعلان ارسال‌شده. AudienceLabel نام کاربر، مسیر واحد یا «همه‌ی کاربران» است؛ ReadCount شمار گیرندگانی که خوانده‌اند.</summary>
 public record AdminNotificationDto(long NotificationId, string Title, string Message, string AudienceType, string AudienceLabel, int RecipientCount, int ReadCount, bool IsActive, DateTime CreatedAt, string SentBy);
+/// <summary>یک صفحه از اعلان‌های ارسال‌شده از پنل با شمار کل و صفحه‌بندی.</summary>
 public record AdminNotificationListDto(List<AdminNotificationDto> Items, int Total, int Page, int PageSize)
 {
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Total / (double)Math.Max(1, PageSize)));

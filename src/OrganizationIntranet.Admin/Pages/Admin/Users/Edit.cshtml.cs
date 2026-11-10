@@ -7,6 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Users;
+/// <summary>ساخت و ویرایش کاربر: مشخصات، نام کاربری، رمز، واحد سازمانی و نقش‌ها (نقش برای کاربر موجود لحظه‌ای ثبت می‌شود)؛ مجوز USER_VIEW و USER_EDIT.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.UserViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.UserEdit)]
 public class EditModel(ApiClient api) : PageModel
 {
@@ -77,6 +78,7 @@ public class EditModel(ApiClient api) : PageModel
         }
         catch (ApiException ex) when ((int)ex.Status is 400 or 404 or 409) { return new JsonResult(new { ok = false, message = ex.Message }) { StatusCode = 400 }; }
     }
+    /// <summary>بدنه‌ی درخواست افزودن یا برداشتن یک نقش از کاربر (ثبت لحظه‌ای از admin-pickers.js).</summary>
     public sealed record RoleToggleBody(string Kind, long Id, bool Granted);
 
     public async Task<IActionResult> OnPostAsync()

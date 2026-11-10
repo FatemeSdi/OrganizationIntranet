@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>پایه‌ی مشترک مرحله‌ی دوم ورود (کد Authenticator یا پیامک) و تکمیل نشست.</summary>
 public class TwoFactorPageModel(ApiClient api, IConfiguration configuration) : PageModel
 {
     [BindProperty] public string Method { get; set; } = "authenticator";

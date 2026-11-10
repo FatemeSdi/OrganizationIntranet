@@ -97,6 +97,9 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 | `Notify.UserNotification` | ✅ پیاده‌سازی شده | |
 | `Org.Unit` + `Sec.User.UnitId` | ✅ migration 012 (۲۰۲۶-۱۱-۰۲) | چارت سازمانی درختی (`ParentId`، `FullPath` مسیر کامل با «/»، `SourceId` برای import تکرارپذیر از ITS) و واحد اختیاری هر کاربر؛ مجوزهای `ORG_VIEW/EDIT`. مرجع: [docs/organization-chart.md](docs/organization-chart.md). دیدن سامانه‌ها و اعلان بر پایه‌ی واحد در مرحله‌ی ۲ ساخته می‌شود |
 | `Lib.Category` + `Lib.Document` | ✅ migration 017 (۲۰۲۶-۱۱-۰۳) | کتابخانه‌ی اسناد و فرم‌ها (جایگزین فهرست ایستای `LibraryCatalog`): مشخصات در بانک، **خود فایل روی دیسک سرور API** (`Library:StoragePath`)؛ پشتیبان‌گیری باید هر دو را بگیرد. مرجع: [docs/library.md](docs/library.md) |
+| `App.ApplicationUnitAccess` + `Application.IsUnitRestricted` | ✅ migration 014 | حالت سوم دسترسی سامانه بر پایه‌ی چارت (واحد و زیرواحدها)؛ [docs/organization-chart.md](docs/organization-chart.md) |
+| `Notify.Notification.IsActive/Audience*` | ✅ migration 015 | اعلان سازمانی ارسالی مدیر (به کاربر، واحد یا همه) با پس‌گرفتن و بازگرداندن؛ مجوز `NOTIFICATION_SEND` |
+| `App.Application.SsoPath/SsoKeyHash` | ✅ migration 013 | مسیر و **هش** کلید SSO هر سامانه در بانک (نه در appsettings)؛ [docs/sso.md](docs/sso.md) |
 | `Notify.Publication.ShowInSlider/SlideOrder` | ✅ migration 016 | انتخاب و ترتیب مطالب اسلایدر صفحه‌ی اصلی؛ ۰ یعنی بدون اولویت (بعد از مطالب دارای ترتیب، به ترتیب تازگی) |
 
 ## Authorization — وضعیت فعلی
@@ -129,6 +132,11 @@ App.Application ──< Notify.Notification ──< Notify.UserNotification >─
 14. هر Application باید بتواند Permissionهای مخصوص خودش را داشته باشد (`Permission.ApplicationId`).
 15. **هر تغییر همراه با تست ارائه شود** (تصمیم صریح کاربر، ۲۰۲۶-۱۰-۲۰): قابلیت، رفع باگ، migration یا اتصال بیرونی بدون تست در `tests/OrganizationIntranet.Tests` کامل شمرده نمی‌شود. پوشه‌بندی، برچسب‌ها و قواعد نوشتن تست در [tests/README.md](tests/README.md) است؛ بعد از هر تغییر `dotnet test tests/OrganizationIntranet.Tests` اجرا و نتیجه‌ی واقعی گزارش شود.
 16. آزمون‌ها هرگز نباید پیامک یا درخواست واقعی به بیرون بفرستند یا بانک واقعی را تغییر دهند؛ بررسی بانک واقعی فقط‌خواندنی و اختیاری است.
+
+17. **هر نوع (class، record، interface، enum) در `src` و `shared` یک `<summary>` فارسی دارد** (بالای attributeها). آزمون `PersianSummaryTests` فهرست نوع‌های بدون توضیح را گزارش می‌دهد و بدون آن آزمون‌ها قرمز می‌شود.
+18. **نشست Portal و Admin جداست** (کوکی `OrganizationIntranet.UI.Portal` و `.Admin` و ApplicationName جدا در Data Protection)؛ ورود در یکی دیگری را عوض نمی‌کند و ورود Portal همیشه به Portal برمی‌گردد. این را دوباره یکی نکن.
+19. تغییر یافته‌ی امنیتی یا ریسک تازه را در [docs/security-review.md](docs/security-review.md) ثبت کن؛ کلیدها و رمزها هرگز در لاگ، پاسخ یا آزمون چاپ نشوند.
+20. فایل کتابخانه‌ی اسناد روی دیسک سرور API است (نه بانک): نام روی دیسک تصادفی، پسوند و امضای فایل سنجیده و دانلود همیشه attachment؛ مسیر هرگز از ورودی کاربر ساخته نشود ([docs/library.md](docs/library.md)).
 
 ## روند کار پیشنهادی برای هر مرحله‌ی مهاجرت
 

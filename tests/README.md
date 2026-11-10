@@ -13,6 +13,13 @@
 
 نام فضای نام همه‌ی فایل‌ها `OrganizationIntranet.Tests` است؛ پوشه‌ها فقط برای سازمان‌دهی‌اند.
 
+## آزمون‌های محافظ ساختاری
+
+- `Unit/PersianSummaryTests`: هر نوع در `src` و `shared` باید `<summary>` فارسی داشته باشد.
+- `Unit/CommittedHostsTests` و `CommittedKeysTests`: آدرس درگاه پیامک و IP داخلی در `appsettings.json` نباشد و کلیدهای توسعه سازگار بمانند.
+- `Unit/MigrationFilesTests`: هر migration دارد up/down/verify، در README و فهرست `ExpectedMigrations` است.
+- `Integration/SecurityHeadersTests` و `SeparateUiSessionsTests`: سرآیندهای امنیتی و جدایی نشست Portal/Admin.
+
 ## اجرا
 
 ```powershell

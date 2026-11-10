@@ -19,4 +19,5 @@ public sealed record PickList(string Name, string Label, IReadOnlyList<PickItem>
             "نقش را انتخاب کنید", "role", "نقش", instantUrl, readOnly);
 }
 
+/// <summary>یک گزینه‌ی انتخاب‌گر (شناسه، عنوان و متن جست‌وجو).</summary>
 public sealed record PickItem(string Value, string Label, string? Sub, bool Selected, bool Inactive);

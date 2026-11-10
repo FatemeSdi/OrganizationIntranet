@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>تبدیل ApiException به پاسخ صفحه: ۴۰۱ نشست را می‌بندد و به ورود می‌برد، ۴۰۳ و ۴۰۴ همان‌ها و بقیه صفحه‌ی خطا.</summary>
 public sealed class ApiPageExceptionFilter : IAsyncExceptionFilter
 {
     public async Task OnExceptionAsync(ExceptionContext context)

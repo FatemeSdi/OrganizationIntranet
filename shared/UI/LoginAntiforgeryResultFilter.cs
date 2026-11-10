@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>خطای Antiforgery صفحه‌ی ورود را به پاسخ JSON «اعتبار فرم پایان یافته» تبدیل می‌کند تا صفحه تازه شود، نه خطای خام.</summary>
 public sealed class LoginAntiforgeryResultFilter : IAlwaysRunResultFilter
 {
     public void OnResultExecuting(ResultExecutingContext context)

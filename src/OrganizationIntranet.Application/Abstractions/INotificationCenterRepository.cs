@@ -19,6 +19,7 @@ public sealed class NotificationCenterRow
 /// <param name="Read">null = همه، true = خوانده‌شده، false = خوانده‌نشده</param>
 public sealed record NotificationCenterQuery(string? Kind, bool? Read, DateTime? Since, int Page, int PageSize);
 
+/// <summary>دسترسی به داده‌ی مرکز اعلان کاربر (اعلان سامانه‌ها و هشدار درخواست دسترسی)؛ پیاده‌سازی در لایه‌ی API.</summary>
 public interface INotificationCenterRepository
 {
     /// <summary>Total با فیلتر وضعیت؛ All و Unread بدون آن (برای تب‌ها). دید هر منبع همان دید فهرست‌های جداگانه است.</summary>

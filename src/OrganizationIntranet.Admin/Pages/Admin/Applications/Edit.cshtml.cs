@@ -6,6 +6,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Applications;
 
+/// <summary>ویرایش کامل یک سامانه: مشخصات، حالت دسترسی (با تخصیص یا درخواست، عمومی، بر اساس چارت)، کاربران و نقش‌ها، واحدها و سرویس‌ها؛ مجوز APPLICATION_VIEW و (برای ذخیره) APPLICATION_EDIT.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.ApplicationViewPolicy), Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.UserViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.ApplicationEdit)]
 public class EditModel(ApiClient api) : PageModel
 {
@@ -65,8 +66,10 @@ public class EditModel(ApiClient api) : PageModel
         { ErrorMessage = ex.Message; await LoadPrincipalsAsync(); return Page(); }
     }
 
+    /// <summary>بدنه‌ی درخواست ثبت لحظه‌ای دسترسی (کاربر یا نقش) از انتخاب‌گر admin-pickers.js.</summary>
     public sealed record AccessToggleBody(string Kind, long Id, bool Granted);
 
+    /// <summary>فیلدهای فرم ویرایش سامانه (مشخصات، حالت دسترسی، کاربران، نقش‌ها، واحدها و سرویس‌ها).</summary>
     public sealed class ApplicationInput
     {
         public string ApplicationName { get; set; } = "";
@@ -85,6 +88,7 @@ public class EditModel(ApiClient api) : PageModel
         public List<int> RoleIds { get; set; } = new();
         public List<ServiceInput> Services { get; set; } = new();
     }
+    /// <summary>یک ردیف سرویس سامانه در فرم (کد، نام، نشانی و فعال بودن)؛ Remove یعنی ردیف از فهرست برداشته شود.</summary>
     public sealed class ServiceInput
     {
         public string? ServiceCode { get; set; }

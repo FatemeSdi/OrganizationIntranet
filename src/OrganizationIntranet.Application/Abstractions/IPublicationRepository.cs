@@ -5,6 +5,7 @@ namespace OrganizationIntranet.Application.Abstractions;
 /// <summary>دامنه‌ی دید محتوا: All = همه (مدیر)، Published = منتشرشده برای کاربر واردشده، Public = منتشرشده و عمومی برای بازدیدکننده‌ی ناشناس، Draft = فقط پیش‌نویس‌های بایگانی‌نشده، Archived = فقط بایگانی‌شده‌ها، NotArchived = پیش‌فرض فهرست مدیر (همه‌ی بایگانی‌نشده‌ها). All شامل بایگانی‌شده‌ها هم هست و فقط برای یافتن مطلب با شناسه به کار می‌رود.</summary>
 public enum PublicationScope { All, Published, Public, Draft, Archived, NotArchived }
 
+/// <summary>دسترسی به داده‌ی مطالب اطلاع‌رسانی و تصویر شاخص؛ دامنه‌ی دید با PublicationScope تعیین می‌شود. پیاده‌سازی در لایه‌ی API.</summary>
 public interface IPublicationRepository
 {
     Task<(List<Publication> Items, int Total)> ListAsync(PublicationScope scope, string? kind, string? search, int page, int pageSize, bool sliderOnly = false);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace OrganizationIntranet.Pages.Account
 {
+    /// <summary>خروج از پنل مدیریت: فقط نشست (کوکی) همین UI بسته می‌شود و کاربر به صفحه‌ی ورود می‌رود.</summary>
     public class LogoutModel : PageModel
     {
         public async Task<IActionResult> OnGetAsync() => await SignOutAndRedirectAsync();

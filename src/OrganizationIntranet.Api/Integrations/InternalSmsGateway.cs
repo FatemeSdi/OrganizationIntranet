@@ -3,6 +3,7 @@ using OrganizationIntranet.Application.Abstractions;
 
 namespace OrganizationIntranet.Api.Integrations;
 
+/// <summary>ثبت درگاه پیامک داخلی در DI (HttpClient با timeout پانزده‌ثانیه‌ای و بدون دنبال‌کردن redirect).</summary>
 public static class InternalSmsGatewayRegistration
 {
     // ثبت واحد برای برنامه و آزمون‌ها: timeout پانزده‌ثانیه‌ای و بدون دنبال‌کردن redirect یا کوکی.

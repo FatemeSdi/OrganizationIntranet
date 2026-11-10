@@ -5,6 +5,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Publications;
 // برای ناشناس، مطلب غیرعمومی یا پیش‌نویس «یافت نشد» (۴۰۴) است؛ وجود آن لو نمی‌رود.
+/// <summary>متن کامل یک مطلب با همان دامنه‌ی دید (ناشناس فقط مطلب عمومی منتشرشده)؛ ناموجود یا غیرمجاز ۴۰۴.</summary>
 [AllowAnonymous]
 public class DetailsModel(ApiClient api) : PageModel
 {

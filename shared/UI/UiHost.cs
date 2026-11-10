@@ -8,6 +8,7 @@ using System.Security.Claims;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>راه‌اندازی مشترک Portal و Admin: کلیدها و نشانی‌ها را اعتبارسنجی می‌کند و کوکی ورود و کلید Data Protection جدا برای هر UI می‌سازد (نشست Portal و Admin مستقل است)، ApiClient، CAPTCHA و فیلترهای مشترک را ثبت می‌کند.</summary>
 public static class UiHost
 {
     /// <summary>Where this process looked for User Secrets and what it effectively sees: names and lengths only, never values.</summary>
@@ -127,6 +128,17 @@ public static class UiHost
         // پاسخ‌های بدون بدنه (۴۰۴ مسیر ناموجود، NotFound() صفحه‌ها، ...) صفحه‌ی خطای هم‌تم هر پرتال را نشان می‌دهند.
         app.UseStatusCodePagesWithReExecute("/Error/{0}");
         app.UseHttpsRedirection();
+        // سرآیندهای امنیتی پایه برای همه‌ی پاسخ‌های UI: جلوگیری از قاب‌شدن صفحه (clickjacking، به‌ویژه پنل مدیریت)، حدس نوع محتوا، نشت آدرس کامل در Referer و دسترسی به سخت‌افزار.
+        // CSP عمداً نیامده است: صفحه‌ها اسکریپت و استایل درون‌خط دارند و CSP سخت‌گیرانه نیازمند بازنویسی با nonce است (docs/security-review.md).
+        app.Use(async (context, next) =>
+        {
+            var headers = context.Response.Headers;
+            headers.XContentTypeOptions = "nosniff";
+            headers.XFrameOptions = "DENY";
+            headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+            headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
+            await next();
+        });
         if (name == "Admin") app.UseMiddleware<AdminUiBoundaryMiddleware>();
         app.UseStaticFiles();
         app.Use(async (context, next) =>

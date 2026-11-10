@@ -10,6 +10,7 @@ public sealed record SsoRedeemed(User User, string ApplicationUsername);
 /// <summary>یک سامانه‌ی فعال با وضعیت دسترسی کاربر و نام کاربری نگاشت‌شده‌اش (در صورت وجود).</summary>
 public sealed record SsoAccountRow(int ApplicationId, string ApplicationCode, string ApplicationName, string? BaseUrl, string? SsoPath, bool HasSsoKey, bool HasAccess, string? ExternalUsername);
 
+/// <summary>دسترسی به داده‌ی ورود یکپارچه: بلیت‌های یک‌بارمصرف، نگاشت نام کاربری هر کاربر در هر سامانه و تنظیمات SSO سامانه‌ها؛ پیاده‌سازی در لایه‌ی API.</summary>
 public interface ISsoRepository
 {
     /// <summary>null یعنی سامانه فعال نیست یا کاربر (فعال) به آن دسترسی ندارد.</summary>

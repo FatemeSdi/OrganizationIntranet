@@ -7,6 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 namespace OrganizationIntranet.Pages.Portal;
 // صفحه‌ی اصلی برای ناشناس باز است (UiHost) و فقط داده‌ی عمومی نشان می‌دهد؛ همه‌ی عملیات POST نیاز به ورود دارند و API هم دوباره بررسی می‌کند.
+/// <summary>صفحه‌ی اصلی پورتال: برای ناشناس فقط سامانه‌ها و مطالب عمومی، و برای کاربر واردشده سامانه‌های او، اعلان‌ها، کارتابل نظارت و درخواست دسترسی. همه‌ی عملیات POST نیاز به ورود دارند.</summary>
 [AllowAnonymous]
 public class IndexModel(ApiClient api) : PageModel
 {

@@ -8,6 +8,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Authentication;
 
+/// <summary>تنظیمات ورود و امنیت (روش‌های ورود، دومرحله‌ای، پیامک و بازیابی رمز)؛ مجوز AUTH_SETTINGS_EDIT.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.AuthenticationSettingsEditPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {

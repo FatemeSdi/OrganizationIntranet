@@ -7,6 +7,7 @@ using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 
 namespace OrganizationIntranet.Pages.Admin.Permissions;
+/// <summary>فهرست و ساخت مجوزها و فعال/غیرفعال کردن آن‌ها؛ مجوز سیستمی غیرفعال نمی‌شود.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PermissionViewPolicy), OrganizationIntranet.Admin.Authorization.PostRequiresPermission(OrganizationIntranet.Contracts.AdminPermissions.PermissionEdit)]
 public class IndexModel(ApiClient api) : PageModel
 {

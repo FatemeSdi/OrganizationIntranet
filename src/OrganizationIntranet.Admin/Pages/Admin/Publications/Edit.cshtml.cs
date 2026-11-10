@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
+/// <summary>ساخت و ویرایش مطلب اطلاع‌رسانی: متن، نوع، انتشار و عمومی بودن، اسلایدر، تصویر شاخص (بارگذاری یا یکی از تصاویر پیش‌فرض) و بایگانی؛ مجوز PUBLICATION_EDIT.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public class EditModel(ApiClient api, IWebHostEnvironment environment) : PageModel
 {

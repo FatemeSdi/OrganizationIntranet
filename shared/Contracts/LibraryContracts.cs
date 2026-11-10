@@ -40,6 +40,7 @@ public record LibraryCatalogDto(List<LibraryCategoryDto> Categories, List<Librar
 
 /// <summary>دسته‌بندی برای مدیر: همه‌ی دسته‌ها (فعال یا نه، خالی یا نه) با شمار همه‌ی سندها.</summary>
 public record LibraryCategoryAdminDto(int CategoryId, string GroupCode, string Title, int DisplayOrder, bool IsActive, int DocumentCount);
+/// <summary>ساخت یا ویرایش دسته‌بندی کتابخانه: بخش، عنوان، ترتیب نمایش و فعال بودن.</summary>
 public record LibraryCategoryRequest(string? GroupCode, string? Title, int DisplayOrder = 0, bool IsActive = true);
 /// <summary>سند برای مدیر، با وضعیت و سازنده.</summary>
 public record LibraryDocumentAdminDto(long DocumentId, int CategoryId, string GroupCode, string CategoryTitle, string Title, string? Description, string FileName, string Extension,
@@ -47,6 +48,7 @@ public record LibraryDocumentAdminDto(long DocumentId, int CategoryId, string Gr
 {
     public bool HasPreview => LibraryRules.CanPreview(Extension, SizeBytes);
 }
+/// <summary>یک صفحه از سندهای کتابخانه برای مدیر با شمار کل و صفحه‌بندی.</summary>
 public record LibraryDocumentPageDto(List<LibraryDocumentAdminDto> Items, int Total, int Page, int PageSize)
 {
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Total / (double)Math.Max(1, PageSize)));

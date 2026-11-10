@@ -5,6 +5,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.Pages.Admin.Publications;
 // پیش‌نمایش تصویر شاخص در پنل مدیریت (شامل پیش‌نویس‌ها).
+/// <summary>تصویر شاخص مطلب برای پیش‌نمایش مدیر (حتی مطلب پیش‌نویس)؛ از API می‌گیرد و با nosniff می‌دهد.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.PublicationEditPolicy)]
 public class ImageModel(ApiClient api) : PageModel
 {

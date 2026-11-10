@@ -4,6 +4,7 @@ using OrganizationIntranet.UI;
 
 namespace OrganizationIntranet.ViewComponents;
 
+/// <summary>زنگ اعلان هدر پنل مدیریت: شمار و فهرست درخواست‌های دسترسی در انتظار برای دارندگان ACCESS_REQUEST_REVIEW.</summary>
 public class AccessRequestBellViewComponent(ApiClient api) : ViewComponent
 {
     public async Task<IViewComponentResult> InvokeAsync()

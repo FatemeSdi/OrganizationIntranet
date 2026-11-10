@@ -6,6 +6,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 namespace OrganizationIntranet.Pages.Admin.Users;
+/// <summary>فهرست کاربران با جست‌وجو و صفحه‌بندی؛ مجوز USER_VIEW.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.UserViewPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {

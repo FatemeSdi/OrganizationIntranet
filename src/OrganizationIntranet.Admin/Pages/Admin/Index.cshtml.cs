@@ -8,6 +8,7 @@ using OrganizationIntranet.Helper;
 using OrganizationIntranet.Authorization;
 
 namespace OrganizationIntranet.Pages.Admin;
+/// <summary>داشبورد پنل مدیریت: آمار کاربران، نقش‌ها و سامانه‌ها، آخرین کاربران و میان‌بر به بخش‌هایی که کاربر مجوزشان را دارد.</summary>
 [Authorize(Policy = OrganizationIntranet.Contracts.AdminPermissions.IntranetAdminPolicy)]
 public class IndexModel(ApiClient api) : PageModel
 {

@@ -6,6 +6,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>پایه‌ی مشترک صفحه‌ی ورود (Portal و Admin): CAPTCHA، ورود با رمز یا کد ملی و پیامک، و شروع دومرحله‌ای.</summary>
 public class LoginPageModel(ApiClient api, IDNTCaptchaValidatorService captcha, IConfiguration configuration) : PageModel
 {
     // The national-ID challenge token stays on the server (protected TempData cookie) and never reaches browser JavaScript.

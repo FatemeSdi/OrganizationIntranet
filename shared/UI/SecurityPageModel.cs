@@ -8,6 +8,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>پایه‌ی مشترک صفحه‌ی امنیت حساب (تغییر رمز، راه‌اندازی Authenticator و وضعیت دومرحله‌ای).</summary>
 [Authorize]
 public class SecurityPageModel(ApiClient api) : PageModel
 {

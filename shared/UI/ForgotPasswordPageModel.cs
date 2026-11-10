@@ -5,6 +5,7 @@ using OrganizationIntranet.Contracts;
 
 namespace OrganizationIntranet.UI;
 
+/// <summary>پایه‌ی مشترک صفحه‌ی بازیابی رمز با پیامک (Portal و Admin).</summary>
 public class ForgotPasswordPageModel(ApiClient api, IDNTCaptchaValidatorService captcha) : PageModel
 {
     [BindProperty] public string Username { get; set; } = "";

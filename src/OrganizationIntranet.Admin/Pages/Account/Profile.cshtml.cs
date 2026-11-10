@@ -6,6 +6,7 @@ using OrganizationIntranet.Contracts;
 using OrganizationIntranet.UI;
 using OrganizationIntranet.Helper;
 namespace OrganizationIntranet.Pages.Account;
+/// <summary>پروفایل کاربر واردشده در پنل: نام، نقش‌ها و اطلاعات حساب (فقط‌خواندنی؛ از api/account/me).</summary>
 [Authorize]
 public class ProfileModel(ApiClient api) : PageModel
 {
