@@ -1,18 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
-<rect width="1200" height="576" fill="url(#bg)"/>
-<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
-<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
-<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><rect x="468" y="108" width="140" height="16" rx="8" fill="#0A2036"/><rect x="468" y="138" width="90" height="12" rx="6" fill="#D9D4C4"/><polyline points="690,140 706,122 722,140" fill="none" stroke="#D6A24C" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-<line x1="468" y1="448" x2="732" y2="448" stroke="#D9D4C4" stroke-width="5" stroke-linecap="round"/>
-<rect x="472" y="360" width="40" height="88" rx="8" fill="#1573B8"/>
-<rect x="526" y="312" width="40" height="136" rx="8" fill="#1573B8"/>
-<rect x="580" y="332" width="40" height="116" rx="8" fill="#1573B8"/>
-<rect x="634" y="262" width="40" height="186" rx="8" fill="#1573B8"/>
-<rect x="688" y="206" width="40" height="242" rx="8" fill="#D6A24C"/>
-<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
-<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><polyline points="-62,38 -22,-2 8,20 58,-36"/><polyline points="26,-38 58,-38 58,-6"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
-<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><polyline points="-52,-34 -44,-26 -30,-42"/><line x1="-12" y1="-34" x2="52" y2="-34"/><polyline points="-52,0 -44,8 -30,-8"/><line x1="-12" y1="0" x2="52" y2="0"/><polyline points="-52,34 -44,42 -30,26"/><line x1="-12" y1="34" x2="36" y2="34"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>دیماند</title>
+<rect width="1200" height="576" fill="#F7F4EC"/>
+<g fill="#E9E5D8">
+<rect x="-170" y="320" width="440" height="150" rx="42" transform="rotate(-45 50 395)"/>
+<rect x="930" y="-30" width="440" height="150" rx="42" transform="rotate(-45 1150 45)"/>
+</g>
+<circle cx="600" cy="288" r="166" fill="none" stroke="#1573B8" stroke-width="42" stroke-linecap="round" stroke-dasharray="827 216" transform="rotate(-48 600 288)"/>
+<circle cx="683" cy="144.2" r="31" fill="#D6A24C" stroke="#F7F4EC" stroke-width="8"/>
+<g stroke="#0A2036" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<line x1="672" y1="318" x2="672" y2="206"/>
+<line x1="586" y1="206" x2="684" y2="206"/>
+<line x1="618" y1="206" x2="618" y2="232"/>
+</g>
+<rect x="590" y="232" width="56" height="56" rx="10" fill="#123A5C"/>
+<rect x="522" y="262" width="56" height="56" rx="10" fill="#D6A24C"/>
+<polygon points="505,318 695,318 667,366 533,366" fill="#0A2036" stroke="#0A2036" stroke-width="8" stroke-linejoin="round"/>
+<rect x="540" y="384" width="120" height="9" rx="4.5" fill="#1573B8" fill-opacity="0.45"/>
+<rect x="566" y="400" width="68" height="9" rx="4.5" fill="#1573B8" fill-opacity="0.45"/>
 </svg>

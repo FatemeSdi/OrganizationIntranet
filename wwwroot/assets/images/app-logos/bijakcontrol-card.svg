@@ -1,22 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
-<rect width="1200" height="576" fill="url(#bg)"/>
-<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
-<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
-<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><rect x="468" y="108" width="120" height="22" rx="11" fill="#D6A24C"/><rect x="468" y="156" width="220" height="14" rx="7" fill="#D9D4C4"/><rect x="468" y="184" width="160" height="14" rx="7" fill="#D9D4C4"/>
-<rect x="468" y="240" width="6" height="92" rx="0" fill="#0A2036"/>
-<rect x="485" y="240" width="9" height="92" rx="0" fill="#0A2036"/>
-<rect x="506" y="240" width="7" height="92" rx="0" fill="#0A2036"/>
-<rect x="524" y="240" width="10" height="92" rx="0" fill="#0A2036"/>
-<rect x="547" y="240" width="3" height="92" rx="0" fill="#0A2036"/>
-<rect x="566" y="240" width="4" height="92" rx="0" fill="#0A2036"/>
-<rect x="584" y="240" width="3" height="92" rx="0" fill="#0A2036"/>
-<rect x="604" y="240" width="4" height="92" rx="0" fill="#0A2036"/>
-<rect x="468" y="366" width="150" height="14" rx="7" fill="#D9D4C4"/><rect x="468" y="394" width="110" height="14" rx="7" fill="#D9D4C4"/>
-<circle cx="690" cy="440" r="38" fill="#1573B8"/><polyline points="672,440 686,454 710,426" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
-<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="-10" cy="-10" r="42"/><line x1="22" y1="22" x2="58" y2="58"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
-<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><rect x="-58" y="-32" width="116" height="64" rx="6"/><line x1="-30" y1="-32" x2="-30" y2="32"/><line x1="0" y1="-32" x2="0" y2="32"/><line x1="30" y1="-32" x2="30" y2="32"/></g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>کنترل بیجک</title>
+<rect width="1200" height="576" fill="#F7F4EC"/><g fill="#E9E5D8"><rect x="-170" y="320" width="440" height="150" rx="42" transform="rotate(-45 50 395)"/><rect x="930" y="-30" width="440" height="150" rx="42" transform="rotate(-45 1150 45)"/></g>
+<g transform="translate(-14 -22)">
+<ellipse cx="600" cy="520" rx="190" ry="15" fill="#D9D4C4" fill-opacity="0.7"/>
+<path d="M470 140 H730 V462 L704 482 L678 462 L652 482 L626 462 L600 482 L574 462 L548 482 L522 462 L496 482 L470 462 Z" fill="#FFFFFF" stroke="#D9D4C4" stroke-width="6" stroke-linejoin="round"/>
+<rect x="500" y="172" width="110" height="22" rx="11" fill="#D6A24C"/><rect x="500" y="214" width="200" height="14" rx="7" fill="#D9D4C4"/><rect x="500" y="240" width="150" height="14" rx="7" fill="#D9D4C4"/>
+<rect x="500" y="284" width="6" height="82" fill="#0A2036"/>
+<rect x="519" y="284" width="10" height="82" fill="#0A2036"/>
+<rect x="543" y="284" width="7" height="82" fill="#0A2036"/>
+<rect x="563" y="284" width="9" height="82" fill="#0A2036"/>
+<rect x="587" y="284" width="3" height="82" fill="#0A2036"/>
+<rect x="608" y="284" width="4" height="82" fill="#0A2036"/>
+<rect x="628" y="284" width="3" height="82" fill="#0A2036"/>
+<rect x="651" y="284" width="4" height="82" fill="#0A2036"/>
+<rect x="500" y="384" width="120" height="14" rx="7" fill="#D9D4C4"/>
+<line x1="738" y1="452" x2="794" y2="508" stroke="#0A2036" stroke-width="22" stroke-linecap="round"/><circle cx="690" cy="404" r="64" fill="#FFFFFF" fill-opacity="0.92" stroke="#0A2036" stroke-width="18"/>
+<polyline points="670,404 684,417 710,391" fill="none" stroke="#D6A24C" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg>

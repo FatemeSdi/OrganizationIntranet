@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>حضور و غیاب</title>
+<rect width="1200" height="576" fill="#F7F4EC"/><g fill="#E9E5D8"><rect x="-170" y="320" width="440" height="150" rx="42" transform="rotate(-45 50 395)"/><rect x="930" y="-30" width="440" height="150" rx="42" transform="rotate(-45 1150 45)"/></g>
+<g stroke="#0A2036" stroke-width="26" stroke-linecap="butt"><line x1="528" y1="30" x2="596" y2="166"/><line x1="672" y1="30" x2="604" y2="166"/></g>
+<rect x="578" y="148" width="44" height="40" rx="9" fill="#D6A24C"/>
+<rect x="470" y="180" width="260" height="336" rx="32" fill="#FFFFFF" stroke="#D9D4C4" stroke-width="6"/>
+<rect x="562" y="204" width="76" height="12" rx="6" fill="#E9E5D8"/>
+<clipPath id="photo"><circle cx="600" cy="320" r="86"/></clipPath>
+<circle cx="600" cy="320" r="86" fill="#E9E5D8"/>
+<g clip-path="url(#photo)"><circle cx="600" cy="296" r="32" fill="#0A2036"/><path d="M520 420 A80 80 0 0 1 680 420 Z" fill="#1573B8"/></g>
+<rect x="520" y="430" width="160" height="16" rx="8" fill="#0A2036"/>
+<rect x="544" y="458" width="112" height="12" rx="6" fill="#D9D4C4"/>
+<circle cx="700" cy="478" r="36" fill="#D6A24C" stroke="#F7F4EC" stroke-width="9"/>
+<polyline points="683,478 696,491 719,464" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

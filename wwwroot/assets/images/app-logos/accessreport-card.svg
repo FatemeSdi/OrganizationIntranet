@@ -1,20 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
-<rect width="1200" height="576" fill="url(#bg)"/>
-<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
-<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
-<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><line x1="504" y1="130" x2="504" y2="470" stroke="#D9D4C4" stroke-width="6" stroke-linecap="round"/>
-<circle cx="504" cy="148" r="20" fill="#1573B8"/><polyline points="496,148 512,148" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="548" y="132" width="160" height="16" rx="8" fill="#D9D4C4"/><rect x="548" y="156" width="104" height="10" rx="5" fill="#E9E5D8"/>
-<circle cx="504" cy="234" r="20" fill="#D6A24C"/><polyline points="496,234 512,234" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="548" y="218" width="160" height="16" rx="8" fill="#D9D4C4"/><rect x="548" y="242" width="104" height="10" rx="5" fill="#E9E5D8"/>
-<circle cx="504" cy="320" r="20" fill="#1573B8"/><polyline points="496,320 512,320" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="548" y="304" width="160" height="16" rx="8" fill="#D9D4C4"/><rect x="548" y="328" width="104" height="10" rx="5" fill="#E9E5D8"/>
-<circle cx="504" cy="406" r="20" fill="#D6A24C"/><polyline points="496,406 512,406" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-<rect x="548" y="390" width="160" height="16" rx="8" fill="#D9D4C4"/><rect x="548" y="414" width="104" height="10" rx="5" fill="#E9E5D8"/>
-<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
-<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle r="64"/><polyline points="0,-36 0,0 26,18"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
-<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M-2,-52 H40 V52 H-2"/><line x1="-62" y1="0" x2="14" y2="0"/><polyline points="-2,-16 14,0 -2,16"/></g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>مدیریت تردد</title>
+<rect width="1200" height="576" fill="#F7F4EC"/><g fill="#E9E5D8"><rect x="-170" y="320" width="440" height="150" rx="42" transform="rotate(-45 50 395)"/><rect x="930" y="-30" width="440" height="150" rx="42" transform="rotate(-45 1150 45)"/></g>
+<g transform="translate(600 288) scale(1.12) translate(-600 -349)">
+<rect x="350" y="456" width="500" height="12" rx="6" fill="#D9D4C4"/>
+<rect x="380" y="300" width="88" height="156" rx="18" fill="#123A5C"/><rect x="392" y="290" width="64" height="18" rx="9" fill="#0A2036"/><circle cx="424" cy="262" r="26" fill="#D6A24C" stroke="#F7F4EC" stroke-width="7"/>
+<rect x="404" y="372" width="40" height="52" rx="10" fill="#0A2036" fill-opacity="0.45"/>
+<g transform="rotate(-16 442 346)"><clipPath id="arm"><rect x="442" y="328" width="400" height="36" rx="18"/></clipPath><rect x="442" y="328" width="400" height="36" rx="18" fill="#FFFFFF" stroke="#D9D4C4" stroke-width="5"/>
+<rect x="462" y="324" width="40" height="44" fill="#D6A24C" clip-path="url(#arm)"/>
+<rect x="542" y="324" width="40" height="44" fill="#D6A24C" clip-path="url(#arm)"/>
+<rect x="622" y="324" width="40" height="44" fill="#D6A24C" clip-path="url(#arm)"/>
+<rect x="702" y="324" width="40" height="44" fill="#D6A24C" clip-path="url(#arm)"/>
+<rect x="782" y="324" width="40" height="44" fill="#D6A24C" clip-path="url(#arm)"/>
+</g><circle cx="442" cy="346" r="17" fill="#0A2036" stroke="#F7F4EC" stroke-width="5"/>
+</g></svg>

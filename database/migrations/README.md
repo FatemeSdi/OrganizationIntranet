@@ -39,6 +39,7 @@
 | `018_PublicApplications` | همین پوشه | ده سامانه‌ی صفحه‌ی اصلی اینترانت قدیمی (فیش حقوق، اشتراک فایل، درگاه واحد، مبین، فرزین، ورود فایل، جیکامز، اطلاعات مشتریان، کنترل بیجک، دیماند) را با نشانی و توضیح همان صفحه **عمومی** می‌کند؛ سامانه‌ی موجود (با کد) به‌روز و ناموجود (GCOMS و BIJAKCONTROL) ساخته می‌شود |
 | `019_HideHomeApplication` | همین پوشه | سامانه‌ی «اینترانت سازمانی» (`INTERANET`) را غیرفعال می‌کند تا کارتش در هیچ فهرستی نیاید؛ مجوزهای پنل و اعلان‌های سازمانی که نام آن را فرستنده دارند دست‌نخورده کار می‌کنند |
 | `020_ApplicationImages` | همین پوشه | تصویر کارت سامانه برای پورتال: ستون `ImageUpdatedAt` روی `App.Application` و جدول `App.ApplicationImage` (JPEG/PNG/WebP تا ۲ مگابایت، بایت‌ها جدا از فهرست سامانه‌ها)؛ سامانه‌ی بدون تصویر مثل قبل آیکن را نشان می‌دهد |
+| `021_AttendanceApplication` | همین پوشه | «حضور و غیاب» (`ATTENDANCE`، نشانی از صفحه‌ی اینترانت قدیمی، توضیح «سامانه امور کارکنان») را **عمومی** اضافه می‌کند و توضیح کارت دیماند (`DEMAND`) و جیکامز (`GCOMS`) را به متن انتخاب‌شده تغییر می‌دهد؛ تصویر کارت در migration نیست و از پنل بارگذاری می‌شود |
 
 فایل‌های 003 در ۲۰۲۶-۱۰-۲۲ از روی دیتابیس مرجع بازسازی شدند (فایل‌های اصلی هیچ‌وقت commit نشده بودند). 004 قبلاً با نام `tools/sql/003-access-workflow-*` بود و به همین پوشه منتقل شد. `tools/sql/001-publications-*` و `002-publications-integrity-*` اسکریپت‌های قدیمی‌تر جدول مطالب‌اند، در `SchemaMigration` ثبت نمی‌شوند و در خط پایه‌ی نصب تازه آمده‌اند.
 
@@ -79,7 +80,7 @@ $env:ConnectionStrings__DefaultConnection = "Server=<سرور>;Database=Organiza
 ```powershell
 $run = { param($f) powershell -NoProfile -ExecutionPolicy Bypass -File tools/Invoke-DatabaseScript.ps1 -ScriptPath $f; if ($LASTEXITCODE) { throw "failed: $f" } }
 & $run database/backup.sql
-foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart','013_ApplicationSsoSettings','014_ApplicationUnitAccess','015_AdminNotifications','016_PublicationSlider','017_LibraryDocuments','018_PublicApplications','019_HideHomeApplication','020_ApplicationImages') {
+foreach ($m in '005_PublicPublications','006_NationalIdLogin','007_PublicationImages','008_AdminPermissions','009_SsoTickets','010_PublicationArchive','011_UserApplicationAccounts','012_OrganizationChart','013_ApplicationSsoSettings','014_ApplicationUnitAccess','015_AdminNotifications','016_PublicationSlider','017_LibraryDocuments','018_PublicApplications','019_HideHomeApplication','020_ApplicationImages','021_AttendanceApplication') {
     & $run "database/migrations/$m.up.sql"
     & $run "database/migrations/$m.verify.sql"
 }

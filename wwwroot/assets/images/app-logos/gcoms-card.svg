@@ -1,18 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
-<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
-<rect width="1200" height="576" fill="url(#bg)"/>
-<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
-<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
-<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
-<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><circle cx="548" cy="196" r="58" fill="none" stroke="#D9D4C4" stroke-width="22"/>
-<circle cx="548" cy="196" r="58" fill="none" stroke="#1573B8" stroke-width="22" stroke-dasharray="120 244.4" transform="rotate(-90 548 196)"/>
-<circle cx="548" cy="196" r="58" fill="none" stroke="#D6A24C" stroke-width="22" stroke-dasharray="150 214.4" stroke-dashoffset="-124" transform="rotate(-90 548 196)"/>
-<rect x="640" y="160" width="92" height="14" rx="7" fill="#0A2036"/><rect x="640" y="190" width="70" height="12" rx="6" fill="#D9D4C4"/><rect x="640" y="218" width="82" height="12" rx="6" fill="#D9D4C4"/>
-<line x1="468" y1="456" x2="732" y2="456" stroke="#D9D4C4" stroke-width="5" stroke-linecap="round"/>
-<polyline points="470,430 520,386 572,408 632,344 690,366 732,304" fill="none" stroke="#1573B8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="732" cy="304" r="10" fill="#D6A24C"/>
-<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
-<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle r="62"/><path d="M0,0 L0,-62 A62 62 0 0 1 62,0 Z" fill="#0A2036"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
-<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M-62,8 H62 L44,40 H-44 Z"/><rect x="-22" y="-22" width="44" height="30"/><line x1="0" y1="-22" x2="0" y2="-46"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576" role="img">
+<title>جیکامز</title>
+<rect width="1200" height="576" fill="#F7F4EC"/><g fill="#E9E5D8"><rect x="-170" y="320" width="440" height="150" rx="42" transform="rotate(-45 50 395)"/><rect x="930" y="-30" width="440" height="150" rx="42" transform="rotate(-45 1150 45)"/></g>
+<g transform="translate(600 288) scale(1.12) translate(-600 -290)">
+<rect x="296" y="428" width="608" height="9" rx="4.5" fill="#1573B8" fill-opacity="0.45"/>
+<path d="M330 196 V386 A95 26 0 0 0 520 386 V196 Z" fill="#123A5C"/>
+<ellipse cx="425" cy="196" rx="95" ry="26" fill="#1573B8"/>
+<clipPath id="tank"><path d="M330 196 V386 A95 26 0 0 0 520 386 V196 Z"/></clipPath><path d="M330 292 A95 26 0 0 0 520 292" fill="none" stroke="#D6A24C" stroke-width="16" clip-path="url(#tank)"/>
+<line x1="425" y1="170" x2="425" y2="148" stroke="#0A2036" stroke-width="9" stroke-linecap="round"/>
+<circle cx="425" cy="142" r="11" fill="#D6A24C"/>
+<line x1="520" y1="350" x2="690" y2="350" stroke="#0A2036" stroke-width="16" stroke-linecap="round"/>
+<circle cx="605" cy="350" r="19" fill="#D6A24C" stroke="#F7F4EC" stroke-width="7"/>
+<g fill="#D6A24C"><circle cx="552" cy="350" r="4.5"/><circle cx="650" cy="350" r="4.5"/></g>
+<rect x="690" y="318" width="210" height="110" rx="10" fill="#1573B8"/>
+<rect x="690" y="198" width="210" height="110" rx="10" fill="#D6A24C"/>
+<g stroke="#0A2036" stroke-opacity="0.38" stroke-width="8" stroke-linecap="round">
+<line x1="728" y1="338" x2="728" y2="408"/><line x1="766" y1="338" x2="766" y2="408"/><line x1="804" y1="338" x2="804" y2="408"/><line x1="842" y1="338" x2="842" y2="408"/><line x1="874" y1="338" x2="874" y2="408"/>
+<line x1="728" y1="218" x2="728" y2="288"/><line x1="766" y1="218" x2="766" y2="288"/><line x1="804" y1="218" x2="804" y2="288"/><line x1="842" y1="218" x2="842" y2="288"/><line x1="874" y1="218" x2="874" y2="288"/>
+</g>
+</g>
 </svg>
