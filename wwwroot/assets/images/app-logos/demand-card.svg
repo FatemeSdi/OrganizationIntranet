@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
+<rect width="1200" height="576" fill="url(#bg)"/>
+<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
+<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
+<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><rect x="468" y="108" width="140" height="16" rx="8" fill="#0A2036"/><rect x="468" y="138" width="90" height="12" rx="6" fill="#D9D4C4"/><polyline points="690,140 706,122 722,140" fill="none" stroke="#D6A24C" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="468" y1="448" x2="732" y2="448" stroke="#D9D4C4" stroke-width="5" stroke-linecap="round"/>
+<rect x="472" y="360" width="40" height="88" rx="8" fill="#1573B8"/>
+<rect x="526" y="312" width="40" height="136" rx="8" fill="#1573B8"/>
+<rect x="580" y="332" width="40" height="116" rx="8" fill="#1573B8"/>
+<rect x="634" y="262" width="40" height="186" rx="8" fill="#1573B8"/>
+<rect x="688" y="206" width="40" height="242" rx="8" fill="#D6A24C"/>
+<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
+<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><polyline points="-62,38 -22,-2 8,20 58,-36"/><polyline points="26,-38 58,-38 58,-6"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
+<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><polyline points="-52,-34 -44,-26 -30,-42"/><line x1="-12" y1="-34" x2="52" y2="-34"/><polyline points="-52,0 -44,8 -30,-8"/><line x1="-12" y1="0" x2="52" y2="0"/><polyline points="-52,34 -44,42 -30,26"/><line x1="-12" y1="34" x2="36" y2="34"/></g>
+</svg>

@@ -157,6 +157,9 @@ public sealed partial class PortalSmokeTests
             var src = Regex.Match(html, $"src=\"(/Applications/Image/{withImage}\\?v=\\d+)\"").Groups[1].Value;
             Assert.NotEmpty(src);
             Assert.Contains("class=\"sys-media\"", html);
+            // قواعد CSS نوار پایین باید از قواعد عمومی کارت (.go و p) قوی‌تر باشند؛ وگرنه قد کارت دارای تصویر به‌هم می‌ریزد
+            Assert.Contains(".sys-card .go.sys-caption{", html);
+            Assert.Contains(".sys-card.sys-card--image p{", html);
             // کارت دارای تصویر: نام و توضیح در نوار پایین کارت به‌جای «ورود به سامانه»؛ کارت بدون تصویر مثل قبل
             var decoded = WebUtility.HtmlDecode(html);
             var imageCard = Regex.Match(decoded, "<a class=\"sys-card sys-card--image\".*?</a>", RegexOptions.Singleline).Value;

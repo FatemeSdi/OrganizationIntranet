@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
+<rect width="1200" height="576" fill="url(#bg)"/>
+<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
+<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
+<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><rect x="468" y="108" width="96" height="22" rx="11" fill="#D6A24C"/>
+<rect x="468" y="164" width="264" height="14" rx="7" fill="#D9D4C4"/>
+<rect x="468" y="198" width="230" height="14" rx="7" fill="#D9D4C4"/>
+<rect x="468" y="232" width="264" height="14" rx="7" fill="#D9D4C4"/>
+<rect x="468" y="266" width="196" height="14" rx="7" fill="#D9D4C4"/>
+<rect x="468" y="300" width="150" height="14" rx="7" fill="#D9D4C4"/>
+<path d="M470,420 q20,-42 40,0 t40,0 t40,0" fill="none" stroke="#D6A24C" stroke-width="7" stroke-linecap="round"/>
+<circle cx="690" cy="430" r="36" fill="#1573B8"/><polyline points="674,430 686,442 708,418" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
+<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="-72" y="-48" width="144" height="96" rx="12"/><polyline points="-70,-38 0,12 70,-38"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
+<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><circle cx="-46" cy="0" r="16"/><circle cx="46" cy="0" r="16"/><line x1="-26" y1="0" x2="24" y2="0"/><polyline points="8,-14 24,0 8,14"/></g>
+</svg>

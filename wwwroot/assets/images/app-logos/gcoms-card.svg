@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="576" viewBox="0 0 1200 576">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A2036"/><stop offset="0.55" stop-color="#123A5C"/><stop offset="1" stop-color="#1573B8"/></linearGradient></defs>
+<rect width="1200" height="576" fill="url(#bg)"/>
+<circle cx="1110" cy="40" r="230" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="70" cy="560" r="200" fill="#FFFFFF" fill-opacity="0.05"/>
+<circle cx="600" cy="288" r="270" fill="none" stroke="#D6A24C" stroke-opacity="0.22" stroke-width="3" stroke-dasharray="10 14"/>
+<g stroke="#D6A24C" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 14"><line x1="392" y1="288" x2="436" y2="288"/><line x1="764" y1="288" x2="808" y2="288"/></g>
+<rect x="440" y="76" width="320" height="436" rx="30" fill="#F7F4EC"/><circle cx="548" cy="196" r="58" fill="none" stroke="#D9D4C4" stroke-width="22"/>
+<circle cx="548" cy="196" r="58" fill="none" stroke="#1573B8" stroke-width="22" stroke-dasharray="120 244.4" transform="rotate(-90 548 196)"/>
+<circle cx="548" cy="196" r="58" fill="none" stroke="#D6A24C" stroke-width="22" stroke-dasharray="150 214.4" stroke-dashoffset="-124" transform="rotate(-90 548 196)"/>
+<rect x="640" y="160" width="92" height="14" rx="7" fill="#0A2036"/><rect x="640" y="190" width="70" height="12" rx="6" fill="#D9D4C4"/><rect x="640" y="218" width="82" height="12" rx="6" fill="#D9D4C4"/>
+<line x1="468" y1="456" x2="732" y2="456" stroke="#D9D4C4" stroke-width="5" stroke-linecap="round"/>
+<polyline points="470,430 520,386 572,408 632,344 690,366 732,304" fill="none" stroke="#1573B8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="732" cy="304" r="10" fill="#D6A24C"/>
+<circle cx="260" cy="288" r="128" fill="#D6A24C" stroke="#F7F4EC" stroke-width="10"/>
+<g transform="translate(260 288)" fill="none" stroke="#0A2036" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle r="62"/><path d="M0,0 L0,-62 A62 62 0 0 1 62,0 Z" fill="#0A2036"/></g><circle cx="940" cy="288" r="118" fill="#1573B8" stroke="#D6A24C" stroke-width="6"/>
+<g transform="translate(940 288)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M-62,8 H62 L44,40 H-44 Z"/><rect x="-22" y="-22" width="44" height="30"/><line x1="0" y1="-22" x2="0" y2="-46"/></g>
+</svg>
