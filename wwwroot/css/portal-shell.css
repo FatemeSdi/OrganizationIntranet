@@ -222,3 +222,4 @@ footer.pp-site { margin-top: 48px; background: var(--navy-950); color: #8AA0B2; 
 }
 @media (prefers-reduced-motion: reduce) { .pp-body * { transition: none !important; } }
 .min-w-0 { min-width: 0; }
+.pp-avatar { white-space: nowrap; }

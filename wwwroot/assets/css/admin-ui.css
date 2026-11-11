@@ -321,3 +321,32 @@ a.stat-tile:hover { transform: translateY(-2px); border-color: rgba(var(--primar
 
 /* کارت آماری بدون مجوز صفحه‌ی مقصد، پیوند نیست */
 a.stat-tile:not([href]):hover { transform: none; border-color: var(--default-border); box-shadow: none; cursor: default; }
+
+/* ---- انتخاب «چه کسی سامانه را ببیند؟» (ویرایش سامانه): سه کارت انتخابی به‌جای رادیوی ساده ---- */
+.access-modes-field { border: 0; padding: 0; margin: 0; min-width: 0; }
+.access-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+@media (max-width: 991.98px) { .access-modes { grid-template-columns: 1fr; } }
+.access-mode { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .75rem; align-items: start; padding: 1rem; margin: 0;
+    border: 1.5px solid var(--default-border); border-radius: 14px; background: var(--custom-white); cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+.access-mode:hover { border-color: rgba(var(--primary-rgb), .45); }
+.access-mode__input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.access-mode__icon { width: 2.5rem; height: 2.5rem; border-radius: 10px; display: grid; place-items: center; font-size: 1.25rem; background: rgba(var(--primary-rgb), .08); color: var(--primary-color); transition: background .15s, color .15s; }
+.access-mode__body { display: grid; gap: .25rem; padding-inline-end: 1.5rem; }
+.access-mode__body b { font-size: .875rem; font-weight: 700; }
+.access-mode__body small { color: var(--text-muted); font-size: .75rem; line-height: 1.9; }
+.access-mode__check { position: absolute; top: .75rem; inset-inline-end: .75rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; display: grid; place-items: center; font-size: .75rem;
+    border: 1.5px solid var(--default-border); color: transparent; transition: background .15s, border-color .15s, color .15s; }
+.access-mode:has(.access-mode__input:checked) { border-color: var(--primary-color); background: rgba(var(--primary-rgb), .05); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
+.access-mode:has(.access-mode__input:checked) .access-mode__icon { background: var(--primary-color); color: #fff; }
+.access-mode:has(.access-mode__input:checked) .access-mode__check { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+.access-mode:has(.access-mode__input:focus-visible) { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .access-mode, .access-mode__icon, .access-mode__check { transition: none; } }
+.unit-access { margin-top: .875rem; border: 1px solid var(--default-border); border-radius: 14px; overflow: hidden; }
+.unit-access[hidden] { display: none; }
+.unit-access__head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .875rem 1rem; background: rgba(var(--primary-rgb), .04); border-bottom: 1px solid var(--default-border); }
+.unit-access__head b { font-size: .8125rem; }
+.unit-access__help { color: var(--text-muted); font-size: .75rem; line-height: 1.9; margin: .125rem 0 0; }
+.unit-access__search { padding: .625rem 1rem 0; }
+.unit-access__list { max-height: 18rem; overflow: auto; padding: .5rem 1rem .75rem; }
+.unit-access__item { padding-block: .1875rem; margin: 0; }
+.unit-access__none, .unit-access__empty { color: var(--text-muted); font-size: .8125rem; padding: .75rem 1rem; }

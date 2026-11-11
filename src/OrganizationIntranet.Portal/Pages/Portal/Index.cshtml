@@ -249,6 +249,21 @@
   .sys-media{flex:1; min-height:150px; background:var(--navy-900); position:relative; overflow:hidden}
   .sys-media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
   .sys-unread--over{position:absolute; top:12px; inset-inline-start:12px; box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  /* نشان «ورود یکپارچه» (SSO) روی کارت سامانه‌های متصل؛ در کارت تصویری روی گوشه‌ی تصویر */
+  .sys-badges{display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+  .sys-sso{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:800; color:var(--blue-600); background:rgba(21,115,184,.1); border-radius:100px; padding:3px 9px; height:fit-content; white-space:nowrap}
+  .sys-sso svg{width:13px; height:13px}
+  .sys-sso--over{position:absolute; top:12px; inset-inline-end:12px; background:rgba(10,32,54,.8); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  /* گروه‌بندی سامانه‌ها برای کاربر واردشده: عمومی و اختصاصی من */
+  .sys-group + .sys-group{margin-top:42px}
+  .sys-group[hidden]{display:none}
+  .sys-group__head{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line)}
+  .sys-group__icon{width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:var(--sand-100); color:var(--navy-800); flex-shrink:0}
+  .sys-group--private .sys-group__icon{background:linear-gradient(135deg, var(--navy-900), var(--blue-600)); color:#fff}
+  .sys-group__icon svg{width:22px; height:22px}
+  .sys-group__head h3{font-size:18px; font-weight:800; margin:0; color:var(--navy-900)}
+  .sys-group__head p{margin:3px 0 0; font-size:13px; line-height:1.8; color:var(--ink-500); max-width:70ch}
+  .sys-group__count{margin-inline-start:auto; min-width:34px; text-align:center; background:var(--sand-100); color:var(--navy-800); border-radius:999px; padding:4px 12px; font-size:13px; font-weight:800}
   .sys-card .go.sys-caption{margin-top:0; padding:11px 18px 13px; border-top:1px solid var(--line); background:var(--card)}
   .sys-caption__text{min-width:0; display:flex; flex-direction:column; gap:1px}
   .sys-card.sys-card--image h3{font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -540,52 +555,60 @@ else
     <div class="container">
       <div class="section-head">
         <div>
-          <div class="eyebrow">@(Model.IsAuthenticated ? "دسترسی من" : "سامانه‌های عمومی")</div>
-          <h2 class="section-title">@(Model.IsAuthenticated ? "سامانه‌های در اختیار شما" : "سامانه‌های سازمان")</h2>
+          <div class="eyebrow">@(Model.IsAuthenticated ? "سامانه‌ها" : "سامانه‌های عمومی")</div>
+          <h2 class="section-title">@(Model.IsAuthenticated ? "سامانه‌های شما" : "سامانه‌های سازمان")</h2>
         </div>
       </div>
-      <div class="systems-grid" id="systemsGrid">
-        @foreach (var app in Model.Applications)
-        {
-          <a class="sys-card@(app.HasImage ? " sys-card--image" : "")" href="@app.Url" target="@(app.Url is null ? null : "_blank")" rel="@(app.Url is null ? null : "noopener")" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
-            @if (app.HasImage)
-            {
-              @* تصویر کارت جای آیکن را می‌گیرد؛ شمار اعلان روی گوشه‌ی تصویر می‌نشیند و نام و توضیح به‌جای «ورود به سامانه» در نوار پایین کارت است. *@
-              <div class="sys-media">
-                <img src="/Applications/Image/@app.ApplicationId?v=@app.ImageVersion" alt="" loading="lazy" />
-                @if (app.UnreadCount > 0) { <span class="sys-unread sys-unread--over">@app.UnreadCount جدید</span> }
-              </div>
-              <div class="go sys-caption">
-                <div class="sys-caption__text"><h3>@app.Name</h3><p>@app.Description</p></div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-              </div>
-            }
-            else
-            {
-            <div class="sys-top">
-              <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
-              @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }
-            </div>
-            <h3>@app.Name</h3><p>@app.Description</p>
-            <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : "ورود به سامانه")<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-            }
-          </a>
-        }
 @if (Model.IsAuthenticated)
 {
-        <partial name="_AccessRequestCard" />
+  @* کاربر واردشده دو گروه جدا می‌بیند: عمومی (برای همه) و اختصاصی من (تخصیص، درخواست یا چارت؛ اغلب با ورود یکپارچه). مرز گروه‌ها فقط IsPublic است. *@
+  var publicApps = Model.Applications.Where(a => a.IsPublic).ToList();
+  var privateApps = Model.Applications.Where(a => !a.IsPublic).ToList();
+  if (publicApps.Count > 0)
+  {
+      <div class="sys-group sys-group--public" data-sys-group="public">
+        <div class="sys-group__head">
+          <span class="sys-group__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+          <div>
+            <h3>سامانه‌های عمومی</h3>
+            <p>برای همه‌ی همکاران باز است و نیاز به تخصیص دسترسی ندارد.</p>
+          </div>
+          <span class="sys-group__count" aria-label="@publicApps.Count سامانه">@publicApps.Count</span>
+        </div>
+        <div class="systems-grid" id="systemsPublicGrid">
+          @foreach (var app in publicApps) { <partial name="_SystemCard" model="app" /> }
+        </div>
+      </div>
+  }
+      <div class="sys-group sys-group--private" data-sys-group="private">
+        <div class="sys-group__head">
+          <span class="sys-group__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div>
+            <h3>سامانه‌های اختصاصی من</h3>
+            <p>دسترسی‌هایی که برای شما یا واحد شما تعریف شده است. سامانه‌های دارای نشان «ورود یکپارچه» با حساب اینترانت و بدون ورود دوباره باز می‌شوند.</p>
+          </div>
+          <span class="sys-group__count" aria-label="@privateApps.Count سامانه">@privateApps.Count</span>
+        </div>
+        <div class="systems-grid" id="systemsGrid">
+          @foreach (var app in privateApps) { <partial name="_SystemCard" model="app" /> }
+          <partial name="_AccessRequestCard" />
+        </div>
+      </div>
+      <p class="no-results" id="noResults" role="status" data-empty="در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید.">در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید.</p>
 }
 else
 {
+      <div class="systems-grid" id="systemsGrid">
+        @foreach (var app in Model.Applications) { <partial name="_SystemCard" model="app" /> }
         <a class="sys-card request-access-card" href="/Account/Login?returnUrl=%2FPortal">
           <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg></div>
           <h3>سامانه‌های اختصاصی من</h3>
           <p>با ورود به حساب کاربری نمایش داده می‌شوند.</p>
           <span class="go">ورود به حساب <span aria-hidden="true">←</span></span>
         </a>
-}
       </div>
-            <p class="no-results" id="noResults" role="status" data-empty="@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است.")">@(Model.IsAuthenticated ? "در حال حاضر، دسترسی به سامانه‌ای برای شما تعریف نشده است. می‌توانید درخواست دسترسی ثبت کنید." : "در حال حاضر سامانه‌ی عمومی ثبت نشده است.")</p>
+      <p class="no-results" id="noResults" role="status" data-empty="در حال حاضر سامانه‌ی عمومی ثبت نشده است.">در حال حاضر سامانه‌ی عمومی ثبت نشده است.</p>
+}
     </div>
   </section>
 
@@ -656,22 +679,24 @@ else
     <script src="~/js/portal-toast.js" asp-append-version="true"></script>
     <script>
 
-const grid = document.getElementById('systemsGrid');
-
-/* ---------------- search filter (scoped to my systems) ---------------- */
+/* ---------------- search filter (همه‌ی گروه‌های سامانه: عمومی و اختصاصی) ---------------- */
 const noResults = document.getElementById('noResults');
 noResults.classList.toggle('show', @Model.Applications.Count === 0);
 const searchInput = document.getElementById('systemSearch');
 searchInput.addEventListener('input', ()=>{
   const term = searchInput.value.trim().toLowerCase();
   let visible = 0;
-  Array.from(grid.querySelectorAll('.sys-card:not(.request-access-card)')).forEach(c=>{
+  document.querySelectorAll('#systems .sys-card:not(.request-access-card)').forEach(c=>{
     const match = !term || c.dataset.name.toLowerCase().includes(term);
     c.hidden = !match;
     if(match) visible++;
   });
+  // گروهی که با جست‌وجو هیچ کارتی ندارد (با کارت درخواست دسترسی‌اش) پنهان می‌شود
+  document.querySelectorAll('#systems [data-sys-group]').forEach(g=>{
+    g.hidden = !!term && g.querySelectorAll('.sys-card:not(.request-access-card):not([hidden])').length === 0;
+  });
   noResults.textContent = term ? "سامانه‌ای مطابق با جست‌وجوی شما یافت نشد." : noResults.dataset.empty;
-  noResults.classList.toggle('show', visible === 0);
+  noResults.classList.toggle('show', term ? visible === 0 : @Model.Applications.Count === 0);
 });
 
 /* ---------------- dropdown toggles ---------------- */

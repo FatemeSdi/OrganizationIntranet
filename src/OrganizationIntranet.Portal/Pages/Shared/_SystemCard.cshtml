@@ -1,0 +1,29 @@
+@model OrganizationIntranet.Contracts.PortalApplicationDto
+@{ var app = Model; }
+<a class="sys-card@(app.HasImage ? " sys-card--image" : "")" href="@app.Url" target="@(app.Url is null ? null : "_blank")" rel="@(app.Url is null ? null : "noopener")" aria-disabled="@(app.Url is null ? "true" : "false")" data-name="@app.Name @app.Description">
+  @if (app.HasImage)
+  {
+    @* تصویر کارت جای آیکن را می‌گیرد؛ شمار اعلان و نشان ورود یکپارچه روی گوشه‌های تصویر می‌نشینند و نام و توضیح به‌جای «ورود به سامانه» در نوار پایین کارت است. *@
+    <div class="sys-media">
+      <img src="/Applications/Image/@app.ApplicationId?v=@app.ImageVersion" alt="" loading="lazy" />
+      @if (app.UnreadCount > 0) { <span class="sys-unread sys-unread--over">@app.UnreadCount جدید</span> }
+      @if (app.SingleSignOn) { <span class="sys-sso sys-sso--over" title="با حساب اینترانت و بدون ورود دوباره باز می‌شود"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>ورود یکپارچه</span> }
+    </div>
+    <div class="go sys-caption">
+      <div class="sys-caption__text"><h3>@app.Name</h3><p>@app.Description</p></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+  }
+  else
+  {
+  <div class="sys-top">
+    <div class="sys-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/assets/images/application-icons.svg#@app.Icon"></use></svg></div>
+    <div class="sys-badges">
+      @if (app.SingleSignOn) { <span class="sys-sso" title="با حساب اینترانت و بدون ورود دوباره باز می‌شود"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>ورود یکپارچه</span> }
+      @if (app.UnreadCount > 0) { <span class="sys-unread">@app.UnreadCount جدید</span> }
+    </div>
+  </div>
+  <h3>@app.Name</h3><p>@app.Description</p>
+  <span class="go">@(app.Url is null ? "آدرس سامانه ثبت نشده است" : "ورود به سامانه")<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  }
+</a>

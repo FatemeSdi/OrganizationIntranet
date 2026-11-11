@@ -48,7 +48,8 @@ public record UserDto(long UserId, string Name, string LastName, string Username
 public record ProfileDto(long UserId, string Username, string Name, string LastName, string? NationalId, string? MobileNumber, string? Email, DateTime CreatedAt, DateTime? LastLogin, string RoleNames, List<string> RoleCodes, List<string> PermissionCodes)
 {
     public string DisplayName => $"{Name} {LastName}".Trim();
-    public string Initials => (Name.Length > 0 ? Name[..1] : "") + (LastName.Length > 0 ? LastName[..1] : "");
+    /// <summary>حرف اول نام و نام خانوادگی با یک فاصله («ف ص»)؛ بدون فاصله، حروف فارسی به هم می‌چسبند و مثل یک کلمه («فص») خوانده می‌شوند.</summary>
+    public string Initials => string.Join(" ", new[] { Name, LastName }.Where(part => part.Length > 0).Select(part => part[..1]));
 }
 /// <summary>آمار داشبورد پنل مدیریت.</summary>
 public record DashboardDto(int TotalUsers, int ActiveUsers, int TotalRoles, int TotalApplications, List<UserDto> RecentUsers);

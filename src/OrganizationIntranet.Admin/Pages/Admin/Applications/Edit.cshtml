@@ -48,7 +48,7 @@
                     <div>
                         <input asp-for="ImageFile" type="file" class="form-control" accept="@OrganizationIntranet.Contracts.ApplicationImageRules.Accept" />
                         <span asp-validation-for="ImageFile" class="text-danger fs-12"></span>
-                        <div class="form-text">اگر تصویر بگذارید، کارت سامانه در پورتال به‌جای آیکن، این تصویر را نشان می‌دهد و نام و خلاصه‌ی سامانه در نوار پایین کارت می‌آید؛ پس تصویر را بدون متن بسازید. JPEG، PNG یا WebP تا ۲ مگابایت؛ تصویر افقی تقریباً ۲ به ۱ (مثلاً ۱۲۰۰×۵۷۶) با عناصر اصلی در میانه، متناسب کارت است و بزرگ‌تر از کارت نمی‌شود (لبه‌های بالا و پایین ممکن است کمی بریده شود).</div>
+                        <div class="form-text">اگر تصویر بگذارید، کارت سامانه در پورتال به‌جای آیکن، این تصویر را نشان می‌دهد و نام و خلاصه‌ی سامانه در نوار پایین کارت می‌آید؛ پس تصویر را بدون متن بسازید. JPEG، PNG یا WebP تا ۲ مگابایت؛ تصویر افقی تقریباً ۲ به ۱ (مثلاً ۹۰۰×۴۳۲) با عناصر اصلی در میانه، متناسب کارت است (لبه‌های بالا و پایین ممکن است کمی بریده شود). برای بالا آمدن سریع کارت‌ها حجم تصویر را زیر ۱۰۰ کیلوبایت نگه دارید (JPEG با کیفیت ۹۰ کافی است).</div>
                         @if (Model.ImageVersion != 0)
                         {
                             <div class="switch-row mt-3">
@@ -85,6 +85,57 @@
             <p class="form-section__help">مشخص می‌کند چه کسی سامانه را ببیند و کاربر چه چیزی بداند.</p>
         </div>
         <div>
+            @{
+                var modes = new[]
+                {
+                    (Value: "Request", Id: "mode-request", Icon: "ti-key", Title: "با تخصیص یا درخواست", Text: "فقط کاربران و نقش‌هایی که در بخش بعد انتخاب می‌شوند به آن دسترسی دارند. بقیه می‌توانند درخواست دسترسی بدهند."),
+                    (Value: "Public", Id: "mode-public", Icon: "ti-world", Title: "عمومی", Text: "همه، حتی بازدیدکننده‌ی ناشناس، کارت را می‌بینند و تخصیص دسترسی لازم نیست."),
+                    (Value: "Unit", Id: "mode-unit", Icon: "ti-sitemap", Title: "بر اساس چارت سازمانی", Text: "فقط کاربران واحدهای انتخاب‌شده و زیرواحدهایشان آن را می‌بینند. بقیه نه می‌بینند و نه می‌توانند درخواست بدهند."),
+                };
+            }
+            <fieldset class="access-modes-field" data-access-mode>
+                <legend class="form-label">چه کسی سامانه را ببیند؟</legend>
+                <div class="access-modes">
+                    @foreach (var mode in modes)
+                    {
+                        <label class="access-mode" for="@mode.Id">
+                            <input class="access-mode__input" type="radio" asp-for="Input.AccessMode" value="@mode.Value" id="@mode.Id" />
+                            <span class="access-mode__icon" aria-hidden="true"><i class="ti @mode.Icon"></i></span>
+                            <span class="access-mode__body"><b>@mode.Title</b><small>@mode.Text</small></span>
+                            <span class="access-mode__check" aria-hidden="true"><i class="ti ti-check"></i></span>
+                        </label>
+                    }
+                </div>
+                <div id="unit-access" class="unit-access" @(Model.Input.AccessMode == "Unit" ? "" : "hidden")>
+                    @if (Model.Units.Count == 0)
+                    {
+                        <div class="unit-access__empty">چارت سازمانی خالی است. <a href="/Admin/Organization">تعریف واحدها</a></div>
+                    }
+                    else
+                    {
+                        <div class="unit-access__head">
+                            <div>
+                                <b>واحدهای دارای دسترسی</b>
+                                <p class="unit-access__help">واحدی که انتخاب کنید، زیرواحدهایش هم شامل می‌شوند. کاربران و نقش‌هایی که در بخش بعد انتخاب می‌شوند، به‌عنوان استثنا همچنان دسترسی دارند.</p>
+                            </div>
+                            <span class="badge bg-primary-transparent" data-unit-count aria-live="polite">۰ واحد انتخاب شده</span>
+                        </div>
+                        <div class="unit-access__search"><input type="search" class="form-control form-control-sm" placeholder="جست‌وجوی واحد..." aria-label="جست‌وجوی واحد" data-unit-filter autocomplete="off" /></div>
+                        <div class="unit-access__list">
+                            @foreach (var unit in Model.Units.Where(u => u.IsActive || Model.Input.UnitIds.Contains(u.UnitId)))
+                            {
+                                <div class="form-check unit-access__item" data-unit-title="@unit.Title" style="padding-inline-start:@(1.75 + unit.Depth * 1.5)rem">
+                                    <input class="form-check-input" type="checkbox" name="Input.UnitIds" value="@unit.UnitId" id="unit-@unit.UnitId" checked="@Model.Input.UnitIds.Contains(unit.UnitId)" />
+                                    <label class="form-check-label" for="unit-@unit.UnitId">@unit.Title @if (!unit.IsActive) { <span class="status-pill status-pill--muted">غیرفعال</span> }</label>
+                                </div>
+                            }
+                            <div class="unit-access__none" data-unit-none hidden>واحدی با این نام یافت نشد.</div>
+                        </div>
+                    }
+                </div>
+            </fieldset>
+
+            <h3 class="form-label mt-4">اطلاع به کاربر</h3>
             <div class="switch-row">
                 <div><label class="switch-row__label" for="Input_RequiresLogin">نیازمند ورود در سامانه</label><p class="switch-row__help">کاربر بعد از باز کردن سامانه، در خود سامانه هم باید وارد شود.</p></div>
                 <input asp-for="Input.RequiresLogin" class="form-check-input" role="switch" />
@@ -93,48 +144,30 @@
                 <div><label class="switch-row__label" for="Input_IsInternetAccessible">قابل دسترسی از اینترنت</label><p class="switch-row__help">سامانه از بیرون شبکه‌ی سازمان هم قابل استفاده است. فقط برای اطلاع کاربر.</p></div>
                 <input asp-for="Input.IsInternetAccessible" class="form-check-input" role="switch" />
             </div>
-            <fieldset class="mt-3" data-access-mode>
-                <legend class="form-label">چه کسی سامانه را ببیند؟</legend>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Request" id="mode-request" />
-                    <label class="form-check-label" for="mode-request"><b>با تخصیص یا درخواست</b> — فقط کاربران و نقش‌هایی که پایین انتخاب می‌شوند؛ بقیه می‌توانند درخواست دسترسی بدهند.</label>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Public" id="mode-public" />
-                    <label class="form-check-label" for="mode-public"><b>عمومی</b> — همه (حتی بازدیدکننده‌ی ناشناس) کارت را می‌بینند و تخصیص لازم نیست.</label>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" asp-for="Input.AccessMode" value="Unit" id="mode-unit" />
-                    <label class="form-check-label" for="mode-unit"><b>بر اساس چارت سازمانی</b> — فقط کاربران واحدهای انتخاب‌شده و زیرواحدهایشان؛ بقیه آن را نمی‌بینند و نمی‌توانند درخواست بدهند.</label>
-                </div>
-                <div id="unit-access" class="border rounded p-3 mt-2" @(Model.Input.AccessMode == "Unit" ? "" : "hidden")>
-                    @if (Model.Units.Count == 0)
-                    {
-                        <span class="text-muted fs-13">چارت سازمانی خالی است. <a href="/Admin/Organization">تعریف واحدها</a></span>
-                    }
-                    else
-                    {
-                        <div class="fs-12 text-muted mb-2">واحدی که انتخاب کنید، زیرواحدهایش هم شامل می‌شوند. کاربران و نقش‌های انتخاب‌شده پایین، به‌عنوان استثنا همچنان دسترسی دارند.</div>
-                        <div class="overflow-auto" style="max-height:18rem">
-                            @foreach (var unit in Model.Units.Where(u => u.IsActive || Model.Input.UnitIds.Contains(u.UnitId)))
-                            {
-                                <div class="form-check" style="padding-inline-start:@(1.75 + unit.Depth * 1.5)rem">
-                                    <input class="form-check-input" type="checkbox" name="Input.UnitIds" value="@unit.UnitId" id="unit-@unit.UnitId" checked="@Model.Input.UnitIds.Contains(unit.UnitId)" />
-                                    <label class="form-check-label" for="unit-@unit.UnitId">@unit.Title @if (!unit.IsActive) { <span class="status-pill status-pill--muted">غیرفعال</span> }</label>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            </fieldset>
         </div>
     </section>
     <script>
+        // نمایش پنل واحدها فقط در حالت «بر اساس چارت»، جست‌وجوی واحد و شمار انتخاب‌شده‌ها.
         (function () {
             var panel = document.getElementById('unit-access');
             document.querySelectorAll('[data-access-mode] input[type=radio]').forEach(function (radio) {
                 radio.addEventListener('change', function () { panel.hidden = document.getElementById('mode-unit').checked === false; });
             });
+            var items = Array.prototype.slice.call(panel.querySelectorAll('.unit-access__item'));
+            var count = panel.querySelector('[data-unit-count]'), filter = panel.querySelector('[data-unit-filter]'), none = panel.querySelector('[data-unit-none]');
+            function digits(n) { return String(n).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }); }
+            function refresh() {
+                if (!count) return;
+                var selected = panel.querySelectorAll('input[name="Input.UnitIds"]:checked').length;
+                count.textContent = digits(selected) + ' واحد انتخاب شده';
+            }
+            items.forEach(function (item) { item.querySelector('input').addEventListener('change', refresh); });
+            if (filter) filter.addEventListener('input', function () {
+                var term = filter.value.trim(), shown = 0;
+                items.forEach(function (item) { var match = !term || item.dataset.unitTitle.indexOf(term) !== -1; item.hidden = !match; if (match) shown++; });
+                none.hidden = shown !== 0;
+            });
+            refresh();
         })();
     </script>
 

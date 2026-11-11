@@ -164,15 +164,98 @@
     });
 
     // هشدار تغییرات ذخیره‌نشده در فرم‌های ویرایش.
-    document.querySelectorAll('form[data-dirty-guard]').forEach(function (form) {
-        var dirty = false;
-        form.addEventListener('input', function () { dirty = true; });
-        form.addEventListener('change', function () { dirty = true; });
-        window.addEventListener('beforeunload', function (e) {
-            if (dirty && form.dataset.submitted !== '1') { e.preventDefault(); e.returnValue = ''; }
+    // عمداً از beforeunload استفاده نمی‌شود: متن آن را مرورگر می‌نویسد (انگلیسی: «Changes you made may not be saved») و صفحه نمی‌تواند آن را فارسی کند.
+    // به‌جای آن، خروج از صفحه (پیوند، دکمه‌ی برگشت مرورگر و ارسال فرم دیگر) با پنجره‌ی فارسی خودمان تأیید گرفته می‌شود.
+    (function dirtyGuard() {
+        var forms = Array.prototype.slice.call(document.querySelectorAll('form[data-dirty-guard]'));
+        if (!forms.length) return;
+        var dirty = false, leaving = false, sentinel = false;
+        function isDirty() { return dirty && !leaving && !forms.some(function (f) { return f.dataset.submitted === '1'; }); }
+        forms.forEach(function (form) {
+            function mark(e) {
+                // کادر جست‌وجو (مثل جست‌وجوی واحد) داده‌ای را تغییر نمی‌دهد.
+                if (e && e.target && e.target.matches && e.target.matches('[data-unit-filter], [type=search]')) return;
+                dirty = true;
+                // یک ورودی تاریخچه برای گرفتن دکمه‌ی «برگشت» مرورگر؛ فقط یک‌بار و بعد از اولین تغییر.
+                if (!sentinel) { sentinel = true; history.pushState({ dirtyGuard: true }, ''); }
+            }
+            form.addEventListener('input', mark);
+            form.addEventListener('change', mark);
+            form.addEventListener('submit', function () { form.dataset.submitted = '1'; });
         });
-        form.addEventListener('submit', function () { form.dataset.submitted = '1'; });
-    });
+
+        var dialog = null, onLeave = null, onStay = null;
+        function build() {
+            var wrap = document.createElement('div');
+            wrap.className = 'modal fade';
+            wrap.tabIndex = -1;
+            wrap.setAttribute('aria-labelledby', 'dirtyGuardTitle');
+            wrap.setAttribute('aria-hidden', 'true');
+            // با DOM API ساخته می‌شود تا متن فقط به‌عنوان متن درج شود.
+            function el(tag, className, text, parent) {
+                var node = document.createElement(tag);
+                if (className) node.className = className;
+                if (text) node.textContent = text;
+                if (parent) parent.appendChild(node);
+                return node;
+            }
+            var content = el('div', 'modal-content', '', el('div', 'modal-dialog modal-dialog-centered', '', wrap));
+            var title = el('h5', 'modal-title', '', el('div', 'modal-header', '', content));
+            title.id = 'dirtyGuardTitle';
+            var icon = el('i', 'ti ti-alert-triangle text-warning me-2', '', title);
+            icon.setAttribute('aria-hidden', 'true');
+            title.appendChild(document.createTextNode('تغییرات ذخیره‌نشده'));
+            el('div', 'modal-body', 'تغییراتی که در این صفحه داده‌اید هنوز ذخیره نشده است. اگر از صفحه خارج شوید، از بین می‌روند.', content);
+            var footer = el('div', 'modal-footer', '', content);
+            var stay = el('button', 'btn btn-primary', 'ماندن در صفحه', footer); stay.type = 'button'; stay.setAttribute('data-guard-stay', '');
+            var out = el('button', 'btn btn-danger-light', 'خروج بدون ذخیره', footer); out.type = 'button'; out.setAttribute('data-guard-leave', '');
+            document.body.appendChild(wrap);
+            wrap.querySelector('[data-guard-stay]').addEventListener('click', function () { var cb = onStay; close(); if (cb) cb(); });
+            wrap.querySelector('[data-guard-leave]').addEventListener('click', function () { var cb = onLeave; close(); if (cb) cb(); });
+            return wrap;
+        }
+        function close() {
+            var instance = window.bootstrap && window.bootstrap.Modal.getInstance(dialog);
+            if (instance) instance.hide(); else dialog.style.display = 'none';
+        }
+        // پنجره‌ی تأیید فارسی؛ اگر Bootstrap بارگذاری نشده باشد، confirm فارسی ساده.
+        function ask(leave, stay) {
+            onLeave = leave; onStay = stay;
+            if (!window.bootstrap || !window.bootstrap.Modal) {
+                if (window.confirm('تغییرات ذخیره‌نشده از بین می‌روند. از صفحه خارج می‌شوید؟')) leave(); else if (stay) stay();
+                return;
+            }
+            dialog = dialog || build();
+            window.bootstrap.Modal.getOrCreateInstance(dialog, { backdrop: 'static', keyboard: false }).show();
+        }
+        function leave(action) { leaving = true; action(); }
+
+        // پیوندهای داخل صفحه (منو، مسیر صفحه، دکمه‌ی برگشت و ...)
+        document.addEventListener('click', function (e) {
+            if (!isDirty() || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+            var link = e.target.closest('a[href]');
+            if (!link || link.target === '_blank' || link.hasAttribute('download') || link.hasAttribute('data-bs-toggle')) return;
+            var href = link.getAttribute('href');
+            if (!href || href.charAt(0) === '#' || /^(javascript|mailto|tel):/i.test(href)) return;
+            e.preventDefault();
+            ask(function () { leave(function () { window.location.href = link.href; }); });
+        }, true);
+
+        // ارسال فرم دیگر (مثلاً خروج از حساب)؛ فرم‌های خود صفحه‌ی ویرایش مجازند.
+        document.addEventListener('submit', function (e) {
+            if (!isDirty() || forms.indexOf(e.target) !== -1) return;
+            e.preventDefault();
+            var other = e.target;
+            ask(function () { leave(function () { other.submit(); }); });
+        }, true);
+
+        // دکمه‌ی برگشت مرورگر: ورودی تاریخچه‌ی ما برداشته می‌شود؛ اگر کاربر بماند دوباره گذاشته می‌شود.
+        window.addEventListener('popstate', function () {
+            if (!sentinel) return;
+            if (!isDirty()) { if (!leaving) { sentinel = false; history.back(); } return; }
+            ask(function () { leave(function () { sentinel = false; history.back(); }); }, function () { history.pushState({ dirtyGuard: true }, ''); });
+        });
+    })();
 
     // شمارنده‌ی کاراکتر برای [data-counter] با maxlength.
     document.querySelectorAll('[data-counter][maxlength]').forEach(function (field) {
